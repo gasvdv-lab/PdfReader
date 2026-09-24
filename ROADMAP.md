@@ -13,12 +13,14 @@ Geslaagd.
 ## v0.1.2 — Zoom & Fit
 Geslaagd.
 ## v0.1.3 — Mobile Reader UX
-Huidige release.
+Geslaagd.
 
 ## v0.2.0 — Text Layer
-Volgende stap.
+Huidige release.
 
 ## v0.2.1 — Search
+Volgende stap.
+
 ## v0.2.2 — Thumbnails
 ## v0.2.3 — Continuous Scroll
 ## v0.2.4 — PWA Foundation

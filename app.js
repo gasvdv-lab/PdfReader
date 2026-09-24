@@ -1,17 +1,19 @@
-const APP_VERSION = "0.1.3";
+const APP_VERSION = "0.2.0";
 
 const fileInput = document.getElementById("fileInput");
 const engineStatus = document.getElementById("engineStatus");
 const fileName = document.getElementById("fileName");
 const pageCount = document.getElementById("pageCount");
 const navPageCount = document.getElementById("navPageCount");
-const renderStatus = document.getElementById("renderStatus");
 const zoomStatus = document.getElementById("zoomStatus");
+const textStatus = document.getElementById("textStatus");
 const messageBox = document.getElementById("messageBox");
 const reader = document.getElementById("reader");
 const emptyState = document.getElementById("emptyState");
 const canvas = document.getElementById("pdfCanvas");
 const canvasWrap = document.getElementById("canvasWrap");
+const pageStage = document.getElementById("pageStage");
+const textLayer = document.getElementById("textLayer");
 const ctx = canvas.getContext("2d", { alpha: false });
 
 const prevButton = document.getElementById("prevButton");
@@ -79,6 +81,7 @@ async function loadPdfJs() {
   } catch (error) {
     console.error(error);
     engineStatus.textContent = "✗ Mislukt";
+    setMessage(`PDF.js kon niet worden geladen: ${error?.message || error}`, "error");
   }
 }
 
@@ -103,6 +106,71 @@ async function fitPageScale(pageNumber) {
   );
 }
 
+function clearTextLayer() {
+  textLayer.innerHTML = "";
+  textStatus.textContent = "Laden…";
+}
+
+async function renderTextLayer(page, viewport) {
+  clearTextLayer();
+
+  const textContent = await page.getTextContent();
+  const styles = textContent.styles || {};
+
+  textLayer.style.width = `${Math.floor(viewport.width)}px`;
+  textLayer.style.height = `${Math.floor(viewport.height)}px`;
+
+  let textItems = 0;
+
+  for (const item of textContent.items) {
+    if (!item.str) continue;
+
+    const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+    const angle = Math.atan2(tx[1], tx[0]);
+    const fontHeight = Math.hypot(tx[2], tx[3]);
+
+    if (!Number.isFinite(fontHeight) || fontHeight <= 0) continue;
+
+    const span = document.createElement("span");
+    span.textContent = item.str;
+
+    const style = styles[item.fontName] || {};
+    const ascent = Number.isFinite(style.ascent)
+      ? style.ascent
+      : (Number.isFinite(style.descent) ? 1 + style.descent : 0.8);
+
+    const left = tx[4];
+    const top = tx[5] - fontHeight * ascent;
+
+    span.style.left = `${left}px`;
+    span.style.top = `${top}px`;
+    span.style.fontSize = `${fontHeight}px`;
+    span.style.fontFamily = style.fontFamily || "sans-serif";
+
+    const transforms = [];
+    if (angle) {
+      transforms.push(`rotate(${angle}rad)`);
+    }
+
+    span.style.transform = transforms.join(" ");
+    textLayer.appendChild(span);
+
+    // Correct horizontal scale after the browser has measured the span.
+    const measuredWidth = span.getBoundingClientRect().width;
+    const desiredWidth = Math.abs(item.width * currentScale);
+
+    if (measuredWidth > 0 && desiredWidth > 0) {
+      const scaleX = desiredWidth / measuredWidth;
+      const rotation = angle ? `rotate(${angle}rad) ` : "";
+      span.style.transform = `${rotation}scaleX(${scaleX})`;
+    }
+
+    textItems++;
+  }
+
+  textStatus.textContent = `✓ ${textItems} tekstitems`;
+}
+
 async function renderPage(targetPage, scale = currentScale) {
   if (!pdfDoc) return;
 
@@ -114,7 +182,7 @@ async function renderPage(targetPage, scale = currentScale) {
     renderTask = null;
   }
 
-  renderStatus.textContent = `Pagina ${pageNumber} laden…`;
+  clearTextLayer();
 
   try {
     const page = await pdfDoc.getPage(pageNumber);
@@ -125,6 +193,9 @@ async function renderPage(targetPage, scale = currentScale) {
     canvas.height = Math.max(1, Math.floor(viewport.height * outputScale));
     canvas.style.width = `${Math.floor(viewport.width)}px`;
     canvas.style.height = `${Math.floor(viewport.height)}px`;
+
+    pageStage.style.width = `${Math.floor(viewport.width)}px`;
+    pageStage.style.height = `${Math.floor(viewport.height)}px`;
 
     const transform = outputScale !== 1
       ? [outputScale, 0, 0, outputScale, 0, 0]
@@ -141,18 +212,20 @@ async function renderPage(targetPage, scale = currentScale) {
 
     currentPage = pageNumber;
     currentScale = safeScale;
-    renderStatus.textContent = `✓ Pagina ${currentPage}`;
     updateUi();
 
+    await renderTextLayer(page, viewport);
+
     setMessage(
-      `Pagina ${currentPage} van ${pdfDoc.numPages} · ${Math.round(currentScale * 100)}%`,
+      `Pagina ${currentPage} van ${pdfDoc.numPages} · tekstselectie actief`,
       "ok"
     );
   } catch (error) {
     if (error?.name === "RenderingCancelledException") return;
+
     console.error(error);
     renderTask = null;
-    renderStatus.textContent = "✗ Mislukt";
+    textStatus.textContent = "✗ Mislukt";
     setMessage(`Renderfout: ${error?.message || error}`, "error");
   }
 }
@@ -162,7 +235,7 @@ async function openPdf(file) {
 
   fileName.textContent = file.name || "Onbekend bestand";
   pageCount.textContent = "…";
-  renderStatus.textContent = "Inlezen…";
+  textStatus.textContent = "Wachten";
   emptyState.classList.add("hidden");
   reader.classList.remove("hidden");
   setMessage("PDF wordt lokaal ingelezen…");
@@ -182,7 +255,7 @@ async function openPdf(file) {
     pdfDoc = null;
     pageCount.textContent = "—";
     navPageCount.textContent = "0";
-    renderStatus.textContent = "✗ Mislukt";
+    textStatus.textContent = "✗ Mislukt";
     currentScale = 1;
     updateUi();
     setMessage(`PDF openen mislukt: ${error?.message || error}`, "error");
@@ -240,4 +313,4 @@ window.addEventListener("resize", () => {
 await loadPdfJs();
 updateUi();
 
-console.info(`PdfReader ${APP_VERSION} — Mobile Reader UX geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Text Layer geladen.`);

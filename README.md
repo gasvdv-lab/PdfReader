@@ -1,16 +1,15 @@
-# PdfReader v0.1.3 — Mobile Reader UX
+# PdfReader v0.2.0 — Text Layer
 
 ## Doel
-Deze release bewijst één nieuw technisch concept:
-de bestaande reader comfortabel bedienen op mobiel.
+Deze release bewijst exact één nieuw technisch concept:
+selecteerbare tekst bovenop de huidige PDF-pagina.
 
 ## Nieuw
-- compacte mobiele header
-- sticky reader-toolbar
-- grotere touch-knoppen
-- betere canvashoogte
-- schermrotatie/resizen past automatisch opnieuw op breedte
-- compacte bestands- en paginastatus
+- PDF-tekstlaag boven canvas
+- tekst selecteren
+- tekst kopiëren
+- selectie blijft gekoppeld aan huidige zoom/pagina
+- status toont aantal tekstitems
 
 ## Behouden
 - PDF openen
@@ -20,9 +19,9 @@ de bestaande reader comfortabel bedienen op mobiel.
 - zoom +/-
 - Breedte
 - Pagina
+- mobiele reader-UX
 
 ## Nog niet
-- text layer
 - zoeken
 - thumbnails
 - continue scroll
@@ -30,7 +29,7 @@ de bestaande reader comfortabel bedienen op mobiel.
 - PWA-cache
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.1.3
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

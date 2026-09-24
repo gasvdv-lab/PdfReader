@@ -23,56 +23,42 @@ main{width:min(1000px,100%);margin:0 auto;padding:10px;flex:1}
 .panel{background:#111827;border:1px solid #26344a;border-radius:16px;padding:16px}
 .intro-block h2{margin:0 0 6px;font-size:clamp(22px,5vw,34px)}
 .intro-block p{margin:0 0 14px;color:#94a3b8}
-.empty-state{
-  min-height:42vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;text-align:center;color:#cbd5e1;border:1px dashed #334155;border-radius:14px
-}
+.empty-state{min-height:42vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:#cbd5e1;border:1px dashed #334155;border-radius:14px}
 .empty-state span{color:#64748b;font-size:14px}
 .hidden{display:none!important}
 .reader{display:flex;flex-direction:column;gap:10px}
-.mobile-toolbar{
-  position:sticky;top:63px;z-index:20;
-  background:#0d1626;border:1px solid #2b3b54;border-radius:14px;padding:8px
-}
+.mobile-toolbar{position:sticky;top:63px;z-index:20;background:#0d1626;border:1px solid #2b3b54;border-radius:14px;padding:8px}
 .toolbar-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
-.toolbar-row+ .toolbar-row{margin-top:6px}
-.toolbar-row button{
-  min-width:44px;min-height:44px;border:1px solid #334155;background:#172033;color:#fff;
-  border-radius:10px;padding:8px 11px;font-weight:700
-}
+.toolbar-row+.toolbar-row{margin-top:6px}
+.toolbar-row button{min-width:44px;min-height:44px;border:1px solid #334155;background:#172033;color:#fff;border-radius:10px;padding:8px 11px;font-weight:700}
 .toolbar-row button:disabled{opacity:.4}
 .wide-button{min-width:86px!important}
 .page-jump{display:flex;align-items:center;gap:6px;color:#cbd5e1}
-.page-jump input{
-  width:64px;min-height:44px;border:1px solid #334155;border-radius:10px;
-  background:#0f172a;color:#fff;text-align:center
-}
+.page-jump input{width:64px;min-height:44px;border:1px solid #334155;border-radius:10px;background:#0f172a;color:#fff;text-align:center}
 #zoomLabel{min-width:58px;text-align:center;font-weight:700;color:#cbd5e1}
-.reader-meta{
-  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
-  color:#94a3b8;font-size:13px
-}
-.reader-meta span:first-child{
-  max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
-}
-.message-box{
-  padding:11px 12px;border-radius:10px;background:#172033;color:#cbd5e1;font-size:13px
-}
+.reader-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#94a3b8;font-size:13px}
+.reader-meta span:first-child{max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.message-box{padding:11px 12px;border-radius:10px;background:#172033;color:#cbd5e1;font-size:13px}
 .message-box.ok{background:#123524;color:#bbf7d0}
 .message-box.error{background:#451a1a;color:#fecaca}
-.canvas-wrap{
-  width:100%;overflow:auto;display:flex;justify-content:center;align-items:flex-start;
-  padding:6px;background:#182235;border:1px solid #2f3d55;border-radius:12px;
-  max-height:calc(100vh - 230px)
+.canvas-wrap{width:100%;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:6px;background:#182235;border:1px solid #2f3d55;border-radius:12px;max-height:calc(100vh - 230px)}
+.page-stage{position:relative;display:inline-block;line-height:1}
+#pdfCanvas{display:block;background:#fff;max-width:none;box-shadow:0 8px 24px rgba(0,0,0,.32)}
+.text-layer{position:absolute;inset:0;overflow:hidden;opacity:1;line-height:1;transform-origin:0 0;pointer-events:auto}
+.text-layer span{
+  position:absolute;
+  color:transparent;
+  white-space:pre;
+  cursor:text;
+  transform-origin:0 0;
+  user-select:text;
+  -webkit-user-select:text
 }
-#pdfCanvas{
-  display:block;background:#fff;max-width:none;
-  box-shadow:0 8px 24px rgba(0,0,0,.32)
+.text-layer ::selection,
+.text-layer span::selection{
+  background:rgba(59,130,246,.35)
 }
-.reader-status{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;
-  font-size:12px;color:#94a3b8
-}
+.reader-status{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:12px;color:#94a3b8}
 .reader-status span{padding:8px;border-radius:9px;background:#0d1626;border:1px solid #22304a}
 .reader-status strong{color:#e5e7eb}
 .next-step{margin-top:16px;padding:13px;border-radius:12px;background:#172033;color:#cbd5e1}
