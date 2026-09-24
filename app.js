@@ -1,4 +1,4 @@
-const APP_VERSION = "0.1.2";
+const APP_VERSION = "0.1.3";
 
 const fileInput = document.getElementById("fileInput");
 const engineStatus = document.getElementById("engineStatus");
@@ -9,6 +9,7 @@ const renderStatus = document.getElementById("renderStatus");
 const zoomStatus = document.getElementById("zoomStatus");
 const messageBox = document.getElementById("messageBox");
 const reader = document.getElementById("reader");
+const emptyState = document.getElementById("emptyState");
 const canvas = document.getElementById("pdfCanvas");
 const canvasWrap = document.getElementById("canvasWrap");
 const ctx = canvas.getContext("2d", { alpha: false });
@@ -36,13 +37,16 @@ function setMessage(text, type = "") {
   if (type) messageBox.classList.add(type);
 }
 
+function clampScale(value) {
+  return Math.min(4, Math.max(0.25, value));
+}
+
 function updateUi() {
   const ready = Boolean(pdfDoc);
 
   prevButton.disabled = !ready || currentPage <= 1;
   nextButton.disabled = !ready || currentPage >= (pdfDoc?.numPages || 1);
   pageInput.disabled = !ready;
-
   zoomOutButton.disabled = !ready;
   zoomInButton.disabled = !ready;
   fitWidthButton.disabled = !ready;
@@ -75,34 +79,26 @@ async function loadPdfJs() {
   } catch (error) {
     console.error(error);
     engineStatus.textContent = "✗ Mislukt";
-    setMessage(`PDF.js kon niet worden geladen: ${error?.message || error}`, "error");
   }
 }
 
-async function getBaseViewport(pageNumber) {
-  const page = await pdfDoc.getPage(pageNumber);
-  return { page, baseViewport: page.getViewport({ scale: 1 }) };
-}
-
-function clampScale(value) {
-  return Math.min(4, Math.max(0.25, value));
-}
-
 async function fitWidthScale(pageNumber) {
-  const { baseViewport } = await getBaseViewport(pageNumber);
-  const availableWidth = Math.max(220, canvasWrap.clientWidth - 20);
-  return clampScale(availableWidth / baseViewport.width);
+  const page = await pdfDoc.getPage(pageNumber);
+  const viewport = page.getViewport({ scale: 1 });
+  const availableWidth = Math.max(220, canvasWrap.clientWidth - 14);
+  return clampScale(availableWidth / viewport.width);
 }
 
 async function fitPageScale(pageNumber) {
-  const { baseViewport } = await getBaseViewport(pageNumber);
-  const availableWidth = Math.max(220, canvasWrap.clientWidth - 20);
-  const availableHeight = Math.max(260, window.innerHeight - 260);
+  const page = await pdfDoc.getPage(pageNumber);
+  const viewport = page.getViewport({ scale: 1 });
+  const availableWidth = Math.max(220, canvasWrap.clientWidth - 14);
+  const availableHeight = Math.max(240, canvasWrap.clientHeight - 14);
 
   return clampScale(
     Math.min(
-      availableWidth / baseViewport.width,
-      availableHeight / baseViewport.height
+      availableWidth / viewport.width,
+      availableHeight / viewport.height
     )
   );
 }
@@ -145,17 +141,19 @@ async function renderPage(targetPage, scale = currentScale) {
 
     currentPage = pageNumber;
     currentScale = safeScale;
-
-    renderStatus.textContent = `✓ Pagina ${currentPage} gerenderd`;
+    renderStatus.textContent = `✓ Pagina ${currentPage}`;
     updateUi();
-    setMessage(`✓ Pagina ${currentPage} van ${pdfDoc.numPages} · zoom ${Math.round(currentScale * 100)}%.`, "ok");
+
+    setMessage(
+      `Pagina ${currentPage} van ${pdfDoc.numPages} · ${Math.round(currentScale * 100)}%`,
+      "ok"
+    );
   } catch (error) {
     if (error?.name === "RenderingCancelledException") return;
-
     console.error(error);
     renderTask = null;
     renderStatus.textContent = "✗ Mislukt";
-    setMessage(`Pagina renderen mislukt: ${error?.message || error}`, "error");
+    setMessage(`Renderfout: ${error?.message || error}`, "error");
   }
 }
 
@@ -165,7 +163,8 @@ async function openPdf(file) {
   fileName.textContent = file.name || "Onbekend bestand";
   pageCount.textContent = "…";
   renderStatus.textContent = "Inlezen…";
-  reader.classList.add("hidden");
+  emptyState.classList.add("hidden");
+  reader.classList.remove("hidden");
   setMessage("PDF wordt lokaal ingelezen…");
 
   try {
@@ -174,7 +173,6 @@ async function openPdf(file) {
 
     currentPage = 1;
     pageCount.textContent = String(pdfDoc.numPages);
-    reader.classList.remove("hidden");
 
     currentScale = await fitWidthScale(1);
     updateUi();
@@ -208,13 +206,8 @@ nextButton.addEventListener("click", () => {
 pageInput.addEventListener("change", () => {
   if (!pdfDoc) return;
   const requested = Number(pageInput.value);
-
-  if (!Number.isFinite(requested)) {
-    pageInput.value = String(currentPage);
-    return;
-  }
-
-  renderPage(requested, currentScale);
+  if (Number.isFinite(requested)) renderPage(requested, currentScale);
+  else pageInput.value = String(currentPage);
 });
 
 zoomInButton.addEventListener("click", () => {
@@ -227,17 +220,24 @@ zoomOutButton.addEventListener("click", () => {
 
 fitWidthButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
-  const scale = await fitWidthScale(currentPage);
-  await renderPage(currentPage, scale);
+  await renderPage(currentPage, await fitWidthScale(currentPage));
 });
 
 fitPageButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
-  const scale = await fitPageScale(currentPage);
-  await renderPage(currentPage, scale);
+  await renderPage(currentPage, await fitPageScale(currentPage));
+});
+
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(async () => {
+    if (!pdfDoc) return;
+    await renderPage(currentPage, await fitWidthScale(currentPage));
+  }, 180);
 });
 
 await loadPdfJs();
 updateUi();
 
-console.info(`PdfReader ${APP_VERSION} — Zoom & Fit geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Mobile Reader UX geladen.`);

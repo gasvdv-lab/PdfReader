@@ -2,26 +2,27 @@
 
 ## v0.0.1 — Static Foundation
 Geslaagd.
-
 ## v0.0.1.1 — Cache & Service Worker Cleanup
 Geslaagd.
-
 ## v0.0.2 — PDF.js Load Test
 Geslaagd.
-
 ## v0.1.0 — Minimal PDF Open
 Geslaagd.
-
 ## v0.1.1 — Page Navigation
 Geslaagd.
-
 ## v0.1.2 — Zoom & Fit
+Geslaagd.
+## v0.1.3 — Mobile Reader UX
 Huidige release.
 
-## v0.1.3 — Mobile Reader UX
+## v0.2.0 — Text Layer
 Volgende stap.
 
-## v0.2.x — Reader Expansion
+## v0.2.1 — Search
+## v0.2.2 — Thumbnails
+## v0.2.3 — Continuous Scroll
+## v0.2.4 — PWA Foundation
+## v0.2.5 — Offline Engine
 ## v0.3.x — Annotaties
 ## v0.4.x — PDF Editing
 ## v0.5.x — Export Engine

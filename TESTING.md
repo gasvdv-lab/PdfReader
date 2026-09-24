@@ -1,21 +1,22 @@
-# PdfReader v0.1.2 — Testing
+# PdfReader v0.1.3 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.1.2
+https://gasvdv-lab.github.io/PdfReader/?v=0.1.3
 
-## Test
-1. Controleer dat `v0.1.2` zichtbaar is.
-2. Open dezelfde PDF als in v0.1.0/v0.1.1.
-3. Controleer dat pagina 1 opent.
-4. Test `+`.
-5. Test `−`.
-6. Test `Breedte`.
-7. Test `Pagina`.
-8. Ga naar pagina 2.
-9. Controleer dat zoom/fit ook op pagina 2 werkt.
-10. Controleer dat het zoompercentage mee verandert.
+## Android
+1. Controleer dat v0.1.3 zichtbaar is.
+2. Open dezelfde test-PDF.
+3. Controleer dat de toolbar bovenaan blijft tijdens gebruik.
+4. Test vorige/volgende.
+5. Test directe paginakeuze.
+6. Test zoom + en -.
+7. Test Breedte.
+8. Test Pagina.
+9. Draai telefoon naar landschap en terug.
+10. Controleer dat de pagina opnieuw correct op breedte past.
 
-## Acceptatiecriterium
-v0.1.2 is geslaagd wanneer zoom +/− en beide fitmodi betrouwbaar werken terwijl nog steeds slechts één pagina tegelijk wordt gerenderd.
+## Windows
+Herhaal de kernfuncties in Chrome of Edge.
 
-Daarna pas doorgaan naar v0.1.3 — Mobile Reader UX.
+## Acceptatie
+v0.1.3 is geslaagd wanneer de bestaande readerfuncties op mobiel duidelijk comfortabeler werken zonder nieuwe reader-enginefuncties toe te voegen.
