@@ -12,8 +12,9 @@ v0.2.1.1 — Search Stability Fix — geslaagd
 v0.2.2 — Fullscreen Reader — geslaagd
 v0.2.2.1 — Professional Reader UX — geslaagd
 v0.2.2.2 — Immersive Fullscreen UX — geslaagd
+v0.2.2.3 — True Fullscreen Viewport — geslaagd
 
-## v0.2.2.3 — True Fullscreen Viewport
+## v0.2.2.4 — Fullscreen Fit Page Default
 Huidige release.
 
 ## v0.2.3 — Thumbnails

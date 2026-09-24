@@ -1,22 +1,29 @@
-# PdfReader v0.2.2.3 — True Fullscreen Viewport
+# PdfReader v0.2.2.4 — Fullscreen Fit Page Default
 
 ## Doel
-Fullscreen moet niet alleen technisch fullscreen zijn: de PDF-weergave moet de volledige viewport benutten.
+Fullscreen opent voortaan standaard met de volledige huidige PDF-pagina passend binnen het scherm.
 
-## Nieuw
-- fullscreen gebruikt exact 100vw × 100dvh
-- standaard fullscreenmodus = `Vul scherm`
-- extra fullscreenmodus `Vul scherm` in het overlaymenu
-- `Pagina` = volledige pagina zichtbaar
-- `Breedte` = volledige schermbreedte
-- `Vul scherm` = scherm volledig gevuld, met panning waar nodig
-- automatische herberekening bij schermrotatie
-- horizontaal en verticaal pannen bij ingezoomde/fill-weergave
-- swipe naar andere pagina alleen aan de horizontale rand van een gepande pagina
-- fullscreen blijft document-first met alleen de `⋯`-handle permanent zichtbaar
+## Gedrag
+- fullscreen start standaard in `Pagina`
+- volledige pagina zichtbaar
+- geen afgesneden randen
+- portrait en landscape worden automatisch opnieuw berekend
+- `Breedte` blijft beschikbaar via het `⋯`-menu
+- `Vul scherm` blijft beschikbaar via het `⋯`-menu
+- als de gebruiker bewust een andere modus kiest, blijft die modus actief tot fullscreen opnieuw geopend wordt
 
-## Belangrijk
-Een A4-pagina en een smartphonescherm hebben verschillende beeldverhoudingen. `Vul scherm` gebruikt daarom een cover-schaal: het scherm is volledig gevuld, terwijl een deel van de pagina buiten de viewport kan vallen en via panning bereikbaar blijft.
+## Behouden
+Alle bewezen functies uit v0.2.2.3:
+- native fullscreen + fallback
+- floating `⋯`-handle
+- fullscreen overlaymenu
+- swipe links/rechts
+- pinch zoom
+- tekstselectie
+- zoeken
+- zoom
+- pagina navigatie
+- panning waar nodig
 
 ## Nog niet
 - thumbnails
@@ -25,7 +32,7 @@ Een A4-pagina en een smartphonescherm hebben verschillende beeldverhoudingen. `V
 - PWA-cache
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.3
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.4
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

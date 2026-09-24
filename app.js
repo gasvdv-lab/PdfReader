@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.2.3";
+const APP_VERSION = "0.2.2.4";
 
 const $ = id => document.getElementById(id);
 
@@ -136,7 +136,7 @@ function closeSearchPanel() {
 
 let fullscreenControlsTimer = null;
 
-let fullscreenViewMode = "fill-screen";
+let fullscreenViewMode = "fit-page";
 
 function setFullscreenViewMode(mode) {
   fullscreenViewMode = mode;
@@ -250,7 +250,7 @@ function enterImmersiveUi() {
   closeSearchPanel();
   closeFullscreenOverlay();
   showFullscreenHandle();
-  setFullscreenViewMode("fill-screen");
+  setFullscreenViewMode("fit-page");
 }
 
 function leaveImmersiveUi() {
@@ -286,7 +286,7 @@ async function enterFullscreen() {
   // this remains as a safe browser fallback.
   setFullscreenUi(true);
   enterImmersiveUi();
-  fullscreenViewMode = "fill-screen";
+  fullscreenViewMode = "fit-page";
 
   try {
     const root = document.documentElement;
@@ -1072,4 +1072,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — True Fullscreen Viewport geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Fullscreen Fit Page Default geladen.`);
