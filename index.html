@@ -16,43 +16,60 @@
       <div class="logo">PDF</div>
       <div class="brand-text">
         <h1>PdfReader</h1>
-        <span class="version-badge">v0.1.3</span>
+        <span class="version-badge">v0.2.0</span>
       </div>
     </div>
 
-    <label class="file-button" for="fileInput">PDF openen</label>
-    <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
+    <div class="header-actions">
+      <button id="toggleSidebar" class="secondary-button" type="button" title="Miniaturen">☰</button>
+      <label class="file-button" for="fileInput">PDF openen</label>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
+    </div>
   </header>
 
   <main>
     <section id="welcome" class="welcome panel">
       <h2>Open een PDF vanaf je toestel</h2>
-      <p>De PDF wordt lokaal in de browser verwerkt. Deze app stuurt het document niet naar een eigen server.</p>
+      <p>De PDF wordt lokaal in je browser verwerkt. Deze app stuurt het document niet naar een eigen server.</p>
       <label class="primary-button" for="fileInput">Kies PDF</label>
       <div class="feature-row">
         <span>Android</span>
         <span>Windows</span>
-        <span>GitHub Pages</span>
-        <span>PWA</span>
+        <span>Scrollmodus</span>
+        <span>Zoeken</span>
+        <span>Thumbnails</span>
       </div>
     </section>
 
     <section id="reader" class="reader hidden" aria-live="polite">
       <div class="toolbar panel">
-        <div class="toolbar-group nav-group">
-          <button id="prevPage" type="button" title="Vorige pagina" aria-label="Vorige pagina">←</button>
-          <div class="page-control">
-            <input id="pageNumber" type="number" min="1" value="1" aria-label="Paginanummer">
-            <span>/ <strong id="pageCount">0</strong></span>
+        <div class="toolbar-row">
+          <div class="toolbar-group">
+            <button id="prevPage" type="button" title="Vorige pagina">←</button>
+            <div class="page-control">
+              <input id="pageNumber" type="number" min="1" value="1" aria-label="Paginanummer">
+              <span>/ <strong id="pageCount">0</strong></span>
+            </div>
+            <button id="nextPage" type="button" title="Volgende pagina">→</button>
           </div>
-          <button id="nextPage" type="button" title="Volgende pagina" aria-label="Volgende pagina">→</button>
+
+          <div class="toolbar-group">
+            <button id="zoomOut" type="button" title="Uitzoomen">−</button>
+            <span id="zoomLabel">100%</span>
+            <button id="zoomIn" type="button" title="Inzoomen">+</button>
+            <button id="fitWidth" type="button">Breedte</button>
+            <button id="fitPage" type="button">Pagina</button>
+          </div>
         </div>
 
-        <div class="toolbar-group zoom-group">
-          <button id="zoomOut" type="button" title="Uitzoomen" aria-label="Uitzoomen">−</button>
-          <span id="zoomLabel">100%</span>
-          <button id="zoomIn" type="button" title="Inzoomen" aria-label="Inzoomen">+</button>
-          <button id="fitWidth" type="button" class="fit-button" title="Passend op breedte">Breedte</button>
+        <div class="toolbar-row search-row">
+          <div class="search-box">
+            <input id="searchInput" type="search" placeholder="Zoek tekst in PDF…" autocomplete="off">
+            <button id="searchButton" type="button">Zoek</button>
+            <button id="searchPrev" type="button" title="Vorige resultaat">↑</button>
+            <button id="searchNext" type="button" title="Volgende resultaat">↓</button>
+          </div>
+          <div id="searchStatus" class="search-status">Geen zoekopdracht</div>
         </div>
       </div>
 
@@ -61,14 +78,21 @@
         <div id="fileName" class="filename"></div>
       </div>
 
-      <div id="canvasWrap" class="canvas-wrap">
-        <canvas id="pdfCanvas"></canvas>
+      <div class="reader-layout">
+        <aside id="sidebar" class="sidebar panel">
+          <div class="sidebar-title">Pagina's</div>
+          <div id="thumbnails" class="thumbnails"></div>
+        </aside>
+
+        <div id="scrollContainer" class="scroll-container">
+          <div id="pages" class="pages"></div>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
-    <span>PdfReader v0.1.3</span>
+    <span>PdfReader v0.2.0</span>
     <div class="footer-actions">
       <button id="checkUpdate" class="link-button" type="button">Controleer update</button>
       <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>

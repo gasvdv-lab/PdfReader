@@ -3,12 +3,11 @@ import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.worker.min.mjs";
 
+const APP_VERSION = "0.2.0";
+
 const fileInput = document.getElementById("fileInput");
 const welcome = document.getElementById("welcome");
 const reader = document.getElementById("reader");
-const canvas = document.getElementById("pdfCanvas");
-const ctx = canvas.getContext("2d", { alpha: false });
-
 const prevPage = document.getElementById("prevPage");
 const nextPage = document.getElementById("nextPage");
 const pageNumber = document.getElementById("pageNumber");
@@ -17,16 +16,29 @@ const zoomOut = document.getElementById("zoomOut");
 const zoomIn = document.getElementById("zoomIn");
 const zoomLabel = document.getElementById("zoomLabel");
 const fitWidth = document.getElementById("fitWidth");
-const canvasWrap = document.getElementById("canvasWrap");
+const fitPage = document.getElementById("fitPage");
 const status = document.getElementById("status");
 const fileName = document.getElementById("fileName");
+const pages = document.getElementById("pages");
+const scrollContainer = document.getElementById("scrollContainer");
+const thumbnails = document.getElementById("thumbnails");
+const sidebar = document.getElementById("sidebar");
+const toggleSidebar = document.getElementById("toggleSidebar");
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
+const searchPrev = document.getElementById("searchPrev");
+const searchNext = document.getElementById("searchNext");
+const searchStatus = document.getElementById("searchStatus");
+const checkUpdateButton = document.getElementById("checkUpdate");
 
 let pdfDoc = null;
 let currentPage = 1;
 let scale = 1;
-let renderTask = null;
-let renderSerial = 0;
-let activeFileName = "";
+let pageBaseSizes = [];
+let renderGeneration = 0;
+let searchResults = [];
+let activeSearchIndex = -1;
+let observer = null;
 
 function setStatus(message) {
   status.textContent = message;
@@ -41,53 +53,148 @@ function updateControls() {
   nextPage.disabled = !pdfDoc || currentPage >= pdfDoc.numPages;
 }
 
-async function renderPage(pageNo) {
+function setActiveThumbnail(pageNo) {
+  document.querySelectorAll(".thumb").forEach(el => {
+    el.classList.toggle("active", Number(el.dataset.page) === pageNo);
+  });
+}
+
+function setupPageObserver() {
+  if (observer) observer.disconnect();
+
+  observer = new IntersectionObserver(entries => {
+    const visible = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+    if (!visible.length) return;
+
+    const pageNo = Number(visible[0].target.dataset.page);
+    if (!Number.isFinite(pageNo)) return;
+
+    currentPage = pageNo;
+    updateControls();
+    setActiveThumbnail(pageNo);
+  }, {
+    root: null,
+    threshold: [0.15, 0.35, 0.6, 0.85]
+  });
+
+  document.querySelectorAll(".page-shell").forEach(el => observer.observe(el));
+}
+
+async function buildPageBaseSizes() {
+  pageBaseSizes = [];
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale: 1 });
+    pageBaseSizes.push({ width: viewport.width, height: viewport.height });
+  }
+}
+
+async function renderAllPages() {
   if (!pdfDoc) return;
 
-  const serial = ++renderSerial;
+  const generation = ++renderGeneration;
+  pages.innerHTML = "";
+  setStatus("Pagina's renderen…");
 
-  if (renderTask) {
-    try { renderTask.cancel(); } catch {}
-    renderTask = null;
-  }
+  for (let pageNo = 1; pageNo <= pdfDoc.numPages; pageNo++) {
+    if (generation !== renderGeneration) return;
 
-  setStatus(`Pagina ${pageNo} laden…`);
-
-  try {
     const page = await pdfDoc.getPage(pageNo);
-    if (serial !== renderSerial) return;
-
     const viewport = page.getViewport({ scale });
     const outputScale = Math.max(1, window.devicePixelRatio || 1);
+
+    const shell = document.createElement("div");
+    shell.className = "page-shell";
+    shell.dataset.page = String(pageNo);
+    shell.id = `page-${pageNo}`;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { alpha: false });
 
     canvas.width = Math.floor(viewport.width * outputScale);
     canvas.height = Math.floor(viewport.height * outputScale);
     canvas.style.width = `${Math.floor(viewport.width)}px`;
     canvas.style.height = `${Math.floor(viewport.height)}px`;
 
+    const label = document.createElement("div");
+    label.className = "page-number-label";
+    label.textContent = pageNo;
+
+    shell.append(canvas, label);
+    pages.appendChild(shell);
+
     const transform = outputScale !== 1
       ? [outputScale, 0, 0, outputScale, 0, 0]
       : null;
 
-    renderTask = page.render({
+    await page.render({
       canvasContext: ctx,
       transform,
       viewport
-    });
-
-    await renderTask.promise;
-    renderTask = null;
-
-    if (serial !== renderSerial) return;
-
-    currentPage = pageNo;
-    updateControls();
-    setStatus(`Pagina ${currentPage} van ${pdfDoc.numPages}`);
-  } catch (err) {
-    if (err?.name === "RenderingCancelledException") return;
-    console.error(err);
-    setStatus("Kon deze pagina niet renderen.");
+    }).promise;
   }
+
+  setupPageObserver();
+  setStatus(`${pdfDoc.numPages} pagina's geladen`);
+  scrollToPage(currentPage, false);
+}
+
+async function buildThumbnails() {
+  thumbnails.innerHTML = "";
+
+  for (let pageNo = 1; pageNo <= pdfDoc.numPages; pageNo++) {
+    const page = await pdfDoc.getPage(pageNo);
+    const base = page.getViewport({ scale: 1 });
+    const thumbScale = Math.min(0.28, 150 / base.width);
+    const viewport = page.getViewport({ scale: thumbScale });
+
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "thumb";
+    item.dataset.page = String(pageNo);
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const outputScale = Math.max(1, window.devicePixelRatio || 1);
+
+    canvas.width = Math.floor(viewport.width * outputScale);
+    canvas.height = Math.floor(viewport.height * outputScale);
+
+    const label = document.createElement("div");
+    label.className = "thumb-label";
+    label.textContent = `Pagina ${pageNo}`;
+
+    item.append(canvas, label);
+    thumbnails.appendChild(item);
+
+    await page.render({
+      canvasContext: ctx,
+      transform: outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null,
+      viewport
+    }).promise;
+
+    item.addEventListener("click", () => {
+      scrollToPage(pageNo);
+      if (window.innerWidth <= 900) sidebar.classList.add("hidden-mobile");
+    });
+  }
+
+  setActiveThumbnail(currentPage);
+}
+
+function scrollToPage(pageNo, smooth = true) {
+  const target = document.getElementById(`page-${pageNo}`);
+  if (!target) return;
+  currentPage = pageNo;
+  updateControls();
+  setActiveThumbnail(pageNo);
+  target.scrollIntoView({
+    behavior: smooth ? "smooth" : "auto",
+    block: "start"
+  });
 }
 
 async function openPdf(file) {
@@ -98,7 +205,6 @@ async function openPdf(file) {
     return;
   }
 
-  activeFileName = file.name;
   fileName.textContent = file.name;
   setStatus(`"${file.name}" openen…`);
 
@@ -109,11 +215,16 @@ async function openPdf(file) {
 
     currentPage = 1;
     scale = 1;
+    searchResults = [];
+    activeSearchIndex = -1;
+    searchStatus.textContent = "Geen zoekopdracht";
 
     welcome.classList.add("hidden");
     reader.classList.remove("hidden");
 
-    await fitPageToWidth();
+    await buildPageBaseSizes();
+    await fitToWidth(false);
+    await buildThumbnails();
 
     document.title = `${file.name} - PdfReader`;
   } catch (err) {
@@ -122,18 +233,90 @@ async function openPdf(file) {
   }
 }
 
-async function fitPageToWidth() {
+async function fitToWidth(render = true) {
+  if (!pdfDoc || !pageBaseSizes.length) return;
+
+  const base = pageBaseSizes[currentPage - 1] || pageBaseSizes[0];
+  const sidebarWidth = window.innerWidth > 900 ? 230 : 0;
+  const available = Math.max(220, window.innerWidth - sidebarWidth - 48);
+  scale = Math.min(3, Math.max(0.25, available / base.width));
+
+  updateControls();
+  if (render) await renderAllPages();
+  else await renderAllPages();
+}
+
+async function fitCurrentPage() {
+  if (!pdfDoc || !pageBaseSizes.length) return;
+
+  const base = pageBaseSizes[currentPage - 1] || pageBaseSizes[0];
+  const sidebarWidth = window.innerWidth > 900 ? 230 : 0;
+  const availableWidth = Math.max(220, window.innerWidth - sidebarWidth - 48);
+  const availableHeight = Math.max(260, window.innerHeight - 220);
+
+  scale = Math.min(
+    3,
+    Math.max(0.25, Math.min(availableWidth / base.width, availableHeight / base.height))
+  );
+
+  updateControls();
+  await renderAllPages();
+}
+
+async function searchPdf() {
   if (!pdfDoc) return;
 
-  const page = await pdfDoc.getPage(currentPage);
-  const baseViewport = page.getViewport({ scale: 1 });
+  const query = searchInput.value.trim().toLocaleLowerCase();
+  searchResults = [];
+  activeSearchIndex = -1;
+  document.querySelectorAll(".page-shell").forEach(el => el.classList.remove("search-hit"));
 
-  const horizontalPadding = window.innerWidth <= 640 ? 18 : 30;
-  const availableWidth = Math.max(220, canvasWrap.clientWidth - horizontalPadding);
+  if (!query) {
+    searchStatus.textContent = "Geen zoekopdracht";
+    return;
+  }
 
-  scale = Math.min(3, Math.max(0.25, availableWidth / baseViewport.width));
-  updateControls();
-  await renderPage(currentPage);
+  searchStatus.textContent = "Zoeken…";
+
+  for (let pageNo = 1; pageNo <= pdfDoc.numPages; pageNo++) {
+    const page = await pdfDoc.getPage(pageNo);
+    const textContent = await page.getTextContent();
+    const text = textContent.items
+      .map(item => item.str || "")
+      .join(" ")
+      .toLocaleLowerCase();
+
+    let fromIndex = 0;
+    while (true) {
+      const pos = text.indexOf(query, fromIndex);
+      if (pos === -1) break;
+      searchResults.push({ pageNo, pos });
+      fromIndex = pos + Math.max(1, query.length);
+    }
+  }
+
+  if (!searchResults.length) {
+    searchStatus.textContent = "Geen resultaten";
+    return;
+  }
+
+  activeSearchIndex = 0;
+  showSearchResult();
+}
+
+function showSearchResult() {
+  document.querySelectorAll(".page-shell").forEach(el => el.classList.remove("search-hit"));
+
+  if (!searchResults.length || activeSearchIndex < 0) return;
+
+  const result = searchResults[activeSearchIndex];
+  const shell = document.getElementById(`page-${result.pageNo}`);
+  shell?.classList.add("search-hit");
+
+  searchStatus.textContent =
+    `${activeSearchIndex + 1} / ${searchResults.length} · pagina ${result.pageNo}`;
+
+  scrollToPage(result.pageNo);
 }
 
 fileInput.addEventListener("change", () => {
@@ -142,42 +325,64 @@ fileInput.addEventListener("change", () => {
 });
 
 prevPage.addEventListener("click", () => {
-  if (pdfDoc && currentPage > 1) renderPage(currentPage - 1);
+  if (pdfDoc && currentPage > 1) scrollToPage(currentPage - 1);
 });
 
 nextPage.addEventListener("click", () => {
-  if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1);
+  if (pdfDoc && currentPage < pdfDoc.numPages) scrollToPage(currentPage + 1);
 });
 
 pageNumber.addEventListener("change", () => {
   if (!pdfDoc) return;
   const requested = Math.max(1, Math.min(pdfDoc.numPages, Number(pageNumber.value) || 1));
-  renderPage(requested);
+  scrollToPage(requested);
 });
 
-zoomIn.addEventListener("click", () => {
+zoomIn.addEventListener("click", async () => {
   if (!pdfDoc) return;
   scale = Math.min(4, scale + 0.15);
   updateControls();
-  renderPage(currentPage);
+  await renderAllPages();
 });
 
-zoomOut.addEventListener("click", () => {
+zoomOut.addEventListener("click", async () => {
   if (!pdfDoc) return;
   scale = Math.max(0.25, scale - 0.15);
   updateControls();
-  renderPage(currentPage);
+  await renderAllPages();
 });
 
-fitWidth.addEventListener("click", fitPageToWidth);
+fitWidth.addEventListener("click", () => fitToWidth(true));
+fitPage.addEventListener("click", fitCurrentPage);
+
+toggleSidebar.addEventListener("click", () => {
+  sidebar.classList.toggle("hidden-mobile");
+});
+
+searchButton.addEventListener("click", searchPdf);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") searchPdf();
+});
+
+searchNext.addEventListener("click", () => {
+  if (!searchResults.length) return;
+  activeSearchIndex = (activeSearchIndex + 1) % searchResults.length;
+  showSearchResult();
+});
+
+searchPrev.addEventListener("click", () => {
+  if (!searchResults.length) return;
+  activeSearchIndex = (activeSearchIndex - 1 + searchResults.length) % searchResults.length;
+  showSearchResult();
+});
 
 window.addEventListener("keydown", event => {
-  if (!pdfDoc) return;
+  if (!pdfDoc || event.target?.matches("input")) return;
 
   if (event.key === "ArrowLeft" && currentPage > 1) {
-    renderPage(currentPage - 1);
+    scrollToPage(currentPage - 1);
   } else if (event.key === "ArrowRight" && currentPage < pdfDoc.numPages) {
-    renderPage(currentPage + 1);
+    scrollToPage(currentPage + 1);
   } else if (event.key === "+" || event.key === "=") {
     zoomIn.click();
   } else if (event.key === "-") {
@@ -189,12 +394,9 @@ let resizeTimer = null;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    if (pdfDoc) fitPageToWidth();
-  }, 180);
+    if (window.innerWidth > 900) sidebar.classList.remove("hidden-mobile");
+  }, 160);
 });
-
-const APP_VERSION = "0.1.3";
-const checkUpdateButton = document.getElementById("checkUpdate");
 
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return null;
@@ -203,21 +405,7 @@ async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register("./service-worker.js", {
       updateViaCache: "none"
     });
-
-    // Controleer bij iedere start actief of een nieuw service-workerbestand bestaat.
     await registration.update();
-
-    registration.addEventListener("updatefound", () => {
-      const worker = registration.installing;
-      if (!worker) return;
-
-      worker.addEventListener("statechange", () => {
-        if (worker.state === "installed" && navigator.serviceWorker.controller) {
-          setStatus(`Nieuwe versie gevonden. Herlaad de app.`);
-        }
-      });
-    });
-
     return registration;
   } catch (err) {
     console.error("Service worker registratie mislukt:", err);
@@ -230,11 +418,8 @@ async function forceUpdateCheck() {
 
   try {
     const registration = await navigator.serviceWorker.getRegistration();
-    if (registration) {
-      await registration.update();
-    }
+    if (registration) await registration.update();
 
-    // Cache-busted reload zodat ook index.html vers wordt opgehaald.
     const url = new URL(window.location.href);
     url.searchParams.set("v", `${APP_VERSION}-${Date.now()}`);
     window.location.replace(url.toString());
@@ -245,7 +430,10 @@ async function forceUpdateCheck() {
 }
 
 checkUpdateButton?.addEventListener("click", forceUpdateCheck);
-
 window.addEventListener("load", registerServiceWorker);
+
+if (window.innerWidth <= 900) {
+  sidebar.classList.add("hidden-mobile");
+}
 
 updateControls();

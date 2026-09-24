@@ -1,23 +1,26 @@
-# PdfReader v0.1.3 — Update & Cache Fix
+# PdfReader v0.2.0 — Complete Reader Foundation
 
 Live app:
-
 https://gasvdv-lab.github.io/PdfReader/
 
-## Doel van deze release
+## Nieuwe functies
 
-Deze release lost het ontwikkelprobleem op waarbij Android/Chrome soms een oudere versie van PdfReader bleef tonen.
+- continue scrollmodus: alle pagina's onder elkaar
+- thumbnails / miniaturen
+- mobiel uitklapbare paginabalk
+- tekst zoeken door de volledige PDF
+- volgende/vorige zoekresultaat
+- resultaatpagina visueel markeren
+- fit-to-width
+- fit-to-page
+- paginanummer blijft automatisch volgen tijdens scrollen
+- vorige/volgende pagina blijft werken
+- zoom +/−
+- cache- en updatefix uit v0.1.3 behouden
 
-## Wijzigingen
+## Privacy
 
-- `index.html` en navigatie gebruiken nu **network-first**
-- service worker gebruikt `updateViaCache: "none"`
-- bij iedere start wordt actief `registration.update()` uitgevoerd
-- oude `pdfreader-*` caches worden automatisch verwijderd
-- statische bestanden gebruiken stale-while-revalidate
-- knop **Controleer update** toegevoegd
-- de actieve versie blijft permanent zichtbaar
-- cacheversie verhoogd naar `v0.1.3`
+PDF-bestanden worden lokaal in de browser verwerkt en niet naar een eigen backend geüpload.
 
 ## Uploaden
 
@@ -27,18 +30,12 @@ https://github.com/gasvdv-lab/PdfReader
 
 Vervang de bestaande bestanden.
 
-## Testlink zonder oude cache
+## Cache-vrije testlink
 
-https://gasvdv-lab.github.io/PdfReader/?v=0.1.3
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0
 
-## Test
+## Bekende beperking
 
-Na deployment moet bovenaan zichtbaar zijn:
+De zoekfunctie markeert in deze versie de pagina waarop een resultaat staat, nog niet het exacte woord in de PDF.
 
-`PdfReader  v0.1.3`
-
-Klik eventueel onderaan op **Controleer update**. De app herlaadt dan met een unieke cache-buster.
-
-## Privacy
-
-PDF-bestanden blijven lokaal in de browser verwerkt. De app uploadt ze niet naar een eigen backend.
+PDF.js wordt nog via jsDelivr geladen. Volledig offline bundelen blijft gepland.

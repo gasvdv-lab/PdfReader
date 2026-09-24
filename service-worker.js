@@ -1,4 +1,4 @@
-const CACHE_NAME = "pdfreader-v0.1.3";
+const CACHE_NAME = "pdfreader-v0.2.0";
 const STATIC_ASSETS = [
   "./styles.css",
   "./app.js",
@@ -29,8 +29,7 @@ self.addEventListener("activate", event => {
 
 async function networkFirst(request) {
   try {
-    const response = await fetch(request, { cache: "no-store" });
-    return response;
+    return await fetch(request, { cache: "no-store" });
   } catch {
     const cached = await caches.match("./index.html");
     if (cached) return cached;
@@ -44,9 +43,7 @@ async function staleWhileRevalidate(request) {
 
   const networkPromise = fetch(request, { cache: "no-cache" })
     .then(response => {
-      if (response && response.ok) {
-        cache.put(request, response.clone());
-      }
+      if (response && response.ok) cache.put(request, response.clone());
       return response;
     })
     .catch(() => null);
@@ -60,13 +57,11 @@ self.addEventListener("fetch", event => {
 
   if (request.method !== "GET") return;
 
-  // HTML/navigation: altijd eerst het netwerk proberen.
   if (request.mode === "navigate" || url.pathname.endsWith("/index.html")) {
     event.respondWith(networkFirst(request));
     return;
   }
 
-  // Alleen eigen statische assets cachen.
   if (url.origin === self.location.origin) {
     event.respondWith(staleWhileRevalidate(request));
   }

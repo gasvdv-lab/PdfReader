@@ -3,35 +3,32 @@
 Live app:
 https://gasvdv-lab.github.io/PdfReader/
 
-## v0.1.0 — Reader Foundation
+## v0.1.x — Foundation
 Status: afgerond
 
-## v0.1.1 — Mobile Layout Fix
-Status: afgerond
+- readerbasis
+- mobile layout
+- versie-indicatie
+- cache/updatefix
 
-## v0.1.2 — Visible Version Badge
-Status: afgerond
-
-## v0.1.3 — Update & Cache Fix
+## v0.2.0 — Complete Reader Foundation
 Status: huidige release
 
-- network-first voor HTML
-- automatische service-worker updatecontrole
-- oude caches automatisch verwijderen
-- updateknop
-- betrouwbare versiecontrole tijdens ontwikkeling
-
-## v0.2.0 — Complete Reader
-Gepland:
-
-- continue scrollmodus
+- continue scroll
 - thumbnails
 - tekst zoeken
-- tekstselectie
-- fit page / fit width
-- recente bestanden
-- verbeterde touch-bediening
-- lokale PDF.js-bundeling
+- fit width
+- fit page
+- actieve pagina volgen tijdens scrollen
+
+## v0.2.1 — Reader Refinement
+Gepland:
+
+- exacte tekstmarkering bij zoeken
+- echte tekstselectielaag
+- recente bestanden lokaal onthouden
+- betere thumbnail performance
+- verbeterde mobiele gestures
 
 ## v0.3.0 — Annotaties
 Gepland:
@@ -40,7 +37,7 @@ Gepland:
 - pen
 - tekstvak
 - notitie
-- vormen
+- lijn/rechthoek/cirkel
 - undo/redo
 
 ## v0.4.0 — Pagina-editor

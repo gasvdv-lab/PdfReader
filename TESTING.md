@@ -1,32 +1,40 @@
-# PdfReader v0.1.3 — Testing
+# PdfReader v0.2.0 — Testing
 
-Testlink zonder oude cache:
-
-https://gasvdv-lab.github.io/PdfReader/?v=0.1.3
+Cache-vrije testlink:
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0
 
 ## Android
 
-1. Upload v0.1.3 naar GitHub.
-2. Wacht tot GitHub Pages klaar is.
-3. Open de cache-busted testlink.
-4. Controleer dat `v0.1.3` zichtbaar is.
-5. Open een PDF.
-6. Test vorige/volgende, paginanummer, zoom en Breedte.
-7. Klik onderaan op `Controleer update`.
-8. Controleer dat de pagina opnieuw opent met een nieuwe `?v=` parameter.
-
-## Cache-regressietest
-
-1. Laat v0.1.3 eenmaal laden.
-2. Sluit de browser.
-3. Open opnieuw.
-4. Controleer dat de versie nog steeds v0.1.3 is.
-5. Bij een latere release moet dezelfde test aantonen dat de nieuwe versie zichtbaar wordt zonder handmatig sitegegevens te wissen.
+1. Open de cache-vrije testlink.
+2. Controleer dat `v0.2.0` zichtbaar is.
+3. Open een PDF met meerdere pagina's.
+4. Controleer:
+   - alle pagina's staan onder elkaar;
+   - scrollen tussen pagina's werkt;
+   - huidig paginanummer verandert tijdens scrollen;
+   - vorige/volgende pagina werkt;
+   - zoom +/− werkt;
+   - `Breedte` werkt;
+   - `Pagina` werkt.
+5. Open de miniaturen via de menuknop.
+6. Tik op een thumbnail en controleer dat de juiste pagina opent.
+7. Zoek een woord dat meerdere keren voorkomt.
+8. Gebruik ↑ en ↓ voor vorige/volgende zoekresultaat.
 
 ## Windows
 
 Herhaal dezelfde test in Chrome of Edge.
 
+Extra:
+- controleer pijltjestoetsen links/rechts;
+- verklein en vergroot het venster;
+- thumbnails moeten links zichtbaar zijn op brede schermen.
+
+## Cachetest
+
+1. Klik `Controleer update`.
+2. Controleer dat de pagina herlaadt met een nieuwe `?v=` parameter.
+
 ## Acceptatiecriterium
 
-De app mag na een nieuwe deployment niet structureel op een oude HTML-versie blijven hangen. De versie-indicatie moet overeenkomen met de laatste gedeployde release.
+v0.2.0 is geslaagd wanneer een PDF van meerdere pagina's bruikbaar doorlopend kan worden gelezen, thumbnails werken en tekstzoekresultaten naar de juiste pagina navigeren.
