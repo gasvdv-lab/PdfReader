@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.2.3">
-  <title>PdfReader v0.2.3</title>
+  <link rel="stylesheet" href="styles.css?v=0.2.4">
+  <title>PdfReader v0.2.4</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -16,7 +16,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.2.3</span>
+        <span>v0.2.4</span>
       </div>
     </div>
   </div>
@@ -41,6 +41,7 @@
   </div>
   <button id="openPdfMenuItem" class="menu-item" type="button">PDF openen</button>
   <button id="thumbnailsMenuItem" class="menu-item" type="button">Paginaminiaturen</button>
+  <button id="continuousScrollMenuItem" class="menu-item" type="button">Doorlopend scrollen</button>
   <button id="fitWidthMenuItem" class="menu-item" type="button">Passend op breedte</button>
   <button id="fitPageMenuItem" class="menu-item" type="button">Passend op pagina</button>
   <button id="resetZoomMenuItem" class="menu-item" type="button">Zoom 100%</button>
@@ -57,8 +58,8 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Thumbnails</h2>
-    <p>Deze versie voegt een lazy geladen thumbnailpaneel toe zonder continuous scroll te introduceren.</p>
+    <h2>Continuous Scroll</h2>
+    <p>Deze versie voegt een aparte doorlopende scrollmodus toe met lazy page rendering en actief-pagina-detectie.</p>
   </div>
 
   <div id="emptyState" class="empty-state">
@@ -104,6 +105,10 @@
         <canvas id="pdfCanvas"></canvas>
         <div id="textLayer" class="text-layer" aria-label="Selecteerbare PDF-tekst"></div>
       </div>
+    <div id="continuousViewer" class="continuous-viewer hidden" aria-label="Doorlopende PDF-weergave">
+      <div id="continuousPages" class="continuous-pages"></div>
+    </div>
+
     </div>
 
     <div class="reader-status">
@@ -116,13 +121,13 @@
 
   <div class="next-step">
     <strong>Volgende stap bij succes:</strong>
-    v0.2.4 — Continuous Scroll
+    v0.2.5 — PWA Foundation
   </div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.2.3</span>
+  <span>PdfReader v0.2.4</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -170,6 +175,7 @@
     <div class="fullscreen-overlay-menu">
       <button id="fsSearchButton" class="menu-item" type="button">Zoeken</button>
       <button id="fsThumbnailsButton" class="menu-item" type="button">Paginaminiaturen</button>
+      <button id="fsContinuousScrollButton" class="menu-item" type="button">Doorlopend scrollen</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -180,6 +186,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.2.3"></script>
+<script type="module" src="app.js?v=0.2.4"></script>
 </body>
 </html>

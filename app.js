@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.3";
+const APP_VERSION = "0.2.4";
 
 const $ = id => document.getElementById(id);
 
@@ -51,6 +51,11 @@ const thumbnailDrawerClose = $("thumbnailDrawerClose");
 const thumbnailBackdrop = $("thumbnailBackdrop");
 const thumbnailList = $("thumbnailList");
 const thumbnailCount = $("thumbnailCount");
+
+const continuousScrollMenuItem = $("continuousScrollMenuItem");
+const fsContinuousScrollButton = $("fsContinuousScrollButton");
+const continuousViewer = $("continuousViewer");
+const continuousPages = $("continuousPages");
 
 const fullscreenHandle = $("fullscreenHandle");
 const fullscreenHandleButton = $("fullscreenHandleButton");
@@ -149,6 +154,13 @@ let fullscreenViewMode = "fit-page";
 let thumbnailObserver = null;
 let thumbnailRenderQueue = new Set();
 let thumbnailRendered = new Set();
+
+let continuousScrollEnabled = false;
+let continuousObserver = null;
+let continuousPageObserver = null;
+let continuousRendered = new Set();
+let continuousRendering = new Set();
+let continuousScale = 1;
 
 function setFullscreenViewMode(mode) {
   fullscreenViewMode = mode;
@@ -450,6 +462,249 @@ function updateActiveThumbnail() {
   if (active && !thumbnailDrawer.classList.contains("hidden")) {
     active.scrollIntoView({ block: "nearest" });
   }
+}
+
+
+function setContinuousScrollEnabled(enabled) {
+  continuousScrollEnabled = Boolean(enabled);
+  document.body.classList.toggle("continuous-scroll-mode", continuousScrollEnabled);
+
+  continuousScrollMenuItem.textContent = continuousScrollEnabled
+    ? "Single page weergave"
+    : "Doorlopend scrollen";
+
+  fsContinuousScrollButton.textContent = continuousScrollEnabled
+    ? "Single page weergave"
+    : "Doorlopend scrollen";
+
+  if (continuousScrollEnabled) {
+    buildContinuousPages();
+  } else {
+    teardownContinuousObservers();
+    continuousViewer.classList.add("hidden");
+    canvasWrap.classList.remove("hidden");
+    updateUi();
+  }
+}
+
+function teardownContinuousObservers() {
+  continuousObserver?.disconnect();
+  continuousPageObserver?.disconnect();
+  continuousObserver = null;
+  continuousPageObserver = null;
+}
+
+function resetContinuousScroll() {
+  teardownContinuousObservers();
+  continuousRendered.clear();
+  continuousRendering.clear();
+  continuousPages.innerHTML = "";
+}
+
+async function calculateContinuousScale(pageNumber = 1) {
+  if (!pdfDoc) return 1;
+  const page = await pdfDoc.getPage(pageNumber);
+  const base = page.getViewport({ scale: 1 });
+
+  const width = Math.max(
+    240,
+    continuousViewer.clientWidth - (window.innerWidth <= 640 ? 18 : 34)
+  );
+
+  return clampScale(Math.min(1.5, width / base.width));
+}
+
+async function buildContinuousPages() {
+  if (!pdfDoc) return;
+
+  continuousViewer.classList.remove("hidden");
+  canvasWrap.classList.add("hidden");
+
+  if (continuousPages.children.length !== pdfDoc.numPages) {
+    resetContinuousScroll();
+
+    const fragment = document.createDocumentFragment();
+
+    for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
+      const wrapper = document.createElement("section");
+      wrapper.className = "continuous-page";
+      wrapper.dataset.pageNumber = String(pageNumber);
+
+      const placeholder = document.createElement("div");
+      placeholder.className = "continuous-page-placeholder";
+      placeholder.textContent = `Pagina ${pageNumber} laden wanneer zichtbaar…`;
+
+      wrapper.appendChild(placeholder);
+      fragment.appendChild(wrapper);
+    }
+
+    continuousPages.appendChild(fragment);
+  }
+
+  continuousScale = await calculateContinuousScale(currentPage || 1);
+  ensureContinuousObservers();
+  observeContinuousPages();
+
+  requestAnimationFrame(() => {
+    const target = continuousPages.querySelector(
+      `.continuous-page[data-page-number="${currentPage}"]`
+    );
+    target?.scrollIntoView({ block: "center" });
+  });
+}
+
+function ensureContinuousObservers() {
+  if (!continuousObserver) {
+    continuousObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+
+        const wrapper = entry.target;
+        const pageNumber = Number(wrapper.dataset.pageNumber);
+
+        renderContinuousPage(pageNumber, wrapper);
+      }
+    }, {
+      root: continuousViewer,
+      rootMargin: "900px 0px",
+      threshold: 0.01
+    });
+  }
+
+  if (!continuousPageObserver) {
+    continuousPageObserver = new IntersectionObserver(entries => {
+      let best = null;
+
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        if (!best || entry.intersectionRatio > best.intersectionRatio) {
+          best = entry;
+        }
+      }
+
+      if (!best) return;
+
+      const pageNumber = Number(best.target.dataset.pageNumber);
+      if (!Number.isFinite(pageNumber)) return;
+
+      currentPage = pageNumber;
+      pageLabel.textContent = `Pagina ${currentPage}`;
+      pageInput.value = String(currentPage);
+      updateActiveThumbnail();
+
+      continuousPages.querySelectorAll(".continuous-page").forEach(page => {
+        page.classList.toggle(
+          "active-page",
+          Number(page.dataset.pageNumber) === currentPage
+        );
+      });
+    }, {
+      root: continuousViewer,
+      threshold: [0.25, 0.45, 0.6, 0.8]
+    });
+  }
+}
+
+function observeContinuousPages() {
+  if (!continuousObserver || !continuousPageObserver) return;
+
+  continuousPages.querySelectorAll(".continuous-page").forEach(page => {
+    continuousObserver.observe(page);
+    continuousPageObserver.observe(page);
+  });
+}
+
+async function renderContinuousPage(pageNumber, wrapper) {
+  if (
+    !pdfDoc ||
+    continuousRendered.has(pageNumber) ||
+    continuousRendering.has(pageNumber)
+  ) return;
+
+  continuousRendering.add(pageNumber);
+
+  try {
+    const page = await pdfDoc.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: continuousScale });
+    const outputScale = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+
+    const stage = document.createElement("div");
+    stage.className = "continuous-page-stage";
+    stage.style.width = `${Math.floor(viewport.width)}px`;
+    stage.style.height = `${Math.floor(viewport.height)}px`;
+
+    const badge = document.createElement("span");
+    badge.className = "continuous-page-number";
+    badge.textContent = String(pageNumber);
+
+    const canvasPage = document.createElement("canvas");
+    const context = canvasPage.getContext("2d", { alpha: false });
+
+    canvasPage.width = Math.max(1, Math.floor(viewport.width * outputScale));
+    canvasPage.height = Math.max(1, Math.floor(viewport.height * outputScale));
+    canvasPage.style.width = `${Math.floor(viewport.width)}px`;
+    canvasPage.style.height = `${Math.floor(viewport.height)}px`;
+
+    const transform = outputScale !== 1
+      ? [outputScale, 0, 0, outputScale, 0, 0]
+      : null;
+
+    stage.appendChild(canvasPage);
+    stage.appendChild(badge);
+
+    wrapper.innerHTML = "";
+    wrapper.appendChild(stage);
+
+    await page.render({
+      canvasContext: context,
+      viewport,
+      transform
+    }).promise;
+
+    continuousRendered.add(pageNumber);
+  } catch (error) {
+    console.warn(`Continuous page ${pageNumber} kon niet renderen.`, error);
+    wrapper.innerHTML = `<div class="continuous-page-placeholder">Pagina ${pageNumber} kon niet geladen worden.</div>`;
+  } finally {
+    continuousRendering.delete(pageNumber);
+  }
+}
+
+async function jumpToContinuousPage(pageNumber) {
+  if (!continuousScrollEnabled || !pdfDoc) return;
+
+  const target = Math.max(1, Math.min(pdfDoc.numPages, Math.round(pageNumber)));
+  currentPage = target;
+  updateUi();
+
+  const el = continuousPages.querySelector(
+    `.continuous-page[data-page-number="${target}"]`
+  );
+
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+async function toggleContinuousScroll() {
+  if (!pdfDoc) return;
+
+  setContinuousScrollEnabled(!continuousScrollEnabled);
+
+  if (continuousScrollEnabled) {
+    await buildContinuousPages();
+  } else {
+    canvasWrap.classList.remove("hidden");
+
+    if (document.body.classList.contains("fullscreen-reader")) {
+      await applyFullscreenViewMode(fullscreenViewMode);
+    } else {
+      await renderPage(currentPage, currentScale);
+    }
+  }
+
+  closeMenus();
+  closeFullscreenOverlay();
 }
 
 function fullscreenSupported() {
@@ -803,6 +1058,7 @@ async function openPdf(file) {
     currentScale = 1;
     pageTextCache.clear();
     resetThumbnails();
+    resetContinuousScroll();
     searchResults = [];
     activeSearchIndex = -1;
     searchInput.value = "";
@@ -895,7 +1151,9 @@ async function showActiveSearchResult() {
   if (!searchResults.length || activeSearchIndex < 0) return;
   const result = searchResults[activeSearchIndex];
 
-  if (currentPage !== result.page) {
+  if (continuousScrollEnabled) {
+    await jumpToContinuousPage(result.page);
+  } else if (currentPage !== result.page) {
     await renderPage(result.page, currentScale);
   } else {
     applyHighlightsForCurrentPage();
@@ -1004,6 +1262,8 @@ fullscreenButtonTop.addEventListener("click", toggleFullscreen);
 
 
 thumbnailsMenuItem.addEventListener("click", openThumbnailDrawer);
+continuousScrollMenuItem.addEventListener("click", toggleContinuousScroll);
+fsContinuousScrollButton.addEventListener("click", toggleContinuousScroll);
 fsThumbnailsButton.addEventListener("click", openThumbnailDrawer);
 thumbnailDrawerClose.addEventListener("click", closeThumbnailDrawer);
 thumbnailBackdrop.addEventListener("click", closeThumbnailDrawer);
@@ -1017,17 +1277,23 @@ fullscreenOverlay.addEventListener("click", event => {
 });
 
 fsPrevButton.addEventListener("click", async () => {
-  if (pdfDoc && currentPage > 1) {
+  if (!pdfDoc || currentPage <= 1) return;
+  if (continuousScrollEnabled) {
+    await jumpToContinuousPage(currentPage - 1);
+  } else {
     await renderPage(currentPage - 1, currentScale);
-    updateFullscreenOverlayUi();
   }
+  updateFullscreenOverlayUi();
 });
 
 fsNextButton.addEventListener("click", async () => {
-  if (pdfDoc && currentPage < pdfDoc.numPages) {
+  if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
+  if (continuousScrollEnabled) {
+    await jumpToContinuousPage(currentPage + 1);
+  } else {
     await renderPage(currentPage + 1, currentScale);
-    updateFullscreenOverlayUi();
   }
+  updateFullscreenOverlayUi();
 });
 
 fsZoomOutButton.addEventListener("click", async () => {
@@ -1044,6 +1310,7 @@ fsZoomInButton.addEventListener("click", async () => {
 
 fsFitWidthButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
+  if (continuousScrollEnabled) setContinuousScrollEnabled(false);
   await applyFullscreenViewMode("fit-width");
   updateFullscreenOverlayUi();
   closeFullscreenOverlay();
@@ -1051,6 +1318,7 @@ fsFitWidthButton.addEventListener("click", async () => {
 
 fsFitPageButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
+  if (continuousScrollEnabled) setContinuousScrollEnabled(false);
   await applyFullscreenViewMode("fit-page");
   updateFullscreenOverlayUi();
   closeFullscreenOverlay();
@@ -1058,6 +1326,7 @@ fsFitPageButton.addEventListener("click", async () => {
 
 fsFillScreenButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
+  if (continuousScrollEnabled) setContinuousScrollEnabled(false);
   await applyFullscreenViewMode("fill-screen");
   updateFullscreenOverlayUi();
   closeFullscreenOverlay();
@@ -1197,7 +1466,7 @@ pageStage.addEventListener("touchend", async event => {
   const fastEnough = dt < 700;
   const farEnough = Math.abs(dx) >= 70;
 
-  if (horizontal && fastEnough && farEnough) {
+  if (!continuousScrollEnabled && horizontal && fastEnough && farEnough) {
     const maxScrollX = Math.max(0, canvasWrap.scrollWidth - canvasWrap.clientWidth);
     const atLeftEdge = canvasWrap.scrollLeft <= 2;
     const atRightEdge = canvasWrap.scrollLeft >= maxScrollX - 2;
@@ -1262,6 +1531,12 @@ window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(async () => {
     if (!pdfDoc) return;
+
+    if (continuousScrollEnabled) {
+      resetContinuousScroll();
+      await buildContinuousPages();
+      return;
+    }
     if (document.body.classList.contains("fullscreen-reader")) {
       await applyFullscreenViewMode(fullscreenViewMode);
     } else {
@@ -1272,4 +1547,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Thumbnails geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Continuous Scroll geladen.`);

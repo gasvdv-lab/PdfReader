@@ -1,30 +1,31 @@
-# PdfReader v0.2.3 — Testing
+# PdfReader v0.2.4 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.3
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.4
 
 ## Android
-1. Open een PDF met meerdere pagina's.
-2. Open het linkermenu.
-3. Kies `Paginaminiaturen`.
-4. Controleer dat het thumbnailpaneel opent.
-5. Scroll door het paneel.
-6. Controleer dat thumbnails pas zichtbaar worden wanneer ze in/nabij beeld komen.
-7. Tik op pagina 2 of 3.
-8. Controleer dat de hoofdviewer direct naar die pagina gaat.
-9. Open thumbnails opnieuw.
-10. Controleer dat de huidige pagina visueel gemarkeerd is.
-11. Activeer fullscreen.
-12. Open het `⋯`-menu.
-13. Kies `Paginaminiaturen`.
-14. Tik een andere pagina.
-15. Controleer dat fullscreen behouden blijft en de gekozen pagina passend wordt weergegeven.
-16. Test daarna swipe, pinch, zoeken en gewone navigatie opnieuw.
+1. Open een PDF met minstens 5 pagina's.
+2. Open het menu.
+3. Kies `Doorlopend scrollen`.
+4. Controleer dat pagina's onder elkaar verschijnen.
+5. Scroll langzaam naar beneden.
+6. Controleer dat pagina's pas laden wanneer ze in/nabij beeld komen.
+7. Controleer dat het huidige paginanummer bovenaan mee verandert.
+8. Vul handmatig een ander paginanummer in.
+9. Controleer dat de viewer naar die pagina scrollt.
+10. Open thumbnails en kies een andere pagina.
+11. Controleer dat continuous mode naar die pagina springt.
+12. Zoek een woord op een andere pagina.
+13. Controleer dat de viewer naar de juiste pagina springt.
+14. Schakel via het menu terug naar `Single page weergave`.
+15. Controleer dat swipe/pinch en fullscreen single-page opnieuw normaal werken.
+16. Test continuous mode ook in fullscreen.
+17. Draai portrait → landscape → portrait.
 
 ## Windows
-Herhaal dezelfde tests in Chrome of Edge.
+Herhaal dezelfde test in Chrome of Edge.
 
 ## Acceptatie
-v0.2.3 is geslaagd wanneer thumbnails lazy laden, correcte pagina's tonen, paginanavigatie betrouwbaar uitvoeren en de bestaande readerfuncties niet breken.
+v0.2.4 is geslaagd wanneer doorlopend scrollen soepel werkt, pagina's lazy laden, de actieve pagina correct wordt bijgehouden en terugschakelen naar single-page geen bestaande functies breekt.
 
-Pas daarna doorgaan naar v0.2.4 — Continuous Scroll.
+Pas daarna doorgaan naar v0.2.5 — PWA Foundation.

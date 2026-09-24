@@ -1,40 +1,33 @@
-# PdfReader v0.2.3 — Thumbnails
+# PdfReader v0.2.4 — Continuous Scroll
 
 ## Doel
-Paginaminiaturen toevoegen als aparte navigatiemethode, zonder continuous scroll.
+Een aparte doorlopende scrollmodus toevoegen zonder de bewezen single-page reader te vervangen.
 
 ## Nieuw
-- inklapbaar thumbnailpaneel
-- toegang via het documentmenu
-- toegang vanuit fullscreen overlay
-- thumbnails worden lazy gerenderd
-- alleen zichtbare/nabije thumbnails worden geladen
-- actieve pagina wordt gemarkeerd
-- tik op thumbnail opent direct de pagina
-- thumbnailpaneel werkt op Android en Windows
-- geen service worker of cache toegevoegd
+- menuoptie `Doorlopend scrollen`
+- alle PDF-pagina's onder elkaar
+- lazy rendering via IntersectionObserver
+- alleen zichtbare en nabije pagina's worden gerenderd
+- actieve pagina wordt automatisch gedetecteerd
+- paginanummer bovenin volgt mee tijdens scrollen
+- directe paginakeuze scrollt naar de juiste pagina
+- thumbnails kunnen nog steeds naar een specifieke pagina navigeren
+- zoeken kan naar een pagina in continuous mode springen
+- menuoptie verandert naar `Single page weergave` om terug te schakelen
 
-## Behouden
-- lokale PDF openen
-- één pagina tegelijk in hoofdviewer
-- paginanavigatie
-- zoom
-- tekstselectie
-- zoeken
-- professionele menu-UX
-- swipe
-- pinch zoom
-- immersive fullscreen
-- fullscreen standaard passend op pagina
+## Gedrag
+- swipe links/rechts voor paginawissel is uitgeschakeld in continuous mode
+- gewone verticale scroll wordt dan de primaire navigatie
+- single-page modus behoudt swipe/pinch/fullscreen zoals voorheen
+- fullscreen continuous mode blijft mogelijk
 
 ## Nog niet
-- continuous scroll
 - PWA
 - offline engine
 - annotaties
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.3
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.4
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/
