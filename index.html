@@ -5,17 +5,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.1.1">
-  <title>PdfReader v0.1.1</title>
+  <link rel="stylesheet" href="styles.css?v=0.1.2">
+  <title>PdfReader v0.1.2</title>
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><div class="logo">PDF</div><div><h1>PdfReader</h1><span class="version-badge">v0.1.1</span></div></div>
+  <div class="brand">
+    <div class="logo">PDF</div>
+    <div>
+      <h1>PdfReader</h1>
+      <span class="version-badge">v0.1.2</span>
+    </div>
+  </div>
 </header>
+
 <main>
 <section class="panel">
-  <h2>Page Navigation</h2>
-  <p class="intro">Deze versie bouwt verder op de bewezen PDF-openfunctie en voegt alleen paginanavigatie toe.</p>
+  <h2>Zoom & Fit</h2>
+  <p class="intro">Deze versie bouwt verder op de bewezen paginanavigatie en voegt alleen zoom- en fitfuncties toe.</p>
 
   <div class="controls">
     <label class="open-button" for="fileInput">PDF openen</label>
@@ -23,39 +30,50 @@
   </div>
 
   <div class="status-card">
-    <div class="status-row"><span>Versie</span><strong>v0.1.1</strong></div>
+    <div class="status-row"><span>Versie</span><strong>v0.1.2</strong></div>
     <div class="status-row"><span>PDF.js</span><strong id="engineStatus">Laden…</strong></div>
     <div class="status-row"><span>Bestand</span><strong id="fileName">Nog geen PDF</strong></div>
     <div class="status-row"><span>Pagina's</span><strong id="pageCount">—</strong></div>
+    <div class="status-row"><span>Zoom</span><strong id="zoomStatus">—</strong></div>
     <div class="status-row"><span>Renderstatus</span><strong id="renderStatus">Wachten</strong></div>
   </div>
 
-  <div id="messageBox" class="message-box">Kies een PDF om paginanavigatie te testen.</div>
+  <div id="messageBox" class="message-box">Kies een PDF om zoom en fit te testen.</div>
 
   <div id="reader" class="reader hidden">
     <div class="nav-bar">
       <button id="prevButton" type="button">← Vorige</button>
+
       <div class="page-jump">
         <label for="pageInput">Pagina</label>
         <input id="pageInput" type="number" min="1" value="1">
         <span>/ <strong id="navPageCount">0</strong></span>
       </div>
+
       <button id="nextButton" type="button">Volgende →</button>
     </div>
 
+    <div class="zoom-bar">
+      <button id="zoomOutButton" type="button">−</button>
+      <span id="zoomLabel">100%</span>
+      <button id="zoomInButton" type="button">+</button>
+      <button id="fitWidthButton" type="button">Breedte</button>
+      <button id="fitPageButton" type="button">Pagina</button>
+    </div>
+
     <div class="viewer-title"><span id="pageLabel">Pagina 1</span></div>
-    <div class="canvas-wrap"><canvas id="pdfCanvas"></canvas></div>
+    <div id="canvasWrap" class="canvas-wrap"><canvas id="pdfCanvas"></canvas></div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.1.2 — Zoom & Fit</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.1.3 — Mobile Reader UX</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.1.1</span>
+  <span>PdfReader v0.1.2</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
-<script type="module" src="app.js?v=0.1.1"></script>
+<script type="module" src="app.js?v=0.1.2"></script>
 </body>
 </html>

@@ -13,12 +13,14 @@ Geslaagd.
 Geslaagd.
 
 ## v0.1.1 — Page Navigation
-Huidige release.
+Geslaagd.
 
 ## v0.1.2 — Zoom & Fit
-Volgende stap.
+Huidige release.
 
 ## v0.1.3 — Mobile Reader UX
+Volgende stap.
+
 ## v0.2.x — Reader Expansion
 ## v0.3.x — Annotaties
 ## v0.4.x — PDF Editing
