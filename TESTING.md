@@ -1,15 +1,22 @@
-# PdfReader v0.2.1 — Testing
+# PdfReader v0.2.1.1 — Testing
 
 Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.1.1
 
-1. Open een PDF met echte tekst.
-2. Zoek een woord op pagina 1.
-3. Controleer de markering.
-4. Zoek een woord op een andere pagina.
-5. Controleer automatische paginanavigatie.
-6. Gebruik ↑ en ↓ voor vorige/volgende resultaat.
-7. Test daarna zoom en gewone paginanavigatie opnieuw.
+## Testvolgorde
+1. Open een PDF met meerdere pagina's en echte tekst.
+2. Controleer bestandsnaam en pagina-aantal.
+3. Test volgende/vorige pagina en directe paginakeuze.
+4. Test zoom + en zoom -.
+5. Test Breedte en Pagina.
+6. Selecteer en kopieer tekst.
+7. Zoek een woord op de huidige pagina.
+8. Zoek een woord op een andere pagina.
+9. Zoek een zoekterm met meerdere woorden.
+10. Gebruik ↑ en ↓ door de resultaten.
+11. Controleer dat de juiste pagina opent en de hit gemarkeerd is.
+12. Open daarna een tweede PDF en herhaal een zoekactie.
+13. Draai Android naar landschap en terug; viewer moet opnieuw correct passen.
 
-Acceptatie:
-zoeken over meerdere pagina's werkt zonder bestaande readerfuncties te breken.
+## Acceptatie
+Geen JavaScript-fout bij PDF-openen. Alle bestaande readerfuncties blijven werken en zoeken werkt over meerdere pagina's.

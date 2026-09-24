@@ -1,43 +1,44 @@
-const APP_VERSION = "0.2.1";
+const APP_VERSION = "0.2.1.1";
 
-const fileInput = document.getElementById("fileInput");
-const engineStatus = document.getElementById("engineStatus");
-const fileName = document.getElementById("fileName");
-const pageCount = document.getElementById("pageCount");
-const navPageCount = document.getElementById("navPageCount");
-const zoomStatus = document.getElementById("zoomStatus");
-const messageBox = document.getElementById("messageBox");
-const reader = document.getElementById("reader");
-const emptyState = document.getElementById("emptyState");
-const canvas = document.getElementById("pdfCanvas");
-const canvasWrap = document.getElementById("canvasWrap");
-const pageStage = document.getElementById("pageStage");
-const textLayer = document.getElementById("textLayer");
+const $ = id => document.getElementById(id);
+
+const fileInput = $("fileInput");
+const engineStatus = $("engineStatus");
+const fileName = $("fileName");
+const pageCount = $("pageCount");
+const navPageCount = $("navPageCount");
+const zoomStatus = $("zoomStatus");
+const messageBox = $("messageBox");
+const reader = $("reader");
+const emptyState = $("emptyState");
+const canvas = $("pdfCanvas");
+const canvasWrap = $("canvasWrap");
+const pageStage = $("pageStage");
+const textLayer = $("textLayer");
 const ctx = canvas.getContext("2d", { alpha: false });
 
-const prevButton = document.getElementById("prevButton");
-const nextButton = document.getElementById("nextButton");
-const pageInput = document.getElementById("pageInput");
-const pageLabel = document.getElementById("pageLabel");
-
-const zoomOutButton = document.getElementById("zoomOutButton");
-const zoomInButton = document.getElementById("zoomInButton");
-const fitWidthButton = document.getElementById("fitWidthButton");
-const fitPageButton = document.getElementById("fitPageButton");
-const zoomLabel = document.getElementById("zoomLabel");
-
-const searchInput = document.getElementById("searchInput");
-const searchButton = document.getElementById("searchButton");
-const searchPrevButton = document.getElementById("searchPrevButton");
-const searchNextButton = document.getElementById("searchNextButton");
-const searchStatus = document.getElementById("searchStatus");
-const searchMiniStatus = document.getElementById("searchMiniStatus");
+const prevButton = $("prevButton");
+const nextButton = $("nextButton");
+const pageInput = $("pageInput");
+const pageLabel = $("pageLabel");
+const zoomOutButton = $("zoomOutButton");
+const zoomInButton = $("zoomInButton");
+const fitWidthButton = $("fitWidthButton");
+const fitPageButton = $("fitPageButton");
+const zoomLabel = $("zoomLabel");
+const searchInput = $("searchInput");
+const searchButton = $("searchButton");
+const searchPrevButton = $("searchPrevButton");
+const searchNextButton = $("searchNextButton");
+const searchStatus = $("searchStatus");
+const searchMiniStatus = $("searchMiniStatus");
 
 let pdfjsLib = null;
 let pdfDoc = null;
 let currentPage = 1;
 let currentScale = 1;
 let renderTask = null;
+let renderGeneration = 0;
 let pageTextCache = new Map();
 let searchResults = [];
 let activeSearchIndex = -1;
@@ -54,7 +55,6 @@ function clampScale(value) {
 
 function updateUi() {
   const ready = Boolean(pdfDoc);
-
   prevButton.disabled = !ready || currentPage <= 1;
   nextButton.disabled = !ready || currentPage >= (pdfDoc?.numPages || 1);
   pageInput.disabled = !ready;
@@ -62,6 +62,7 @@ function updateUi() {
   zoomInButton.disabled = !ready;
   fitWidthButton.disabled = !ready;
   fitPageButton.disabled = !ready;
+  searchInput.disabled = !ready;
   searchButton.disabled = !ready;
   searchPrevButton.disabled = !ready || searchResults.length === 0;
   searchNextButton.disabled = !ready || searchResults.length === 0;
@@ -81,14 +82,11 @@ function updateUi() {
 async function loadPdfJs() {
   try {
     pdfjsLib = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.min.mjs");
-
     if (!pdfjsLib || typeof pdfjsLib.getDocument !== "function") {
       throw new Error("PDF.js getDocument ontbreekt.");
     }
-
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.worker.min.mjs";
-
     engineStatus.textContent = `✓ ${pdfjsLib.version || "geladen"}`;
   } catch (error) {
     console.error(error);
@@ -108,45 +106,63 @@ async function fitPageScale(pageNumber) {
   const page = await pdfDoc.getPage(pageNumber);
   const viewport = page.getViewport({ scale: 1 });
   const availableWidth = Math.max(220, canvasWrap.clientWidth - 14);
-  const availableHeight = Math.max(240, canvasWrap.clientHeight - 14);
-
-  return clampScale(
-    Math.min(
-      availableWidth / viewport.width,
-      availableHeight / viewport.height
-    )
-  );
+  const availableHeight = Math.max(240, window.innerHeight - 250);
+  return clampScale(Math.min(
+    availableWidth / viewport.width,
+    availableHeight / viewport.height
+  ));
 }
 
 function clearTextLayer() {
-  textLayer.innerHTML = "";
+  textLayer.replaceChildren();
+}
+
+function normalizeSearchText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().toLocaleLowerCase();
 }
 
 async function getPageTextData(pageNumber) {
   if (pageTextCache.has(pageNumber)) return pageTextCache.get(pageNumber);
+
   const page = await pdfDoc.getPage(pageNumber);
   const textContent = await page.getTextContent();
   const items = textContent.items.map((item, index) => ({
     index,
     str: item.str || "",
-    lower: (item.str || "").toLocaleLowerCase(),
     raw: item
   }));
-  const data = { textContent, items };
+
+  // Build one normalized page string plus a character→item map.
+  // This allows multi-word searches even when PDF.js split a phrase over text items.
+  let pageText = "";
+  const charToItem = [];
+  for (const item of items) {
+    const normalized = String(item.str || "").replace(/\s+/g, " ").trim();
+    if (!normalized) continue;
+    if (pageText && !pageText.endsWith(" ")) {
+      pageText += " ";
+      charToItem.push(null);
+    }
+    for (const ch of normalized) {
+      pageText += ch.toLocaleLowerCase();
+      charToItem.push(item.index);
+    }
+  }
+
+  const data = { textContent, items, pageText, charToItem };
   pageTextCache.set(pageNumber, data);
   return data;
 }
 
-async function renderTextLayer(page, viewport) {
+async function renderTextLayer(pageNumber, viewport, generation) {
   clearTextLayer();
 
-  const { textContent, items } = await getPageTextData(currentPage);
-  const styles = textContent.styles || {};
+  const { textContent, items } = await getPageTextData(pageNumber);
+  if (generation !== renderGeneration) return;
 
+  const styles = textContent.styles || {};
   textLayer.style.width = `${Math.floor(viewport.width)}px`;
   textLayer.style.height = `${Math.floor(viewport.height)}px`;
-
-  let textItems = 0;
 
   for (const entry of items) {
     const item = entry.raw;
@@ -155,7 +171,6 @@ async function renderTextLayer(page, viewport) {
     const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
     const angle = Math.atan2(tx[1], tx[0]);
     const fontHeight = Math.hypot(tx[2], tx[3]);
-
     if (!Number.isFinite(fontHeight) || fontHeight <= 0) continue;
 
     const span = document.createElement("span");
@@ -167,65 +182,58 @@ async function renderTextLayer(page, viewport) {
       ? style.ascent
       : (Number.isFinite(style.descent) ? 1 + style.descent : 0.8);
 
-    const left = tx[4];
-    const top = tx[5] - fontHeight * ascent;
-
-    span.style.left = `${left}px`;
-    span.style.top = `${top}px`;
+    span.style.left = `${tx[4]}px`;
+    span.style.top = `${tx[5] - fontHeight * ascent}px`;
     span.style.fontSize = `${fontHeight}px`;
     span.style.fontFamily = style.fontFamily || "sans-serif";
 
-    const transforms = [];
-    if (angle) {
-      transforms.push(`rotate(${angle}rad)`);
-    }
-
-    span.style.transform = transforms.join(" ");
+    if (angle) span.style.transform = `rotate(${angle}rad)`;
     textLayer.appendChild(span);
 
-    // Correct horizontal scale after the browser has measured the span.
     const measuredWidth = span.getBoundingClientRect().width;
     const desiredWidth = Math.abs(item.width * currentScale);
-
     if (measuredWidth > 0 && desiredWidth > 0) {
       const scaleX = desiredWidth / measuredWidth;
-      const rotation = angle ? `rotate(${angle}rad) ` : "";
-      span.style.transform = `${rotation}scaleX(${scaleX})`;
+      span.style.transform = `${angle ? `rotate(${angle}rad) ` : ""}scaleX(${scaleX})`;
     }
-
-    textItems++;
   }
 
   applyHighlightsForCurrentPage();
 }
 
 function applyHighlightsForCurrentPage() {
-  [...textLayer.querySelectorAll("span")].forEach(span => span.classList.remove("search-hit", "search-active"));
-  searchResults.forEach((result, idx) => {
+  for (const span of textLayer.querySelectorAll("span")) {
+    span.classList.remove("search-hit", "search-active");
+  }
+
+  searchResults.forEach((result, resultIndex) => {
     if (result.page !== currentPage) return;
-    const span = textLayer.querySelector(`span[data-item-index="${result.itemIndex}"]`);
-    if (!span) return;
-    span.classList.add("search-hit");
-    if (idx === activeSearchIndex) span.classList.add("search-active");
+    for (const itemIndex of result.itemIndices) {
+      const span = textLayer.querySelector(`span[data-item-index="${itemIndex}"]`);
+      if (!span) continue;
+      span.classList.add("search-hit");
+      if (resultIndex === activeSearchIndex) span.classList.add("search-active");
+    }
   });
 }
-
 
 async function renderPage(targetPage, scale = currentScale) {
   if (!pdfDoc) return;
 
   const pageNumber = Math.max(1, Math.min(pdfDoc.numPages, Math.round(targetPage)));
   const safeScale = clampScale(scale);
+  const generation = ++renderGeneration;
 
   if (renderTask) {
     try { renderTask.cancel(); } catch {}
     renderTask = null;
   }
-
   clearTextLayer();
 
   try {
     const page = await pdfDoc.getPage(pageNumber);
+    if (generation !== renderGeneration) return;
+
     const viewport = page.getViewport({ scale: safeScale });
     const outputScale = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
 
@@ -233,7 +241,6 @@ async function renderPage(targetPage, scale = currentScale) {
     canvas.height = Math.max(1, Math.floor(viewport.height * outputScale));
     canvas.style.width = `${Math.floor(viewport.width)}px`;
     canvas.style.height = `${Math.floor(viewport.height)}px`;
-
     pageStage.style.width = `${Math.floor(viewport.width)}px`;
     pageStage.style.height = `${Math.floor(viewport.height)}px`;
 
@@ -241,28 +248,20 @@ async function renderPage(targetPage, scale = currentScale) {
       ? [outputScale, 0, 0, outputScale, 0, 0]
       : null;
 
-    renderTask = page.render({
-      canvasContext: ctx,
-      transform,
-      viewport
-    });
-
+    renderTask = page.render({ canvasContext: ctx, transform, viewport });
     await renderTask.promise;
+    if (generation !== renderGeneration) return;
     renderTask = null;
 
     currentPage = pageNumber;
     currentScale = safeScale;
     updateUi();
+    await renderTextLayer(pageNumber, viewport, generation);
+    if (generation !== renderGeneration) return;
 
-    await renderTextLayer(page, viewport);
-
-    setMessage(
-      `Pagina ${currentPage} van ${pdfDoc.numPages} · tekstselectie actief`,
-      "ok"
-    );
+    setMessage(`Pagina ${currentPage} van ${pdfDoc.numPages} · tekstselectie actief`, "ok");
   } catch (error) {
     if (error?.name === "RenderingCancelledException") return;
-
     console.error(error);
     renderTask = null;
     setMessage(`Renderfout: ${error?.message || error}`, "error");
@@ -270,20 +269,34 @@ async function renderPage(targetPage, scale = currentScale) {
 }
 
 async function openPdf(file) {
-  if (!file || !pdfjsLib) return;
+  if (!file) return;
+  if (!pdfjsLib) {
+    setMessage("PDF-engine is nog niet beschikbaar.", "error");
+    return;
+  }
 
   fileName.textContent = file.name || "Onbekend bestand";
   pageCount.textContent = "…";
-  textStatus.textContent = "Wachten";
   emptyState.classList.add("hidden");
   reader.classList.remove("hidden");
   setMessage("PDF wordt lokaal ingelezen…");
 
   try {
+    ++renderGeneration;
+    if (renderTask) {
+      try { renderTask.cancel(); } catch {}
+      renderTask = null;
+    }
+    if (pdfDoc) {
+      try { await pdfDoc.destroy(); } catch {}
+      pdfDoc = null;
+    }
+
     const bytes = new Uint8Array(await file.arrayBuffer());
     pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
 
     currentPage = 1;
+    currentScale = 1;
     pageTextCache.clear();
     searchResults = [];
     activeSearchIndex = -1;
@@ -301,16 +314,17 @@ async function openPdf(file) {
     pageCount.textContent = "—";
     navPageCount.textContent = "0";
     currentScale = 1;
+    searchResults = [];
+    activeSearchIndex = -1;
     updateUi();
     setMessage(`PDF openen mislukt: ${error?.message || error}`, "error");
   }
 }
 
-
 async function searchPdf() {
   if (!pdfDoc) return;
 
-  const query = searchInput.value.trim().toLocaleLowerCase();
+  const query = normalizeSearchText(searchInput.value);
   searchResults = [];
   activeSearchIndex = -1;
 
@@ -324,39 +338,56 @@ async function searchPdf() {
 
   searchStatus.textContent = "Zoeken…";
   searchMiniStatus.textContent = "Zoeken…";
+  updateUi();
 
-  for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
-    const { items } = await getPageTextData(pageNumber);
-
-    for (const item of items) {
-      if (!item.lower) continue;
+  try {
+    for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
+      const { pageText, charToItem } = await getPageTextData(pageNumber);
       let start = 0;
-      while (true) {
-        const hit = item.lower.indexOf(query, start);
+
+      while (start <= pageText.length - query.length) {
+        const hit = pageText.indexOf(query, start);
         if (hit === -1) break;
-        searchResults.push({ page: pageNumber, itemIndex: item.index, offset: hit });
+
+        const itemIndices = [];
+        const seen = new Set();
+        for (let pos = hit; pos < hit + query.length; pos++) {
+          const itemIndex = charToItem[pos];
+          if (itemIndex !== null && itemIndex !== undefined && !seen.has(itemIndex)) {
+            seen.add(itemIndex);
+            itemIndices.push(itemIndex);
+          }
+        }
+
+        if (itemIndices.length) {
+          searchResults.push({ page: pageNumber, itemIndices });
+        }
         start = hit + Math.max(1, query.length);
       }
     }
-  }
 
-  if (!searchResults.length) {
-    searchStatus.textContent = "Geen resultaten";
-    searchMiniStatus.textContent = "0 resultaten";
-    applyHighlightsForCurrentPage();
+    if (!searchResults.length) {
+      searchStatus.textContent = "Geen resultaten";
+      searchMiniStatus.textContent = "0 resultaten";
+      applyHighlightsForCurrentPage();
+      updateUi();
+      return;
+    }
+
+    activeSearchIndex = 0;
+    searchMiniStatus.textContent = `${searchResults.length} resultaat${searchResults.length === 1 ? "" : "en"}`;
     updateUi();
-    return;
+    await showActiveSearchResult();
+  } catch (error) {
+    console.error(error);
+    searchStatus.textContent = `Zoekfout: ${error?.message || error}`;
+    searchMiniStatus.textContent = "✗ Fout";
+    updateUi();
   }
-
-  activeSearchIndex = 0;
-  searchMiniStatus.textContent = `${searchResults.length} resultaat${searchResults.length === 1 ? "" : "en"}`;
-  await showActiveSearchResult();
-  updateUi();
 }
 
 async function showActiveSearchResult() {
   if (!searchResults.length || activeSearchIndex < 0) return;
-
   const result = searchResults[activeSearchIndex];
 
   if (currentPage !== result.page) {
@@ -366,9 +397,11 @@ async function showActiveSearchResult() {
   }
 
   searchStatus.textContent = `${activeSearchIndex + 1} / ${searchResults.length} · pagina ${result.page}`;
+  searchMiniStatus.textContent = `${searchResults.length} resultaat${searchResults.length === 1 ? "" : "en"}`;
 
   requestAnimationFrame(() => {
-    const span = textLayer.querySelector(`span[data-item-index="${result.itemIndex}"]`);
+    const firstItem = result.itemIndices[0];
+    const span = textLayer.querySelector(`span[data-item-index="${firstItem}"]`);
     span?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
   });
 }
@@ -380,41 +413,34 @@ fileInput.addEventListener("change", async () => {
 });
 
 prevButton.addEventListener("click", () => {
-  if (pdfDoc && currentPage > 1) renderPage(currentPage - 1, currentScale);
+  if (pdfDoc && currentPage > 1) void renderPage(currentPage - 1, currentScale);
 });
-
 nextButton.addEventListener("click", () => {
-  if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1, currentScale);
+  if (pdfDoc && currentPage < pdfDoc.numPages) void renderPage(currentPage + 1, currentScale);
 });
-
 pageInput.addEventListener("change", () => {
   if (!pdfDoc) return;
   const requested = Number(pageInput.value);
-  if (Number.isFinite(requested)) renderPage(requested, currentScale);
+  if (Number.isFinite(requested)) void renderPage(requested, currentScale);
   else pageInput.value = String(currentPage);
 });
-
 zoomInButton.addEventListener("click", () => {
-  if (pdfDoc) renderPage(currentPage, currentScale + 0.15);
+  if (pdfDoc) void renderPage(currentPage, currentScale + 0.15);
 });
-
 zoomOutButton.addEventListener("click", () => {
-  if (pdfDoc) renderPage(currentPage, currentScale - 0.15);
+  if (pdfDoc) void renderPage(currentPage, currentScale - 0.15);
 });
-
 fitWidthButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
   await renderPage(currentPage, await fitWidthScale(currentPage));
 });
-
 fitPageButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
   await renderPage(currentPage, await fitPageScale(currentPage));
 });
-
-searchButton.addEventListener("click", searchPdf);
+searchButton.addEventListener("click", () => void searchPdf());
 searchInput.addEventListener("keydown", event => {
-  if (event.key === "Enter") searchPdf();
+  if (event.key === "Enter") void searchPdf();
 });
 searchNextButton.addEventListener("click", async () => {
   if (!searchResults.length) return;
@@ -438,5 +464,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-
-console.info(`PdfReader ${APP_VERSION} — Text Layer geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Search Stability Fix geladen.`);

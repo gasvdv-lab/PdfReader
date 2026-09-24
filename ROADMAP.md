@@ -8,13 +8,13 @@ v0.1.1 Page Navigation — geslaagd
 v0.1.2 Zoom & Fit — geslaagd
 v0.1.3 Mobile Reader UX — geslaagd
 v0.2.0 Text Layer — geslaagd
+v0.2.1 Search — fout gevonden tijdens code-audit
+v0.2.1.1 Search Stability Fix — huidige patch
 
-## v0.2.1 — Search
-Huidige release.
+Volgende functionele stap na fysieke validatie:
+v0.2.2 Thumbnails
 
-## v0.2.2 — Thumbnails
-Volgende stap.
-
+Daarna:
 v0.2.3 Continuous Scroll
 v0.2.4 PWA Foundation
 v0.2.5 Offline Engine
