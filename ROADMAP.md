@@ -10,17 +10,14 @@ Geslaagd.
 Geslaagd.
 
 ## v0.1.0 — Minimal PDF Open
-Huidige release.
-
-Doel:
-- PDF kiezen
-- pagina-aantal uitlezen
-- alleen pagina 1 renderen
+Geslaagd.
 
 ## v0.1.1 — Page Navigation
-Volgende stap.
+Huidige release.
 
 ## v0.1.2 — Zoom & Fit
+Volgende stap.
+
 ## v0.1.3 — Mobile Reader UX
 ## v0.2.x — Reader Expansion
 ## v0.3.x — Annotaties
