@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="pdfReader - lokale PDF reader voor Android en Windows">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>pdfReader</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">PDF</div>
+      <div>
+        <h1>pdfReader</h1>
+        <p>Reader Foundation v0.1.0</p>
+      </div>
+    </div>
+
+    <label class="file-button" for="fileInput">PDF openen</label>
+    <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
+  </header>
+
+  <main>
+    <section id="welcome" class="welcome panel">
+      <h2>Open een PDF vanaf je toestel</h2>
+      <p>Het bestand wordt lokaal in je browser verwerkt en niet door deze app naar een server verstuurd.</p>
+      <label class="primary-button" for="fileInput">Kies PDF</label>
+      <div class="feature-row">
+        <span>Android</span>
+        <span>Windows</span>
+        <span>GitHub Pages</span>
+        <span>PWA</span>
+      </div>
+    </section>
+
+    <section id="reader" class="reader hidden" aria-live="polite">
+      <div class="toolbar panel">
+        <button id="prevPage" type="button" title="Vorige pagina">←</button>
+        <div class="page-control">
+          <input id="pageNumber" type="number" min="1" value="1" aria-label="Paginanummer">
+          <span>/ <strong id="pageCount">0</strong></span>
+        </div>
+        <button id="nextPage" type="button" title="Volgende pagina">→</button>
+
+        <div class="spacer"></div>
+
+        <button id="zoomOut" type="button" title="Uitzoomen">−</button>
+        <span id="zoomLabel">100%</span>
+        <button id="zoomIn" type="button" title="Inzoomen">+</button>
+        <button id="fitWidth" type="button" title="Passend op breedte">Breedte</button>
+      </div>
+
+      <div id="status" class="status">Geen PDF geladen.</div>
+
+      <div id="canvasWrap" class="canvas-wrap">
+        <canvas id="pdfCanvas"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>pdfReader v0.1.0</span>
+    <span>Lokale verwerking</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
