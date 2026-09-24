@@ -1,22 +1,30 @@
-# PdfReader v0.2.1.1 — Testing
+# PdfReader v0.2.2 — Testing
 
-Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.1.1
+## Cache-vrije testlink
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2
 
-## Testvolgorde
-1. Open een PDF met meerdere pagina's en echte tekst.
-2. Controleer bestandsnaam en pagina-aantal.
-3. Test volgende/vorige pagina en directe paginakeuze.
-4. Test zoom + en zoom -.
-5. Test Breedte en Pagina.
-6. Selecteer en kopieer tekst.
-7. Zoek een woord op de huidige pagina.
-8. Zoek een woord op een andere pagina.
-9. Zoek een zoekterm met meerdere woorden.
-10. Gebruik ↑ en ↓ door de resultaten.
-11. Controleer dat de juiste pagina opent en de hit gemarkeerd is.
-12. Open daarna een tweede PDF en herhaal een zoekactie.
-13. Draai Android naar landschap en terug; viewer moet opnieuw correct passen.
+## Upload
+Upload alle 8 bestanden rechtstreeks naar de root van de GitHub-repository en vervang de bestaande bestanden.
+
+## Android
+1. Open de testlink.
+2. Open dezelfde PDF als bij v0.2.1.1.
+3. Controleer eerst vorige/volgende, paginanummer, zoom, Breedte, Pagina en zoeken.
+4. Tik `⛶ Fullscreen`.
+5. Controleer dat browser/header/footer en niet-essentiële readerinformatie verdwijnen voor zover Chrome dit toestaat.
+6. Controleer dat de PDF-viewer vrijwel het volledige scherm gebruikt.
+7. Test vorige/volgende pagina in fullscreen.
+8. Test zoom + en - in fullscreen.
+9. Test Breedte en Pagina in fullscreen.
+10. Test zoeken en volgende/vorige zoekresultaat in fullscreen.
+11. Draai de telefoon portrait → landscape → portrait.
+12. Tik `⛶ Sluiten` of gebruik de systeemactie om fullscreen te verlaten.
+13. Controleer dat de normale interface correct terugkomt.
+
+## Windows
+Herhaal dezelfde test in Chrome of Edge. Test ook `Esc` om native fullscreen te verlaten.
 
 ## Acceptatie
-Geen JavaScript-fout bij PDF-openen. Alle bestaande readerfuncties blijven werken en zoeken werkt over meerdere pagina's.
+v0.2.2 is geslaagd wanneer fullscreen betrouwbaar opent en sluit, de reader tijdens fullscreen bruikbaar blijft, schermrotatie werkt en geen bestaande functie van v0.2.1.1 breekt.
+
+Pas daarna doorgaan naar v0.2.3 — Thumbnails.

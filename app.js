@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.1.1";
+const APP_VERSION = "0.2.2";
 
 const $ = id => document.getElementById(id);
 
@@ -25,6 +25,7 @@ const zoomOutButton = $("zoomOutButton");
 const zoomInButton = $("zoomInButton");
 const fitWidthButton = $("fitWidthButton");
 const fitPageButton = $("fitPageButton");
+const fullscreenButton = $("fullscreenButton");
 const zoomLabel = $("zoomLabel");
 const searchInput = $("searchInput");
 const searchButton = $("searchButton");
@@ -53,6 +54,90 @@ function clampScale(value) {
   return Math.min(4, Math.max(0.25, value));
 }
 
+
+function fullscreenSupported() {
+  return Boolean(
+    document.documentElement.requestFullscreen ||
+    document.documentElement.webkitRequestFullscreen
+  );
+}
+
+function nativeFullscreenActive() {
+  return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+}
+
+function setFullscreenUi(active) {
+  document.body.classList.toggle("fullscreen-reader", active);
+  fullscreenButton.textContent = active ? "⛶ Sluiten" : "⛶ Fullscreen";
+  fullscreenButton.setAttribute(
+    "aria-label",
+    active ? "Fullscreen sluiten" : "Fullscreen openen"
+  );
+}
+
+async function enterFullscreen() {
+  if (!pdfDoc) return;
+
+  // Apply reader-only layout immediately. If native fullscreen is unsupported,
+  // this remains as a safe browser fallback.
+  setFullscreenUi(true);
+
+  try {
+    const root = document.documentElement;
+    if (root.requestFullscreen) {
+      await root.requestFullscreen({ navigationUI: "hide" });
+    } else if (root.webkitRequestFullscreen) {
+      root.webkitRequestFullscreen();
+    }
+  } catch (error) {
+    console.warn("Native fullscreen geweigerd; focusmodus blijft actief.", error);
+  }
+
+  // Refit after viewport dimensions have changed.
+  window.setTimeout(async () => {
+    if (!pdfDoc) return;
+    try {
+      await renderPage(currentPage, await fitWidthScale(currentPage));
+    } catch (error) {
+      console.warn("Herfit na fullscreen mislukt.", error);
+    }
+  }, 180);
+}
+
+async function exitFullscreen() {
+  try {
+    if (document.exitFullscreen && document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else if (document.webkitExitFullscreen && document.webkitFullscreenElement) {
+      document.webkitExitFullscreen();
+    }
+  } catch (error) {
+    console.warn("Fullscreen afsluiten gaf een fout.", error);
+  }
+
+  setFullscreenUi(false);
+
+  window.setTimeout(async () => {
+    if (!pdfDoc) return;
+    try {
+      await renderPage(currentPage, await fitWidthScale(currentPage));
+    } catch (error) {
+      console.warn("Herfit na fullscreen afsluiten mislukt.", error);
+    }
+  }, 180);
+}
+
+async function toggleFullscreen() {
+  if (!pdfDoc) return;
+
+  const active = document.body.classList.contains("fullscreen-reader");
+  if (active) {
+    await exitFullscreen();
+  } else {
+    await enterFullscreen();
+  }
+}
+
 function updateUi() {
   const ready = Boolean(pdfDoc);
   prevButton.disabled = !ready || currentPage <= 1;
@@ -62,6 +147,7 @@ function updateUi() {
   zoomInButton.disabled = !ready;
   fitWidthButton.disabled = !ready;
   fitPageButton.disabled = !ready;
+  fullscreenButton.disabled = !ready;
   searchInput.disabled = !ready;
   searchButton.disabled = !ready;
   searchPrevButton.disabled = !ready || searchResults.length === 0;
@@ -453,6 +539,27 @@ searchPrevButton.addEventListener("click", async () => {
   await showActiveSearchResult();
 });
 
+
+fullscreenButton.addEventListener("click", toggleFullscreen);
+
+function syncFullscreenState() {
+  // If native fullscreen was closed with Esc/back gesture, also leave reader-only CSS mode.
+  if (!nativeFullscreenActive() && document.body.classList.contains("fullscreen-reader")) {
+    setFullscreenUi(false);
+    window.setTimeout(async () => {
+      if (!pdfDoc) return;
+      try {
+        await renderPage(currentPage, await fitWidthScale(currentPage));
+      } catch (error) {
+        console.warn("Herfit na extern fullscreen-einde mislukt.", error);
+      }
+    }, 120);
+  }
+}
+
+document.addEventListener("fullscreenchange", syncFullscreenState);
+document.addEventListener("webkitfullscreenchange", syncFullscreenState);
+
 let resizeTimer = null;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
@@ -464,4 +571,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Search Stability Fix geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Fullscreen Reader geladen.`);

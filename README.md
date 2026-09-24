@@ -1,34 +1,39 @@
-# PdfReader v0.2.1.1 — Search Stability Fix
+# PdfReader v0.2.2 — Fullscreen Reader
 
-Patchrelease op v0.2.1. Geen nieuwe module; bestaande functies zijn hersteld en gestabiliseerd.
+## Doel
+Deze release voegt exact één nieuw technisch concept toe: een echte fullscreen leesmodus.
 
-## Opgeloste fouten
-- `textStatus is not defined` blokkeerde PDF-openen in v0.2.1.
-- Zoekpagina droeg nog de verkeerde titel `Text Layer`.
-- Zoeken werkte alleen binnen één PDF.js-tekstitem; meerdelige zoektermen konden gemist worden.
-- Snelle pagina-/zoomacties konden een oudere render alsnog laten terugschrijven.
-- Vorige PDF werd niet expliciet vrijgegeven bij openen van een nieuw bestand.
-- Fit Page gebruikte een onbetrouwbare viewerhoogte vóór rendering.
+## Nieuw
+- Fullscreen-knop in de reader-toolbar
+- native Fullscreen API waar de browser dit ondersteunt
+- veilige reader-focusmodus als native fullscreen wordt geweigerd of niet beschikbaar is
+- header, footer, statusblokken en roadmapmelding verdwijnen tijdens fullscreen
+- PDF-viewer gebruikt vrijwel het volledige scherm
+- knop verandert naar `Sluiten`
+- Esc/back/fullscreen-exit wordt gedetecteerd
+- pagina wordt opnieuw passend gerenderd bij in- en uitstappen
 
-## Functies die behouden en gecontroleerd zijn
+## Behouden
+Alle bewezen functies van v0.2.1.1:
 - lokale PDF openen
-- pagina-aantal
-- vorige/volgende pagina
+- pagina navigatie
 - directe paginakeuze
-- zoom + / -
-- Breedte
-- Pagina
-- mobiele responsive layout
-- text layer / tekstselectie
-- zoeken over alle pagina's
+- zoom +/-
+- fit Breedte en Pagina
+- mobiele reader UX
+- selecteerbare text layer
+- zoeken over meerdere pagina's
 - vorige/volgende zoekresultaat
-- automatische navigatie naar resultaat
-- visuele zoekmarkering
+- zoekmarkeringen
 
-Geen service worker en geen PWA-cache.
+## Bewust nog niet aanwezig
+- thumbnails
+- continue scroll
+- service worker
+- PWA-cache
 
-Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.1.1
+## Cache-vrije testlink
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2
 
-Vaste app-link:
+## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/
