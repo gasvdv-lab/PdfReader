@@ -672,3 +672,124 @@ body.fullscreen-reader.fullscreen-mode-fill-screen .page-stage{
   background:#172033;
   color:#bfdbfe;
 }
+
+
+/* v0.2.3 — Thumbnails */
+.thumbnail-drawer{
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:145;
+  width:min(330px,88vw);
+  height:100vh;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:#0b1220;
+  border-right:1px solid #26344a;
+  box-shadow:18px 0 45px rgba(0,0,0,.42);
+}
+.thumbnail-drawer-header{
+  min-height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid #1e293b;
+}
+.thumbnail-drawer-header>div{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.thumbnail-drawer-header strong{
+  font-size:15px;
+}
+.thumbnail-drawer-header span{
+  color:#64748b;
+  font-size:11px;
+}
+.thumbnail-list{
+  flex:1;
+  overflow:auto;
+  padding:10px;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.thumbnail-item{
+  width:100%;
+  display:grid;
+  grid-template-columns:82px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  margin:0 0 8px;
+  padding:8px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:#111827;
+  color:#e5e7eb;
+  text-align:left;
+  cursor:pointer;
+}
+.thumbnail-item:hover{
+  background:#172033;
+}
+.thumbnail-item.active{
+  border-color:#3b82f6;
+  background:#172554;
+}
+.thumbnail-preview{
+  width:82px;
+  min-height:106px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border-radius:7px;
+  background:#1f2937;
+  border:1px solid #334155;
+}
+.thumbnail-preview canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+  background:#fff;
+}
+.thumbnail-placeholder{
+  color:#64748b;
+  font-size:11px;
+  text-align:center;
+  padding:8px;
+}
+.thumbnail-meta{
+  min-width:0;
+}
+.thumbnail-meta strong{
+  display:block;
+  font-size:14px;
+}
+.thumbnail-meta span{
+  display:block;
+  margin-top:4px;
+  color:#64748b;
+  font-size:11px;
+}
+.thumbnail-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:140;
+  background:rgba(0,0,0,.42);
+}
+body.fullscreen-reader .thumbnail-drawer{
+  background:rgba(6,11,20,.98);
+}
+body.fullscreen-reader .thumbnail-backdrop{
+  background:rgba(0,0,0,.58);
+}
+@media(min-width:900px){
+  .thumbnail-drawer{
+    width:340px;
+  }
+}

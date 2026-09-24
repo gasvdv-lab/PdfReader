@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.2.4";
+const APP_VERSION = "0.2.3";
 
 const $ = id => document.getElementById(id);
 
@@ -43,6 +43,14 @@ const searchToggleButton = $("searchToggleButton");
 const searchPanel = $("searchPanel");
 const searchCloseButton = $("searchCloseButton");
 const topbarFileName = $("topbarFileName");
+
+const thumbnailsMenuItem = $("thumbnailsMenuItem");
+const fsThumbnailsButton = $("fsThumbnailsButton");
+const thumbnailDrawer = $("thumbnailDrawer");
+const thumbnailDrawerClose = $("thumbnailDrawerClose");
+const thumbnailBackdrop = $("thumbnailBackdrop");
+const thumbnailList = $("thumbnailList");
+const thumbnailCount = $("thumbnailCount");
 
 const fullscreenHandle = $("fullscreenHandle");
 const fullscreenHandleButton = $("fullscreenHandleButton");
@@ -137,6 +145,10 @@ function closeSearchPanel() {
 let fullscreenControlsTimer = null;
 
 let fullscreenViewMode = "fit-page";
+
+let thumbnailObserver = null;
+let thumbnailRenderQueue = new Set();
+let thumbnailRendered = new Set();
 
 function setFullscreenViewMode(mode) {
   fullscreenViewMode = mode;
@@ -256,8 +268,188 @@ function enterImmersiveUi() {
 function leaveImmersiveUi() {
   clearTimeout(fullscreenControlsTimer);
   closeFullscreenOverlay();
+  closeThumbnailDrawer();
   hideFullscreenHandle();
   setControlsVisible(true);
+}
+
+
+function closeThumbnailDrawer() {
+  thumbnailDrawer.classList.add("hidden");
+  thumbnailBackdrop.classList.add("hidden");
+  thumbnailDrawer.setAttribute("aria-hidden", "true");
+}
+
+function openThumbnailDrawer() {
+  if (!pdfDoc) return;
+  closeMenus();
+  closeFullscreenOverlay();
+  buildThumbnailList();
+  updateActiveThumbnail();
+  thumbnailDrawer.classList.remove("hidden");
+  thumbnailBackdrop.classList.remove("hidden");
+  thumbnailDrawer.setAttribute("aria-hidden", "false");
+}
+
+function resetThumbnails() {
+  thumbnailObserver?.disconnect();
+  thumbnailObserver = null;
+  thumbnailRenderQueue.clear();
+  thumbnailRendered.clear();
+  thumbnailList.innerHTML = "";
+  thumbnailCount.textContent = "0 pagina's";
+}
+
+function buildThumbnailList() {
+  if (!pdfDoc) return;
+
+  if (thumbnailList.children.length === pdfDoc.numPages) {
+    ensureThumbnailObserver();
+    observePendingThumbnails();
+    return;
+  }
+
+  resetThumbnails();
+  thumbnailCount.textContent = `${pdfDoc.numPages} pagina${pdfDoc.numPages === 1 ? "" : "'s"}`;
+
+  const fragment = document.createDocumentFragment();
+
+  for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "thumbnail-item";
+    button.dataset.pageNumber = String(pageNumber);
+    button.setAttribute("aria-label", `Ga naar pagina ${pageNumber}`);
+
+    const preview = document.createElement("div");
+    preview.className = "thumbnail-preview";
+    preview.dataset.pageNumber = String(pageNumber);
+
+    const placeholder = document.createElement("div");
+    placeholder.className = "thumbnail-placeholder";
+    placeholder.textContent = "Laden…";
+    preview.appendChild(placeholder);
+
+    const meta = document.createElement("div");
+    meta.className = "thumbnail-meta";
+    meta.innerHTML = `<strong>Pagina ${pageNumber}</strong><span>Tik om te openen</span>`;
+
+    button.appendChild(preview);
+    button.appendChild(meta);
+
+    button.addEventListener("click", async () => {
+      const target = Number(button.dataset.pageNumber);
+      closeThumbnailDrawer();
+
+      if (document.body.classList.contains("fullscreen-reader")) {
+        await renderPage(target, currentScale);
+        if (fullscreenViewMode === "fit-page") {
+          await applyFullscreenViewMode("fit-page");
+        }
+      } else {
+        await renderPage(target, currentScale);
+      }
+
+      updateActiveThumbnail();
+    });
+
+    fragment.appendChild(button);
+  }
+
+  thumbnailList.appendChild(fragment);
+  ensureThumbnailObserver();
+  observePendingThumbnails();
+}
+
+function ensureThumbnailObserver() {
+  if (thumbnailObserver) return;
+
+  thumbnailObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+
+      const preview = entry.target;
+      const pageNumber = Number(preview.dataset.pageNumber);
+
+      thumbnailObserver.unobserve(preview);
+      renderThumbnail(pageNumber, preview);
+    }
+  }, {
+    root: thumbnailList,
+    rootMargin: "180px 0px",
+    threshold: 0.01
+  });
+}
+
+function observePendingThumbnails() {
+  if (!thumbnailObserver) return;
+
+  thumbnailList.querySelectorAll(".thumbnail-preview").forEach(preview => {
+    const pageNumber = Number(preview.dataset.pageNumber);
+    if (!thumbnailRendered.has(pageNumber) && !thumbnailRenderQueue.has(pageNumber)) {
+      thumbnailObserver.observe(preview);
+    }
+  });
+}
+
+async function renderThumbnail(pageNumber, preview) {
+  if (!pdfDoc || thumbnailRendered.has(pageNumber) || thumbnailRenderQueue.has(pageNumber)) return;
+
+  thumbnailRenderQueue.add(pageNumber);
+
+  try {
+    const page = await pdfDoc.getPage(pageNumber);
+    const baseViewport = page.getViewport({ scale: 1 });
+
+    const targetWidth = 78;
+    const scale = targetWidth / baseViewport.width;
+    const viewport = page.getViewport({ scale });
+
+    const canvasThumb = document.createElement("canvas");
+    const thumbCtx = canvasThumb.getContext("2d", { alpha: false });
+    const outputScale = Math.min(1.5, Math.max(1, window.devicePixelRatio || 1));
+
+    canvasThumb.width = Math.max(1, Math.floor(viewport.width * outputScale));
+    canvasThumb.height = Math.max(1, Math.floor(viewport.height * outputScale));
+    canvasThumb.style.width = `${Math.floor(viewport.width)}px`;
+    canvasThumb.style.height = `${Math.floor(viewport.height)}px`;
+
+    const transform = outputScale !== 1
+      ? [outputScale, 0, 0, outputScale, 0, 0]
+      : null;
+
+    await page.render({
+      canvasContext: thumbCtx,
+      viewport,
+      transform
+    }).promise;
+
+    preview.innerHTML = "";
+    preview.appendChild(canvasThumb);
+    thumbnailRendered.add(pageNumber);
+  } catch (error) {
+    console.warn(`Thumbnail pagina ${pageNumber} kon niet renderen.`, error);
+    preview.innerHTML = '<div class="thumbnail-placeholder">Niet beschikbaar</div>';
+  } finally {
+    thumbnailRenderQueue.delete(pageNumber);
+  }
+}
+
+function updateActiveThumbnail() {
+  thumbnailList.querySelectorAll(".thumbnail-item").forEach(item => {
+    item.classList.toggle(
+      "active",
+      Number(item.dataset.pageNumber) === currentPage
+    );
+  });
+
+  const active = thumbnailList.querySelector(
+    `.thumbnail-item[data-page-number="${currentPage}"]`
+  );
+
+  if (active && !thumbnailDrawer.classList.contains("hidden")) {
+    active.scrollIntoView({ block: "nearest" });
+  }
 }
 
 function fullscreenSupported() {
@@ -387,6 +579,7 @@ function updateUi() {
   zoomLabel.textContent = `${pct}%`;
   zoomStatus.textContent = ready ? `${pct}%` : "—";
   if (ready) updateFullscreenOverlayUi();
+  if (ready) updateActiveThumbnail();
 }
 
 async function loadPdfJs() {
@@ -609,6 +802,7 @@ async function openPdf(file) {
     currentPage = 1;
     currentScale = 1;
     pageTextCache.clear();
+    resetThumbnails();
     searchResults = [];
     activeSearchIndex = -1;
     searchInput.value = "";
@@ -807,6 +1001,12 @@ searchToggleButton.addEventListener("click", () => {
 searchCloseButton.addEventListener("click", closeSearchPanel);
 
 fullscreenButtonTop.addEventListener("click", toggleFullscreen);
+
+
+thumbnailsMenuItem.addEventListener("click", openThumbnailDrawer);
+fsThumbnailsButton.addEventListener("click", openThumbnailDrawer);
+thumbnailDrawerClose.addEventListener("click", closeThumbnailDrawer);
+thumbnailBackdrop.addEventListener("click", closeThumbnailDrawer);
 
 fullscreenHandleButton.addEventListener("click", openFullscreenOverlay);
 
@@ -1072,4 +1272,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Fullscreen Fit Page Default geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Thumbnails geladen.`);

@@ -13,14 +13,14 @@ v0.2.2 — Fullscreen Reader — geslaagd
 v0.2.2.1 — Professional Reader UX — geslaagd
 v0.2.2.2 — Immersive Fullscreen UX — geslaagd
 v0.2.2.3 — True Fullscreen Viewport — geslaagd
-
-## v0.2.2.4 — Fullscreen Fit Page Default
-Huidige release.
+v0.2.2.4 — Fullscreen Fit Page Default — geslaagd
 
 ## v0.2.3 — Thumbnails
-Volgende stap.
+Huidige release.
 
 ## v0.2.4 — Continuous Scroll
+Volgende stap.
+
 ## v0.2.5 — PWA Foundation
 ## v0.2.6 — Offline Engine
 ## v0.3.x — Annotaties

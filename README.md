@@ -1,38 +1,40 @@
-# PdfReader v0.2.2.4 — Fullscreen Fit Page Default
+# PdfReader v0.2.3 — Thumbnails
 
 ## Doel
-Fullscreen opent voortaan standaard met de volledige huidige PDF-pagina passend binnen het scherm.
+Paginaminiaturen toevoegen als aparte navigatiemethode, zonder continuous scroll.
 
-## Gedrag
-- fullscreen start standaard in `Pagina`
-- volledige pagina zichtbaar
-- geen afgesneden randen
-- portrait en landscape worden automatisch opnieuw berekend
-- `Breedte` blijft beschikbaar via het `⋯`-menu
-- `Vul scherm` blijft beschikbaar via het `⋯`-menu
-- als de gebruiker bewust een andere modus kiest, blijft die modus actief tot fullscreen opnieuw geopend wordt
+## Nieuw
+- inklapbaar thumbnailpaneel
+- toegang via het documentmenu
+- toegang vanuit fullscreen overlay
+- thumbnails worden lazy gerenderd
+- alleen zichtbare/nabije thumbnails worden geladen
+- actieve pagina wordt gemarkeerd
+- tik op thumbnail opent direct de pagina
+- thumbnailpaneel werkt op Android en Windows
+- geen service worker of cache toegevoegd
 
 ## Behouden
-Alle bewezen functies uit v0.2.2.3:
-- native fullscreen + fallback
-- floating `⋯`-handle
-- fullscreen overlaymenu
-- swipe links/rechts
-- pinch zoom
+- lokale PDF openen
+- één pagina tegelijk in hoofdviewer
+- paginanavigatie
+- zoom
 - tekstselectie
 - zoeken
-- zoom
-- pagina navigatie
-- panning waar nodig
+- professionele menu-UX
+- swipe
+- pinch zoom
+- immersive fullscreen
+- fullscreen standaard passend op pagina
 
 ## Nog niet
-- thumbnails
 - continuous scroll
-- service worker
-- PWA-cache
+- PWA
+- offline engine
+- annotaties
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.4
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.3
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

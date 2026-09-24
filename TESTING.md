@@ -1,27 +1,30 @@
-# PdfReader v0.2.2.4 — Testing
+# PdfReader v0.2.3 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.4
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.3
 
 ## Android
-1. Open een PDF.
-2. Activeer fullscreen.
-3. Controleer dat de volledige huidige pagina meteen volledig zichtbaar is.
-4. Er mogen geen afgesneden randen zijn.
-5. Controleer dat de pagina gecentreerd is.
-6. Draai portrait → landscape → portrait.
-7. Controleer dat `Pagina` automatisch opnieuw correct wordt berekend.
-8. Open `⋯`.
-9. Kies `Breedte` en controleer dat die modus werkt.
-10. Kies `Vul scherm` en controleer dat die modus werkt.
-11. Verlaat fullscreen.
-12. Open fullscreen opnieuw.
-13. Controleer dat de standaard opnieuw `Pagina` is.
+1. Open een PDF met meerdere pagina's.
+2. Open het linkermenu.
+3. Kies `Paginaminiaturen`.
+4. Controleer dat het thumbnailpaneel opent.
+5. Scroll door het paneel.
+6. Controleer dat thumbnails pas zichtbaar worden wanneer ze in/nabij beeld komen.
+7. Tik op pagina 2 of 3.
+8. Controleer dat de hoofdviewer direct naar die pagina gaat.
+9. Open thumbnails opnieuw.
+10. Controleer dat de huidige pagina visueel gemarkeerd is.
+11. Activeer fullscreen.
+12. Open het `⋯`-menu.
+13. Kies `Paginaminiaturen`.
+14. Tik een andere pagina.
+15. Controleer dat fullscreen behouden blijft en de gekozen pagina passend wordt weergegeven.
+16. Test daarna swipe, pinch, zoeken en gewone navigatie opnieuw.
 
 ## Windows
-Herhaal fullscreen openen/sluiten, schermresizing en de drie weergavemodi.
+Herhaal dezelfde tests in Chrome of Edge.
 
 ## Acceptatie
-v0.2.2.4 is geslaagd wanneer fullscreen altijd standaard opent met één volledige pagina passend in de beschikbare viewport.
+v0.2.3 is geslaagd wanneer thumbnails lazy laden, correcte pagina's tonen, paginanavigatie betrouwbaar uitvoeren en de bestaande readerfuncties niet breken.
 
-Pas daarna doorgaan naar v0.2.3 — Thumbnails.
+Pas daarna doorgaan naar v0.2.4 — Continuous Scroll.
