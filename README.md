@@ -1,35 +1,23 @@
-# PdfReader v0.2.0 — Text Layer
+# PdfReader v0.2.1 — Search
 
-## Doel
-Deze release bewijst exact één nieuw technisch concept:
-selecteerbare tekst bovenop de huidige PDF-pagina.
+Doel: zoeken in de tekst van de volledige PDF.
 
-## Nieuw
-- PDF-tekstlaag boven canvas
-- tekst selecteren
-- tekst kopiëren
-- selectie blijft gekoppeld aan huidige zoom/pagina
-- status toont aantal tekstitems
+Nieuw:
+- zoekveld
+- zoeken over alle pagina's
+- aantal resultaten
+- vorige/volgende resultaat
+- automatisch naar juiste pagina
+- visuele markering op de tekstlaag
 
-## Behouden
-- PDF openen
-- één pagina tegelijk
-- vorige/volgende
-- directe paginakeuze
-- zoom +/-
-- Breedte
-- Pagina
-- mobiele reader-UX
-
-## Nog niet
-- zoeken
+Nog niet:
 - thumbnails
 - continue scroll
 - service worker
 - PWA-cache
 
-## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.0
+Cache-vrije testlink:
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.1
 
-## Vaste app-link
+Vaste app-link:
 https://gasvdv-lab.github.io/PdfReader/

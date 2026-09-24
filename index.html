@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css?v=0.2.0">
-  <title>PdfReader v0.2.0</title>
+  <title>PdfReader v0.2.1</title>
 </head>
 <body>
 <header class="topbar">
@@ -14,7 +14,7 @@
     <div class="logo">PDF</div>
     <div>
       <h1>PdfReader</h1>
-      <span class="version-badge">v0.2.0</span>
+      <span class="version-badge">v0.2.1</span>
     </div>
   </div>
   <label class="open-button compact" for="fileInput">PDF openen</label>
@@ -51,6 +51,14 @@
         <button id="fitWidthButton" type="button" class="wide-button">Breedte</button>
         <button id="fitPageButton" type="button" class="wide-button">Pagina</button>
       </div>
+
+      <div class="search-row">
+        <input id="searchInput" type="search" placeholder="Zoek tekst..." autocomplete="off">
+        <button id="searchButton" type="button">Zoek</button>
+        <button id="searchPrevButton" type="button" aria-label="Vorig zoekresultaat">↑</button>
+        <button id="searchNextButton" type="button" aria-label="Volgend zoekresultaat">↓</button>
+      </div>
+      <div id="searchStatus" class="search-status">Geen zoekopdracht</div>
     </div>
 
     <div class="reader-meta">
@@ -71,19 +79,19 @@
       <span>PDF.js <strong id="engineStatus">Laden…</strong></span>
       <span>Pagina's <strong id="pageCount">—</strong></span>
       <span>Zoom <strong id="zoomStatus">—</strong></span>
-      <span>Tekstlaag <strong id="textStatus">Wachten</strong></span>
+      <span>Zoeken <strong id="searchMiniStatus">Wachten</strong></span>
     </div>
   </div>
 
   <div class="next-step">
     <strong>Volgende stap bij succes:</strong>
-    v0.2.1 — Search
+    v0.2.2 — Thumbnails
   </div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.2.0</span>
+  <span>PdfReader v0.2.1</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 

@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.0";
+const APP_VERSION = "0.2.1";
 
 const fileInput = document.getElementById("fileInput");
 const engineStatus = document.getElementById("engineStatus");
@@ -6,7 +6,6 @@ const fileName = document.getElementById("fileName");
 const pageCount = document.getElementById("pageCount");
 const navPageCount = document.getElementById("navPageCount");
 const zoomStatus = document.getElementById("zoomStatus");
-const textStatus = document.getElementById("textStatus");
 const messageBox = document.getElementById("messageBox");
 const reader = document.getElementById("reader");
 const emptyState = document.getElementById("emptyState");
@@ -27,11 +26,21 @@ const fitWidthButton = document.getElementById("fitWidthButton");
 const fitPageButton = document.getElementById("fitPageButton");
 const zoomLabel = document.getElementById("zoomLabel");
 
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
+const searchPrevButton = document.getElementById("searchPrevButton");
+const searchNextButton = document.getElementById("searchNextButton");
+const searchStatus = document.getElementById("searchStatus");
+const searchMiniStatus = document.getElementById("searchMiniStatus");
+
 let pdfjsLib = null;
 let pdfDoc = null;
 let currentPage = 1;
 let currentScale = 1;
 let renderTask = null;
+let pageTextCache = new Map();
+let searchResults = [];
+let activeSearchIndex = -1;
 
 function setMessage(text, type = "") {
   messageBox.textContent = text;
@@ -53,6 +62,9 @@ function updateUi() {
   zoomInButton.disabled = !ready;
   fitWidthButton.disabled = !ready;
   fitPageButton.disabled = !ready;
+  searchButton.disabled = !ready;
+  searchPrevButton.disabled = !ready || searchResults.length === 0;
+  searchNextButton.disabled = !ready || searchResults.length === 0;
 
   if (ready) {
     pageInput.value = String(currentPage);
@@ -108,13 +120,27 @@ async function fitPageScale(pageNumber) {
 
 function clearTextLayer() {
   textLayer.innerHTML = "";
-  textStatus.textContent = "Laden…";
+}
+
+async function getPageTextData(pageNumber) {
+  if (pageTextCache.has(pageNumber)) return pageTextCache.get(pageNumber);
+  const page = await pdfDoc.getPage(pageNumber);
+  const textContent = await page.getTextContent();
+  const items = textContent.items.map((item, index) => ({
+    index,
+    str: item.str || "",
+    lower: (item.str || "").toLocaleLowerCase(),
+    raw: item
+  }));
+  const data = { textContent, items };
+  pageTextCache.set(pageNumber, data);
+  return data;
 }
 
 async function renderTextLayer(page, viewport) {
   clearTextLayer();
 
-  const textContent = await page.getTextContent();
+  const { textContent, items } = await getPageTextData(currentPage);
   const styles = textContent.styles || {};
 
   textLayer.style.width = `${Math.floor(viewport.width)}px`;
@@ -122,7 +148,8 @@ async function renderTextLayer(page, viewport) {
 
   let textItems = 0;
 
-  for (const item of textContent.items) {
+  for (const entry of items) {
+    const item = entry.raw;
     if (!item.str) continue;
 
     const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
@@ -133,6 +160,7 @@ async function renderTextLayer(page, viewport) {
 
     const span = document.createElement("span");
     span.textContent = item.str;
+    span.dataset.itemIndex = String(entry.index);
 
     const style = styles[item.fontName] || {};
     const ascent = Number.isFinite(style.ascent)
@@ -168,8 +196,20 @@ async function renderTextLayer(page, viewport) {
     textItems++;
   }
 
-  textStatus.textContent = `✓ ${textItems} tekstitems`;
+  applyHighlightsForCurrentPage();
 }
+
+function applyHighlightsForCurrentPage() {
+  [...textLayer.querySelectorAll("span")].forEach(span => span.classList.remove("search-hit", "search-active"));
+  searchResults.forEach((result, idx) => {
+    if (result.page !== currentPage) return;
+    const span = textLayer.querySelector(`span[data-item-index="${result.itemIndex}"]`);
+    if (!span) return;
+    span.classList.add("search-hit");
+    if (idx === activeSearchIndex) span.classList.add("search-active");
+  });
+}
+
 
 async function renderPage(targetPage, scale = currentScale) {
   if (!pdfDoc) return;
@@ -225,7 +265,6 @@ async function renderPage(targetPage, scale = currentScale) {
 
     console.error(error);
     renderTask = null;
-    textStatus.textContent = "✗ Mislukt";
     setMessage(`Renderfout: ${error?.message || error}`, "error");
   }
 }
@@ -245,6 +284,12 @@ async function openPdf(file) {
     pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
 
     currentPage = 1;
+    pageTextCache.clear();
+    searchResults = [];
+    activeSearchIndex = -1;
+    searchInput.value = "";
+    searchStatus.textContent = "Geen zoekopdracht";
+    searchMiniStatus.textContent = "Wachten";
     pageCount.textContent = String(pdfDoc.numPages);
 
     currentScale = await fitWidthScale(1);
@@ -255,11 +300,77 @@ async function openPdf(file) {
     pdfDoc = null;
     pageCount.textContent = "—";
     navPageCount.textContent = "0";
-    textStatus.textContent = "✗ Mislukt";
     currentScale = 1;
     updateUi();
     setMessage(`PDF openen mislukt: ${error?.message || error}`, "error");
   }
+}
+
+
+async function searchPdf() {
+  if (!pdfDoc) return;
+
+  const query = searchInput.value.trim().toLocaleLowerCase();
+  searchResults = [];
+  activeSearchIndex = -1;
+
+  if (!query) {
+    searchStatus.textContent = "Geen zoekopdracht";
+    searchMiniStatus.textContent = "Wachten";
+    applyHighlightsForCurrentPage();
+    updateUi();
+    return;
+  }
+
+  searchStatus.textContent = "Zoeken…";
+  searchMiniStatus.textContent = "Zoeken…";
+
+  for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
+    const { items } = await getPageTextData(pageNumber);
+
+    for (const item of items) {
+      if (!item.lower) continue;
+      let start = 0;
+      while (true) {
+        const hit = item.lower.indexOf(query, start);
+        if (hit === -1) break;
+        searchResults.push({ page: pageNumber, itemIndex: item.index, offset: hit });
+        start = hit + Math.max(1, query.length);
+      }
+    }
+  }
+
+  if (!searchResults.length) {
+    searchStatus.textContent = "Geen resultaten";
+    searchMiniStatus.textContent = "0 resultaten";
+    applyHighlightsForCurrentPage();
+    updateUi();
+    return;
+  }
+
+  activeSearchIndex = 0;
+  searchMiniStatus.textContent = `${searchResults.length} resultaat${searchResults.length === 1 ? "" : "en"}`;
+  await showActiveSearchResult();
+  updateUi();
+}
+
+async function showActiveSearchResult() {
+  if (!searchResults.length || activeSearchIndex < 0) return;
+
+  const result = searchResults[activeSearchIndex];
+
+  if (currentPage !== result.page) {
+    await renderPage(result.page, currentScale);
+  } else {
+    applyHighlightsForCurrentPage();
+  }
+
+  searchStatus.textContent = `${activeSearchIndex + 1} / ${searchResults.length} · pagina ${result.page}`;
+
+  requestAnimationFrame(() => {
+    const span = textLayer.querySelector(`span[data-item-index="${result.itemIndex}"]`);
+    span?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+  });
 }
 
 fileInput.addEventListener("change", async () => {
@@ -299,6 +410,21 @@ fitWidthButton.addEventListener("click", async () => {
 fitPageButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
   await renderPage(currentPage, await fitPageScale(currentPage));
+});
+
+searchButton.addEventListener("click", searchPdf);
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") searchPdf();
+});
+searchNextButton.addEventListener("click", async () => {
+  if (!searchResults.length) return;
+  activeSearchIndex = (activeSearchIndex + 1) % searchResults.length;
+  await showActiveSearchResult();
+});
+searchPrevButton.addEventListener("click", async () => {
+  if (!searchResults.length) return;
+  activeSearchIndex = (activeSearchIndex - 1 + searchResults.length) % searchResults.length;
+  await showActiveSearchResult();
 });
 
 let resizeTimer = null;
