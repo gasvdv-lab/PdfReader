@@ -1,41 +1,35 @@
-# PdfReader v0.2.0 — Complete Reader Foundation
+# PdfReader v0.2.0.1 — Version Sync Repair
 
 Live app:
 https://gasvdv-lab.github.io/PdfReader/
 
-## Nieuwe functies
+## Waarom deze patch?
 
-- continue scrollmodus: alle pagina's onder elkaar
-- thumbnails / miniaturen
-- mobiel uitklapbare paginabalk
-- tekst zoeken door de volledige PDF
-- volgende/vorige zoekresultaat
-- resultaatpagina visueel markeren
-- fit-to-width
-- fit-to-page
-- paginanummer blijft automatisch volgen tijdens scrollen
-- vorige/volgende pagina blijft werken
-- zoom +/−
-- cache- en updatefix uit v0.1.3 behouden
+De repository bevatte bestanden uit verschillende versies:
+- app.js was v0.2.0
+- index.html was nog v0.1.2
 
-## Privacy
+Daardoor kon een PDF wel gekozen worden, maar de nieuwe JavaScript vond de vereiste v0.2.0-interface niet en kon niet renderen.
 
-PDF-bestanden worden lokaal in de browser verwerkt en niet naar een eigen backend geüpload.
+## Wat deze release doet
 
-## Uploaden
+- alle bestanden horen bij exact dezelfde versie: v0.2.0.1
+- continue scroll
+- thumbnails
+- zoeken
+- fit width
+- fit page
+- cache/updatefix
+- extra startupcontrole op ontbrekende UI-elementen
 
-Upload alle bestanden uit deze ZIP rechtstreeks naar de root van:
+## BELANGRIJK BIJ UPLOAD
 
-https://github.com/gasvdv-lab/PdfReader
+Verwijder of vervang ALLE bestaande projectbestanden in de repository-root met de bestanden uit deze ZIP.
 
-Vervang de bestaande bestanden.
+Controleer daarna:
+- index.html bevat v0.2.0.1
+- app.js bevat APP_VERSION = "0.2.0.1"
+- service-worker.js bevat pdfreader-v0.2.0.1
 
-## Cache-vrije testlink
-
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.0
-
-## Bekende beperking
-
-De zoekfunctie markeert in deze versie de pagina waarop een resultaat staat, nog niet het exacte woord in de PDF.
-
-PDF.js wordt nog via jsDelivr geladen. Volledig offline bundelen blijft gepland.
+Cache-vrije testlink:
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0.1

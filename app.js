@@ -3,7 +3,7 @@ import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.worker.min.mjs";
 
-const APP_VERSION = "0.2.0";
+const APP_VERSION = "0.2.0.1";
 
 const fileInput = document.getElementById("fileInput");
 const welcome = document.getElementById("welcome");
@@ -39,6 +39,29 @@ let renderGeneration = 0;
 let searchResults = [];
 let activeSearchIndex = -1;
 let observer = null;
+
+const REQUIRED_UI_IDS = [
+  "fileInput","welcome","reader","prevPage","nextPage","pageNumber","pageCount",
+  "zoomOut","zoomIn","zoomLabel","fitWidth","fitPage","status","fileName",
+  "pages","scrollContainer","thumbnails","sidebar","toggleSidebar",
+  "searchInput","searchButton","searchPrev","searchNext","searchStatus"
+];
+
+function validateUi() {
+  const missing = REQUIRED_UI_IDS.filter(id => !document.getElementById(id));
+  if (missing.length) {
+    document.body.innerHTML = `
+      <main style="padding:24px;font-family:system-ui;background:#08111f;color:white;min-height:100vh">
+        <h1>PdfReader v0.2.0.1</h1>
+        <h2>Versiebestanden komen niet overeen</h2>
+        <p>Ontbrekende UI-elementen: ${missing.join(", ")}</p>
+        <p>Upload alle bestanden van dezelfde ZIP opnieuw naar de root van GitHub.</p>
+      </main>`;
+    throw new Error(`UI version mismatch: ${missing.join(", ")}`);
+  }
+}
+
+validateUi();
 
 function setStatus(message) {
   status.textContent = message;

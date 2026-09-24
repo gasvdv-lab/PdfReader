@@ -11,7 +11,7 @@ Status: afgerond
 - versie-indicatie
 - cache/updatefix
 
-## v0.2.0 — Complete Reader Foundation
+## v0.2.0.1 — Version Sync Repair
 Status: huidige release
 
 - continue scroll

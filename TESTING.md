@@ -1,40 +1,21 @@
-# PdfReader v0.2.0 — Testing
+# PdfReader v0.2.0.1 — Testing
 
 Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.0
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0.1
 
-## Android
+## Eerste controle
+Bovenaan moet exact `v0.2.0.1` staan.
 
-1. Open de cache-vrije testlink.
-2. Controleer dat `v0.2.0` zichtbaar is.
-3. Open een PDF met meerdere pagina's.
-4. Controleer:
-   - alle pagina's staan onder elkaar;
-   - scrollen tussen pagina's werkt;
-   - huidig paginanummer verandert tijdens scrollen;
-   - vorige/volgende pagina werkt;
-   - zoom +/− werkt;
-   - `Breedte` werkt;
-   - `Pagina` werkt.
-5. Open de miniaturen via de menuknop.
-6. Tik op een thumbnail en controleer dat de juiste pagina opent.
-7. Zoek een woord dat meerdere keren voorkomt.
-8. Gebruik ↑ en ↓ voor vorige/volgende zoekresultaat.
+## PDF test
+1. Open een PDF met meerdere pagina's.
+2. Controleer dat pagina 1 zichtbaar wordt.
+3. Scroll naar pagina 2.
+4. Test vorige/volgende.
+5. Test thumbnails.
+6. Test zoeken.
+7. Test Breedte en Pagina.
 
-## Windows
-
-Herhaal dezelfde test in Chrome of Edge.
-
-Extra:
-- controleer pijltjestoetsen links/rechts;
-- verklein en vergroot het venster;
-- thumbnails moeten links zichtbaar zijn op brede schermen.
-
-## Cachetest
-
-1. Klik `Controleer update`.
-2. Controleer dat de pagina herlaadt met een nieuwe `?v=` parameter.
-
-## Acceptatiecriterium
-
-v0.2.0 is geslaagd wanneer een PDF van meerdere pagina's bruikbaar doorlopend kan worden gelezen, thumbnails werken en tekstzoekresultaten naar de juiste pagina navigeren.
+## Versiesynchronisatie
+Als de bestanden niet bij elkaar horen, toont de app voortaan expliciet:
+`Versiebestanden komen niet overeen`
+in plaats van stil vast te lopen.
