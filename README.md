@@ -1,41 +1,34 @@
-# PdfReader v0.1.1 — Mobile Layout Fix
+# PdfReader v0.1.2 — Visible Version Badge
 
 Live app:
 
 https://gasvdv-lab.github.io/PdfReader/
 
-## Wat is gewijzigd t.o.v. v0.1.0
+## Wijziging
 
-- compactere mobiele toolbar
-- toolbar logisch opgesplitst in navigatie en zoom
-- PDF-container neemt niet langer kunstmatig veel verticale ruimte in
-- kleinere mobiele marges
-- betere breedteberekening op Android
-- automatische herberekening bij schermrotatie/resizen
-- bestandsnaam zichtbaar op grotere schermen
-- juiste repository- en Pages-naam: `PdfReader`
-- `.nojekyll` toegevoegd voor robuustere GitHub Pages-publicatie
-- PWA cacheversie bijgewerkt
+Deze patch lost één duidelijk testprobleem op:
 
-## Installatie via GitHub Pages
+- de actieve versie is nu **altijd zichtbaar in de header**
+- ook op Android en kleine schermen
+- versie wordt getoond als compacte badge naast `PdfReader`
+- service-worker cache verhoogd naar v0.1.2 zodat browsers de nieuwe bestanden sneller verversen
+
+## Installatie
 
 Upload alle bestanden uit deze ZIP rechtstreeks naar de root van:
 
 https://github.com/gasvdv-lab/PdfReader
 
-GitHub Pages moet publiceren vanaf:
-
-- Branch: `main`
-- Folder: `/ (root)`
+Vervang de bestaande bestanden.
 
 Live app:
 
 https://gasvdv-lab.github.io/PdfReader/
 
-## Privacy
+## Controle
 
-De geopende PDF wordt lokaal in de browser verwerkt. De applicatie stuurt de PDF niet naar een eigen backend.
+Na deployment moet bovenaan zichtbaar zijn:
 
-## Bekende beperking
+`PdfReader  v0.1.2`
 
-PDF.js wordt in deze versie nog via jsDelivr geladen. Volledige offline bundeling staat gepland voor v0.2.0.
+Als je nog `v0.1.1` ziet, vernieuw de pagina volledig of sluit de PWA/browser en open opnieuw.

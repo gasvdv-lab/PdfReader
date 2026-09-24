@@ -1,37 +1,30 @@
-# PdfReader v0.1.1 — Testing
+# PdfReader v0.1.2 — Testing
 
 Live app:
 https://gasvdv-lab.github.io/PdfReader/
 
-## Android regressietest
+## Android
 
 1. Open de live app.
-2. Open dezelfde test-PDF als bij v0.1.0.
-3. Controleer dat:
-   - toolbar compacter is;
-   - navigatie op één logisch blok staat;
-   - zoomfuncties op één logisch blok staan;
-   - PDF-container direct onder de PDF stopt;
-   - geen grote lege donkere ruimte meer onder één pagina staat;
-   - PDF op breedte past;
-   - zoomen werkt;
-   - vorige/volgende werkt;
-   - paginanummer werkt.
-4. Draai de telefoon van portret naar landschap en terug.
-5. Controleer dat de PDF opnieuw op breedte wordt gezet.
+2. Controleer bovenaan naast `PdfReader`.
+3. De badge `v0.1.2` moet altijd zichtbaar zijn.
+4. Open een PDF.
+5. Controleer dat de badge zichtbaar blijft tijdens het lezen.
 
-## Windows regressietest
+## Windows
 
-1. Open de live app in Chrome of Edge.
-2. Open een PDF van meerdere pagina's.
-3. Test:
-   - vorige/volgende;
-   - paginanummer;
-   - zoom +/−;
-   - Breedte;
-   - pijltjestoetsen;
-   - venster verkleinen/vergroten.
+1. Open de live app.
+2. Controleer dat `v0.1.2` zichtbaar is in de header.
+3. Open een PDF en controleer opnieuw.
+
+## Cachecontrole
+
+Als nog een oudere versie zichtbaar is:
+
+1. Sluit de pagina/PWA volledig.
+2. Open opnieuw.
+3. Vernieuw eventueel één keer handmatig.
 
 ## Acceptatiecriterium
 
-v0.1.1 is geslaagd wanneer de mobiele layout merkbaar compacter is dan v0.1.0 en de grote lege ruimte onder het canvas verdwenen is.
+De actieve releaseversie moet op Android én Windows permanent zichtbaar zijn.
