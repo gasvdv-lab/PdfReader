@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.5";
+const APP_VERSION = "0.2.5.1";
 
 const $ = id => document.getElementById(id);
 
@@ -743,6 +743,52 @@ async function toggleContinuousScroll() {
   closeFullscreenOverlay();
 }
 
+
+
+async function cleanupLegacyPwaState() {
+  const report = {
+    registrationsFound: 0,
+    registrationsRemoved: 0,
+    cachesFound: 0,
+    cachesRemoved: 0
+  };
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      report.registrationsFound = registrations.length;
+
+      for (const registration of registrations) {
+        try {
+          const removed = await registration.unregister();
+          if (removed) report.registrationsRemoved += 1;
+        } catch (error) {
+          console.warn("Oude service worker kon niet worden verwijderd.", error);
+        }
+      }
+    }
+
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      report.cachesFound = keys.length;
+
+      for (const key of keys) {
+        try {
+          const removed = await caches.delete(key);
+          if (removed) report.cachesRemoved += 1;
+        } catch (error) {
+          console.warn(`Cache ${key} kon niet worden verwijderd.`, error);
+        }
+      }
+    }
+
+    console.info("Legacy PWA cleanup:", report);
+    return report;
+  } catch (error) {
+    console.warn("Legacy PWA cleanup kon niet volledig worden uitgevoerd.", error);
+    return report;
+  }
+}
 
 function isStandaloneMode() {
   return window.matchMedia?.("(display-mode: standalone)")?.matches ||
@@ -1674,7 +1720,17 @@ window.addEventListener("resize", () => {
   }, 180);
 });
 
+const legacyCleanupReport = await cleanupLegacyPwaState();
+if (
+  legacyCleanupReport.registrationsRemoved > 0 ||
+  legacyCleanupReport.cachesRemoved > 0
+) {
+  setInstallStatus(
+    `Oude app-cache opgeschoond: ${legacyCleanupReport.registrationsRemoved} service worker(s), ${legacyCleanupReport.cachesRemoved} cache(s).`,
+    true
+  );
+}
 refreshInstallUi();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — PWA Foundation geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Repository Cleanup & PWA Repair geladen.`);

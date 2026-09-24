@@ -16,13 +16,14 @@ v0.2.2.3 — True Fullscreen Viewport — geslaagd
 v0.2.2.4 — Fullscreen Fit Page Default — geslaagd
 v0.2.3 — Thumbnails — geslaagd
 v0.2.4 — Continuous Scroll — vervangen wegens stability issues
-v0.2.4.1 — Reader Stability Fix — huidige stabiele basis
+v0.2.4.1 — Reader Stability Fix — stabiele readerbasis
+v0.2.5 — PWA Foundation — technisch correct, maar repository was gemengd met oude bestanden
 
-## v0.2.5 — PWA Foundation
-Huidige release.
+## v0.2.5.1 — Repository Cleanup & PWA Repair
+Huidige herstelrelease.
 
 ## v0.2.6 — Offline Engine
-Volgende stap na fysieke validatie.
+Pas starten nadat repository + live Pages fysiek als v0.2.5.1 bevestigd zijn.
 
 ## v0.3.x — Annotaties
 ## v0.4.x — PDF Editing

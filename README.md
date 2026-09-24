@@ -1,28 +1,24 @@
-# PdfReader v0.2.5 — PWA Foundation
+# PdfReader v0.2.5.1 — Repository Cleanup & PWA Repair
 
 ## Doel
-PdfReader install-ready maken op Android en Windows zonder opnieuw vroegtijdig caching of een service worker in te voeren.
+De GitHub repository en de live GitHub Pages-versie terug naar één consistente codebasis brengen.
 
-## Nieuw
-- `manifest.webmanifest`
-- standalone app-modus
-- app-naam, theme color en start URL
-- 192×192 en 512×512 PNG-iconen
-- Android/Windows installatie-metadata
-- `beforeinstallprompt` ondersteuning waar de browser dit aanbiedt
-- menu-item `App installeren` verschijnt alleen wanneer een install prompt beschikbaar is
-- fallbacktekst wanneer handmatige installatie via het browsermenu nodig is
+## Wat deze release herstelt
+- alle bestanden horen bij dezelfde versie
+- PWA-manifest + PNG-iconen zijn aanwezig
+- er wordt GEEN nieuwe service worker geregistreerd
+- bestaande oude service workers worden bij openen actief uitgeschreven
+- bestaande Cache Storage entries worden opgeschoond
+- de readerbasis uit v0.2.4.1 blijft behouden
+- PWA-installatiemetadata uit v0.2.5 blijft behouden
 
-## Bewust nog NIET toegevoegd
-- geen service worker
-- geen offline cache
-- geen PDF.js precache
-- geen background sync
+## Zeer belangrijk
+Upload deze ZIP niet zomaar over oude repositorybestanden heen.
 
-Dit komt pas in v0.2.6 — Offline Engine, na fysieke validatie van deze PWA-basis.
+Lees eerst `REPOSITORY_RESET.md` en maak de repository-root schoon. Oude bestanden zoals `service-worker.js` moeten echt verwijderd worden.
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.5
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.5.1
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/
