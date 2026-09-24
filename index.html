@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.2.4">
-  <title>PdfReader v0.2.4</title>
+  <link rel="stylesheet" href="styles.css?v=0.2.4.1">
+  <title>PdfReader v0.2.4.1</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -16,7 +16,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.2.4</span>
+        <span>v0.2.4.1</span>
       </div>
     </div>
   </div>
@@ -58,8 +58,8 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Continuous Scroll</h2>
-    <p>Deze versie voegt een aparte doorlopende scrollmodus toe met lazy page rendering en actief-pagina-detectie.</p>
+    <h2>Reader Stability Fix</h2>
+    <p>Stabiliteitspatch voor continuous scroll, thumbnails, zoeken en fullscreen-interacties.</p>
   </div>
 
   <div id="emptyState" class="empty-state">
@@ -105,10 +105,10 @@
         <canvas id="pdfCanvas"></canvas>
         <div id="textLayer" class="text-layer" aria-label="Selecteerbare PDF-tekst"></div>
       </div>
-    <div id="continuousViewer" class="continuous-viewer hidden" aria-label="Doorlopende PDF-weergave">
-      <div id="continuousPages" class="continuous-pages"></div>
     </div>
 
+    <div id="continuousViewer" class="continuous-viewer hidden" aria-label="Doorlopende PDF-weergave">
+      <div id="continuousPages" class="continuous-pages"></div>
     </div>
 
     <div class="reader-status">
@@ -127,7 +127,7 @@
 </main>
 
 <footer>
-  <span>PdfReader v0.2.4</span>
+  <span>PdfReader v0.2.4.1</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -186,6 +186,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.2.4"></script>
+<script type="module" src="app.js?v=0.2.4.1"></script>
 </body>
 </html>

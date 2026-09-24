@@ -902,3 +902,44 @@ body.fullscreen-reader.continuous-scroll-mode .page-stage{
     min-height:320px;
   }
 }
+
+
+/* v0.2.4.1 — Reader Stability Fix */
+
+/* continuousViewer is now a sibling of canvasWrap */
+body.continuous-scroll-mode #canvasWrap{
+  display:none!important;
+}
+body.continuous-scroll-mode #continuousViewer{
+  display:block!important;
+}
+
+/* Fullscreen search must remain reachable from the ⋯ menu. */
+body.fullscreen-reader.fullscreen-search-open .mobile-toolbar{
+  display:block!important;
+  position:fixed;
+  left:8px;
+  right:8px;
+  top:max(8px, env(safe-area-inset-top));
+  z-index:155;
+  padding:8px;
+  border:1px solid #334155;
+  border-radius:14px;
+  background:rgba(11,18,32,.97);
+  box-shadow:0 14px 36px rgba(0,0,0,.4);
+}
+body.fullscreen-reader.fullscreen-search-open .mobile-toolbar .compact-nav{
+  display:none!important;
+}
+body.fullscreen-reader.fullscreen-search-open .search-panel{
+  display:grid!important;
+}
+
+/* Avoid accidental horizontal overflow from continuous pages. */
+.continuous-page-stage{
+  max-width:100%;
+}
+.continuous-page canvas{
+  max-width:100%;
+  height:auto;
+}

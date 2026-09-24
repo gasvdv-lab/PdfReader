@@ -1,31 +1,31 @@
-# PdfReader v0.2.4 — Testing
+# PdfReader v0.2.4.1 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.4
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.4.1
 
-## Android
-1. Open een PDF met minstens 5 pagina's.
-2. Open het menu.
-3. Kies `Doorlopend scrollen`.
-4. Controleer dat pagina's onder elkaar verschijnen.
-5. Scroll langzaam naar beneden.
-6. Controleer dat pagina's pas laden wanneer ze in/nabij beeld komen.
-7. Controleer dat het huidige paginanummer bovenaan mee verandert.
-8. Vul handmatig een ander paginanummer in.
-9. Controleer dat de viewer naar die pagina scrollt.
-10. Open thumbnails en kies een andere pagina.
-11. Controleer dat continuous mode naar die pagina springt.
-12. Zoek een woord op een andere pagina.
-13. Controleer dat de viewer naar de juiste pagina springt.
-14. Schakel via het menu terug naar `Single page weergave`.
-15. Controleer dat swipe/pinch en fullscreen single-page opnieuw normaal werken.
-16. Test continuous mode ook in fullscreen.
-17. Draai portrait → landscape → portrait.
+## Kritieke Android-test
+1. Open een PDF met meerdere pagina's.
+2. Test single-page vorige/volgende.
+3. Open `Doorlopend scrollen`.
+4. Controleer dat de pagina's werkelijk zichtbaar zijn en onder elkaar staan.
+5. Scroll over meerdere pagina's en controleer het actieve paginanummer.
+6. Gebruik vorige/volgende terwijl continuous mode actief is.
+7. Kies een pagina via thumbnails; continuous mode moet behouden blijven.
+8. Zoek naar tekst op een andere pagina; de viewer moet naar die pagina scrollen.
+9. Schakel terug naar `Single page weergave`.
+10. Test tekstselectie en zoeken opnieuw.
+11. Activeer fullscreen in single-page mode; standaard moet `Pagina` gelden.
+12. Open `⋯` > Zoeken; het zoekpaneel moet zichtbaar zijn in fullscreen.
+13. Verlaat fullscreen.
+14. Activeer continuous mode en daarna fullscreen.
+15. Continuous mode moet zichtbaar blijven en scrollbaar zijn.
+16. Draai portrait ↔ landscape.
+17. Open daarna een andere PDF; deze moet schoon in single-page mode starten.
 
 ## Windows
-Herhaal dezelfde test in Chrome of Edge.
+Herhaal dezelfde flow in Chrome of Edge en test ook native fullscreen met Esc.
 
 ## Acceptatie
-v0.2.4 is geslaagd wanneer doorlopend scrollen soepel werkt, pagina's lazy laden, de actieve pagina correct wordt bijgehouden en terugschakelen naar single-page geen bestaande functies breekt.
+Deze patch is geslaagd als single-page, thumbnails, continuous scroll, zoeken en fullscreen zonder verborgen viewer, verkeerde navigatie of mode-conflicten samenwerken.
 
-Pas daarna doorgaan naar v0.2.5 — PWA Foundation.
+Ga pas daarna door naar v0.2.5 — PWA Foundation.
