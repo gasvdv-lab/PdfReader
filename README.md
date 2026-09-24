@@ -1,21 +1,26 @@
-# PdfReader v0.0.1 — Static Foundation
+# PdfReader v0.0.1.1 — Cache & Service Worker Cleanup
 
-Doel: bewijzen dat GitHub Pages exact dezelfde versie toont als in de ZIP.
+## Doel
+Eén technisch concept: alle resten van de oude v0.2.x service-worker/cachearchitectuur verwijderen.
 
-Deze release bevat:
-- statische Android/Windows-interface
-- zichtbare versie v0.0.1
-- eenvoudige diagnostiek
-- geen PDF.js
-- geen service worker
-- geen cachelogica
-- geen PWA
+## Waarom?
+v0.0.1 HTML stond correct live, maar de diagnostiek bleef op 'laden…'. Dat bewijst dat oude assets nog tussenkwamen.
 
-Repository:
-https://github.com/gasvdv-lab/PdfReader
+## Deze release
+- registreert GEEN nieuwe service worker
+- unregistert bestaande service workers voor deze origin
+- verwijdert caches waarvan de naam `pdfreader` bevat
+- gebruikt cache-busters op CSS en JS
+- toont daarna een groen resetresultaat
 
-Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.0.1
+## Cache-vrije testlink
+https://gasvdv-lab.github.io/PdfReader/?v=0.0.1.1-cleanreset
 
-Vaste app-link:
-https://gasvdv-lab.github.io/PdfReader/
+## Verwacht
+- PdfReader v0.0.1.1
+- browserinfo ingevuld
+- scherminfo ingevuld
+- laadtijd ingevuld
+- Oude service workers: x verwijderd
+- Oude caches: x verwijderd
+- groene melding: Schone basis actief
