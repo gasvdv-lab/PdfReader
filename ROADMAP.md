@@ -6,16 +6,20 @@ https://gasvdv-lab.github.io/PdfReader/
 ## v0.1.0 — Reader Foundation
 Status: afgerond
 
-## v0.1.2 — Mobile Layout Fix
+## v0.1.1 — Mobile Layout Fix
+Status: afgerond
+
+## v0.1.2 — Visible Version Badge
+Status: afgerond
+
+## v0.1.3 — Update & Cache Fix
 Status: huidige release
 
-- compactere Android-layout
-- kleinere toolbar
-- dynamische canvas-hoogte
-- verbeterde fit-to-width
-- rotatie/responsive fix
-- correcte GitHub Pages-link
-- `.nojekyll`
+- network-first voor HTML
+- automatische service-worker updatecontrole
+- oude caches automatisch verwijderen
+- updateknop
+- betrouwbare versiecontrole tijdens ontwikkeling
 
 ## v0.2.0 — Complete Reader
 Gepland:

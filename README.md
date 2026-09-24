@@ -1,19 +1,25 @@
-# PdfReader v0.1.2 — Visible Version Badge
+# PdfReader v0.1.3 — Update & Cache Fix
 
 Live app:
 
 https://gasvdv-lab.github.io/PdfReader/
 
-## Wijziging
+## Doel van deze release
 
-Deze patch lost één duidelijk testprobleem op:
+Deze release lost het ontwikkelprobleem op waarbij Android/Chrome soms een oudere versie van PdfReader bleef tonen.
 
-- de actieve versie is nu **altijd zichtbaar in de header**
-- ook op Android en kleine schermen
-- versie wordt getoond als compacte badge naast `PdfReader`
-- service-worker cache verhoogd naar v0.1.2 zodat browsers de nieuwe bestanden sneller verversen
+## Wijzigingen
 
-## Installatie
+- `index.html` en navigatie gebruiken nu **network-first**
+- service worker gebruikt `updateViaCache: "none"`
+- bij iedere start wordt actief `registration.update()` uitgevoerd
+- oude `pdfreader-*` caches worden automatisch verwijderd
+- statische bestanden gebruiken stale-while-revalidate
+- knop **Controleer update** toegevoegd
+- de actieve versie blijft permanent zichtbaar
+- cacheversie verhoogd naar `v0.1.3`
+
+## Uploaden
 
 Upload alle bestanden uit deze ZIP rechtstreeks naar de root van:
 
@@ -21,14 +27,18 @@ https://github.com/gasvdv-lab/PdfReader
 
 Vervang de bestaande bestanden.
 
-Live app:
+## Testlink zonder oude cache
 
-https://gasvdv-lab.github.io/PdfReader/
+https://gasvdv-lab.github.io/PdfReader/?v=0.1.3
 
-## Controle
+## Test
 
 Na deployment moet bovenaan zichtbaar zijn:
 
-`PdfReader  v0.1.2`
+`PdfReader  v0.1.3`
 
-Als je nog `v0.1.1` ziet, vernieuw de pagina volledig of sluit de PWA/browser en open opnieuw.
+Klik eventueel onderaan op **Controleer update**. De app herlaadt dan met een unieke cache-buster.
+
+## Privacy
+
+PDF-bestanden blijven lokaal in de browser verwerkt. De app uploadt ze niet naar een eigen backend.

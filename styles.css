@@ -133,3 +133,10 @@ footer{
   .toolbar button{min-width:34px}
   .page-control input{width:54px}
 }
+
+.footer-actions{display:flex;align-items:center;gap:12px}
+.link-button{
+  appearance:none;border:0;background:transparent;color:#93c5fd;
+  padding:0;font:inherit;cursor:pointer
+}
+.link-button:hover{text-decoration:underline}

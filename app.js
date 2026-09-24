@@ -193,10 +193,59 @@ window.addEventListener("resize", () => {
   }, 180);
 });
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-  });
+const APP_VERSION = "0.1.3";
+const checkUpdateButton = document.getElementById("checkUpdate");
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return null;
+
+  try {
+    const registration = await navigator.serviceWorker.register("./service-worker.js", {
+      updateViaCache: "none"
+    });
+
+    // Controleer bij iedere start actief of een nieuw service-workerbestand bestaat.
+    await registration.update();
+
+    registration.addEventListener("updatefound", () => {
+      const worker = registration.installing;
+      if (!worker) return;
+
+      worker.addEventListener("statechange", () => {
+        if (worker.state === "installed" && navigator.serviceWorker.controller) {
+          setStatus(`Nieuwe versie gevonden. Herlaad de app.`);
+        }
+      });
+    });
+
+    return registration;
+  } catch (err) {
+    console.error("Service worker registratie mislukt:", err);
+    return null;
+  }
 }
+
+async function forceUpdateCheck() {
+  setStatus(`Controleren op update… (v${APP_VERSION})`);
+
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration) {
+      await registration.update();
+    }
+
+    // Cache-busted reload zodat ook index.html vers wordt opgehaald.
+    const url = new URL(window.location.href);
+    url.searchParams.set("v", `${APP_VERSION}-${Date.now()}`);
+    window.location.replace(url.toString());
+  } catch (err) {
+    console.error(err);
+    setStatus("Updatecontrole mislukt.");
+  }
+}
+
+checkUpdateButton?.addEventListener("click", forceUpdateCheck);
+
+window.addEventListener("load", registerServiceWorker);
 
 updateControls();

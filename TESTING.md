@@ -1,30 +1,32 @@
-# PdfReader v0.1.2 — Testing
+# PdfReader v0.1.3 — Testing
 
-Live app:
-https://gasvdv-lab.github.io/PdfReader/
+Testlink zonder oude cache:
+
+https://gasvdv-lab.github.io/PdfReader/?v=0.1.3
 
 ## Android
 
-1. Open de live app.
-2. Controleer bovenaan naast `PdfReader`.
-3. De badge `v0.1.2` moet altijd zichtbaar zijn.
-4. Open een PDF.
-5. Controleer dat de badge zichtbaar blijft tijdens het lezen.
+1. Upload v0.1.3 naar GitHub.
+2. Wacht tot GitHub Pages klaar is.
+3. Open de cache-busted testlink.
+4. Controleer dat `v0.1.3` zichtbaar is.
+5. Open een PDF.
+6. Test vorige/volgende, paginanummer, zoom en Breedte.
+7. Klik onderaan op `Controleer update`.
+8. Controleer dat de pagina opnieuw opent met een nieuwe `?v=` parameter.
+
+## Cache-regressietest
+
+1. Laat v0.1.3 eenmaal laden.
+2. Sluit de browser.
+3. Open opnieuw.
+4. Controleer dat de versie nog steeds v0.1.3 is.
+5. Bij een latere release moet dezelfde test aantonen dat de nieuwe versie zichtbaar wordt zonder handmatig sitegegevens te wissen.
 
 ## Windows
 
-1. Open de live app.
-2. Controleer dat `v0.1.2` zichtbaar is in de header.
-3. Open een PDF en controleer opnieuw.
-
-## Cachecontrole
-
-Als nog een oudere versie zichtbaar is:
-
-1. Sluit de pagina/PWA volledig.
-2. Open opnieuw.
-3. Vernieuw eventueel één keer handmatig.
+Herhaal dezelfde test in Chrome of Edge.
 
 ## Acceptatiecriterium
 
-De actieve releaseversie moet op Android én Windows permanent zichtbaar zijn.
+De app mag na een nieuwe deployment niet structureel op een oude HTML-versie blijven hangen. De versie-indicatie moet overeenkomen met de laatste gedeployde release.
