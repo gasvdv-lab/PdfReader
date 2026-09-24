@@ -10,8 +10,9 @@ v0.1.3 — Mobile Reader UX — geslaagd
 v0.2.0 — Text Layer — geslaagd
 v0.2.1.1 — Search Stability Fix — geslaagd
 v0.2.2 — Fullscreen Reader — geslaagd
+v0.2.2.1 — Professional Reader UX — geslaagd
 
-## v0.2.2.1 — Professional Reader UX
+## v0.2.2.2 — Immersive Fullscreen UX
 Huidige release.
 
 ## v0.2.3 — Thumbnails

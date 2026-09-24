@@ -1,40 +1,29 @@
-# PdfReader v0.2.2.1 — Professional Reader UX
+# PdfReader v0.2.2.2 — Immersive Fullscreen UX
 
 ## Doel
-De bestaande single-page reader professioneel maken zonder nieuwe document-enginefuncties toe te voegen.
+Fullscreen document-first maken: zo weinig mogelijk permanente interface, met één duidelijke toegang tot menu's.
 
 ## Nieuw
-- compacte professionele topbar
-- bestandsnaam centraal zichtbaar
-- menu links voor documentacties
-- `⋮` menu voor view-acties
-- zoeken als in-/uitklapbaar paneel
-- fullscreen geïntegreerd in de topbar
-- bediening tonen/verbergen
-- tik op document om controls te tonen/verbergen
-- swipe links = volgende pagina
-- swipe rechts = vorige pagina
-- pinch gesture voor zoom
-- bestaande knoppen blijven als fallback
-
-## Gesture-regels
-- swipe wordt niet uitgevoerd wanneer tekst actief geselecteerd is
-- swipe vereist duidelijke horizontale beweging
-- korte tik toggelt de controls
-- pinch verandert alleen zoom
-- bestaande knopnavigatie blijft altijd beschikbaar
+- fullscreen verbergt alle gewone reader-controls
+- alleen de PDF blijft centraal zichtbaar
+- kleine floating `⋯`-handle blijft beschikbaar
+- tik op `⋯` opent een compacte fullscreen overlay
+- tik op de PDF opent/sluit dezelfde overlay
+- overlay bevat:
+  - vorige/volgende pagina
+  - huidige pagina / totaal
+  - zoom - / + / percentage
+  - zoeken
+  - passend op breedte
+  - passend op pagina
+  - zoom 100%
+  - fullscreen verlaten
+- swipe links/rechts blijft werken
+- pinch zoom blijft werken
+- tekstselectie blijft beschermd tegen pagina-swipe
 
 ## Behouden
-Alle functies uit v0.2.2:
-- lokale PDF openen
-- pagina navigatie
-- directe paginakeuze
-- zoom
-- Breedte
-- Pagina
-- text layer
-- zoeken
-- fullscreen
+Alle bewezen functies uit v0.2.2.1.
 
 ## Nog niet
 - thumbnails
@@ -43,7 +32,7 @@ Alle functies uit v0.2.2:
 - PWA-cache
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.2
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

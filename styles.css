@@ -421,3 +421,161 @@ body.fullscreen-reader.controls-hidden .topbar{
 body.fullscreen-reader.controls-hidden main{
   padding-top:0;
 }
+
+
+/* v0.2.2.2 — Immersive Fullscreen UX */
+
+.fullscreen-handle{
+  position:fixed;
+  right:10px;
+  bottom:16px;
+  z-index:120;
+}
+.fullscreen-handle button{
+  width:48px;
+  height:48px;
+  border:1px solid rgba(148,163,184,.35);
+  border-radius:999px;
+  background:rgba(15,23,42,.72);
+  color:#fff;
+  font-size:24px;
+  line-height:1;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 8px 24px rgba(0,0,0,.28);
+}
+.fullscreen-overlay{
+  position:fixed;
+  inset:0;
+  z-index:130;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:12px;
+  background:rgba(2,6,23,.45);
+}
+.fullscreen-overlay-card{
+  width:min(520px,100%);
+  max-height:82vh;
+  overflow:auto;
+  border:1px solid #334155;
+  border-radius:18px;
+  background:rgba(11,18,32,.97);
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+  padding:12px;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.fullscreen-overlay-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-bottom:10px;
+  border-bottom:1px solid #1e293b;
+}
+.fullscreen-overlay-head strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.fullscreen-overlay-nav{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+}
+.fullscreen-overlay-nav .icon-button:first-child{justify-self:start}
+.fullscreen-overlay-nav .icon-button:last-child{justify-self:end}
+.fs-page-indicator{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:96px;
+  color:#e5e7eb;
+  font-weight:700;
+}
+.fullscreen-overlay-tools{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  gap:8px;
+  align-items:center;
+}
+.fullscreen-overlay-tools button{
+  min-height:44px;
+  border:1px solid #334155;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+  font-weight:700;
+}
+#fsZoomLabel{
+  min-width:72px;
+  text-align:center;
+  font-weight:700;
+}
+.fullscreen-overlay-menu{
+  margin-top:12px;
+  border-top:1px solid #1e293b;
+}
+.fullscreen-overlay-menu .danger{
+  color:#fecaca;
+}
+body.fullscreen-reader .topbar,
+body.fullscreen-reader .mobile-toolbar,
+body.fullscreen-reader .reader-meta,
+body.fullscreen-reader .message-box,
+body.fullscreen-reader .reader-status,
+body.fullscreen-reader footer,
+body.fullscreen-reader .next-step,
+body.fullscreen-reader .intro-block{
+  display:none!important;
+}
+body.fullscreen-reader main{
+  padding:0!important;
+  height:100vh;
+  height:100dvh;
+}
+body.fullscreen-reader .panel{
+  padding:0!important;
+  height:100%;
+  border:0;
+  border-radius:0;
+  background:#050a12;
+}
+body.fullscreen-reader .reader{
+  height:100%;
+}
+body.fullscreen-reader .canvas-wrap{
+  height:100%;
+  max-height:none!important;
+  border:0;
+  border-radius:0;
+  padding:0;
+  background:#050a12;
+  align-items:center;
+}
+body.fullscreen-reader .page-stage{
+  margin:auto;
+}
+body.fullscreen-reader.controls-hidden .fullscreen-handle{
+  display:block!important;
+}
+body.fullscreen-reader .fullscreen-handle.hidden{
+  display:none!important;
+}
+body.fullscreen-reader .fullscreen-overlay.hidden{
+  display:none!important;
+}
+@media(max-width:640px){
+  .fullscreen-overlay{
+    padding:8px;
+  }
+  .fullscreen-overlay-card{
+    border-radius:16px;
+  }
+}

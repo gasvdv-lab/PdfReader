@@ -1,33 +1,37 @@
-# PdfReader v0.2.2.1 — Testing
+# PdfReader v0.2.2.2 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.2
 
 ## Android
 1. Open een PDF.
-2. Controleer de compacte topbar.
-3. Open het menu links en test `PDF openen`, `Breedte`, `Pagina`, `Zoom 100%`.
-4. Open `⋮` en test view-acties.
-5. Open/sluit zoeken via het zoekicoon.
-6. Swipe links → volgende pagina.
-7. Swipe rechts → vorige pagina.
-8. Tik kort op de PDF → bediening moet verdwijnen.
-9. Tik opnieuw → bediening moet terugkomen.
-10. Test pinch-zoom.
-11. Selecteer tekst en controleer dat een swipe tijdens actieve tekstselectie geen pagina wisselt.
-12. Test fullscreen vanuit de topbar.
-13. Draai portrait → landscape → portrait.
-14. Test daarna alle oude knoppen opnieuw.
+2. Activeer fullscreen.
+3. Controleer dat topbar, paginabalk, zoekbalk en statusregels verdwijnen.
+4. Alleen PDF + kleine `⋯`-handle mogen permanent zichtbaar blijven.
+5. Tik `⋯`.
+6. Controleer overlay:
+   - vorige/volgende
+   - pagina/totaal
+   - zoom -/+
+   - zoeken
+   - breedte
+   - pagina
+   - zoom 100%
+   - fullscreen verlaten
+7. Sluit overlay.
+8. Swipe links/rechts terwijl overlay dicht is.
+9. Pinch zoom.
+10. Tik kort op PDF → overlay opent.
+11. Tik buiten overlay → overlay sluit.
+12. Selecteer tekst en controleer dat swipe niet per ongeluk pagina wisselt.
+13. Test zoeken vanuit fullscreen overlay.
+14. Verlaat fullscreen.
+15. Controleer dat normale professionele UI correct terugkomt.
 
 ## Windows
-1. Open PDF.
-2. Test menu's.
-3. Test zoeken.
-4. Test fullscreen.
-5. Test paginanavigatie en zoom.
-6. Controleer dat er geen console/runtimefouten zijn.
+Herhaal fullscreen, overlaymenu, Esc, zoeken, zoom en navigatie.
 
 ## Acceptatie
-v0.2.2.1 is geslaagd wanneer de reader visueel compacter en professioneler is, menu's betrouwbaar werken en gestures de bestaande readerfuncties niet breken.
+v0.2.2.2 is geslaagd wanneer fullscreen vrijwel alleen de PDF toont en alle functies toch bereikbaar blijven via één discrete menu-handle.
 
 Pas daarna doorgaan naar v0.2.3 — Thumbnails.

@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.2.1";
+const APP_VERSION = "0.2.2.2";
 
 const $ = id => document.getElementById(id);
 
@@ -43,6 +43,24 @@ const searchToggleButton = $("searchToggleButton");
 const searchPanel = $("searchPanel");
 const searchCloseButton = $("searchCloseButton");
 const topbarFileName = $("topbarFileName");
+
+const fullscreenHandle = $("fullscreenHandle");
+const fullscreenHandleButton = $("fullscreenHandleButton");
+const fullscreenOverlay = $("fullscreenOverlay");
+const fullscreenOverlayClose = $("fullscreenOverlayClose");
+const fullscreenOverlayTitle = $("fullscreenOverlayTitle");
+const fsPrevButton = $("fsPrevButton");
+const fsNextButton = $("fsNextButton");
+const fsCurrentPage = $("fsCurrentPage");
+const fsPageCount = $("fsPageCount");
+const fsZoomOutButton = $("fsZoomOutButton");
+const fsZoomInButton = $("fsZoomInButton");
+const fsZoomLabel = $("fsZoomLabel");
+const fsSearchButton = $("fsSearchButton");
+const fsFitWidthButton = $("fsFitWidthButton");
+const fsFitPageButton = $("fsFitPageButton");
+const fsResetZoomButton = $("fsResetZoomButton");
+const fsExitButton = $("fsExitButton");
 const zoomLabel = $("zoomLabel");
 const searchInput = $("searchInput");
 const searchButton = $("searchButton");
@@ -114,6 +132,74 @@ function closeSearchPanel() {
   searchPanel.classList.add("hidden");
 }
 
+
+let fullscreenControlsTimer = null;
+
+function updateFullscreenOverlayUi() {
+  if (!pdfDoc) return;
+  fsCurrentPage.textContent = String(currentPage);
+  fsPageCount.textContent = String(pdfDoc.numPages);
+  fsZoomLabel.textContent = `${Math.round(currentScale * 100)}%`;
+  fullscreenOverlayTitle.textContent = fileName.textContent || "PdfReader";
+
+  fsPrevButton.disabled = currentPage <= 1;
+  fsNextButton.disabled = currentPage >= pdfDoc.numPages;
+}
+
+function showFullscreenHandle() {
+  if (!document.body.classList.contains("fullscreen-reader")) return;
+  fullscreenHandle.classList.remove("hidden");
+  fullscreenHandle.setAttribute("aria-hidden", "false");
+}
+
+function hideFullscreenHandle() {
+  fullscreenHandle.classList.add("hidden");
+  fullscreenHandle.setAttribute("aria-hidden", "true");
+}
+
+function openFullscreenOverlay() {
+  if (!document.body.classList.contains("fullscreen-reader")) return;
+  clearTimeout(fullscreenControlsTimer);
+  updateFullscreenOverlayUi();
+  fullscreenOverlay.classList.remove("hidden");
+  fullscreenOverlay.setAttribute("aria-hidden", "false");
+  hideFullscreenHandle();
+}
+
+function closeFullscreenOverlay() {
+  fullscreenOverlay.classList.add("hidden");
+  fullscreenOverlay.setAttribute("aria-hidden", "true");
+  scheduleFullscreenHandle();
+}
+
+function scheduleFullscreenHandle() {
+  clearTimeout(fullscreenControlsTimer);
+  showFullscreenHandle();
+  fullscreenControlsTimer = setTimeout(() => {
+    if (
+      document.body.classList.contains("fullscreen-reader") &&
+      fullscreenOverlay.classList.contains("hidden")
+    ) {
+      fullscreenHandle.classList.add("idle");
+    }
+  }, 2400);
+}
+
+function enterImmersiveUi() {
+  setControlsVisible(false);
+  closeMenus();
+  closeSearchPanel();
+  closeFullscreenOverlay();
+  showFullscreenHandle();
+}
+
+function leaveImmersiveUi() {
+  clearTimeout(fullscreenControlsTimer);
+  closeFullscreenOverlay();
+  hideFullscreenHandle();
+  setControlsVisible(true);
+}
+
 function fullscreenSupported() {
   return Boolean(
     document.documentElement.requestFullscreen ||
@@ -139,6 +225,7 @@ async function enterFullscreen() {
   // Apply reader-only layout immediately. If native fullscreen is unsupported,
   // this remains as a safe browser fallback.
   setFullscreenUi(true);
+  enterImmersiveUi();
 
   try {
     const root = document.documentElement;
@@ -174,6 +261,7 @@ async function exitFullscreen() {
   }
 
   setFullscreenUi(false);
+  leaveImmersiveUi();
 
   window.setTimeout(async () => {
     if (!pdfDoc) return;
@@ -221,6 +309,7 @@ function updateUi() {
   const pct = Math.round(currentScale * 100);
   zoomLabel.textContent = `${pct}%`;
   zoomStatus.textContent = ready ? `${pct}%` : "—";
+  if (ready) updateFullscreenOverlayUi();
 }
 
 async function loadPdfJs() {
@@ -641,12 +730,80 @@ searchToggleButton.addEventListener("click", () => {
 searchCloseButton.addEventListener("click", closeSearchPanel);
 
 fullscreenButtonTop.addEventListener("click", toggleFullscreen);
+
+fullscreenHandleButton.addEventListener("click", openFullscreenOverlay);
+
+fullscreenOverlayClose.addEventListener("click", closeFullscreenOverlay);
+
+fullscreenOverlay.addEventListener("click", event => {
+  if (event.target === fullscreenOverlay) closeFullscreenOverlay();
+});
+
+fsPrevButton.addEventListener("click", async () => {
+  if (pdfDoc && currentPage > 1) {
+    await renderPage(currentPage - 1, currentScale);
+    updateFullscreenOverlayUi();
+  }
+});
+
+fsNextButton.addEventListener("click", async () => {
+  if (pdfDoc && currentPage < pdfDoc.numPages) {
+    await renderPage(currentPage + 1, currentScale);
+    updateFullscreenOverlayUi();
+  }
+});
+
+fsZoomOutButton.addEventListener("click", async () => {
+  if (!pdfDoc) return;
+  await renderPage(currentPage, currentScale - 0.15);
+  updateFullscreenOverlayUi();
+});
+
+fsZoomInButton.addEventListener("click", async () => {
+  if (!pdfDoc) return;
+  await renderPage(currentPage, currentScale + 0.15);
+  updateFullscreenOverlayUi();
+});
+
+fsFitWidthButton.addEventListener("click", async () => {
+  if (!pdfDoc) return;
+  await renderPage(currentPage, await fitWidthScale(currentPage));
+  updateFullscreenOverlayUi();
+  closeFullscreenOverlay();
+});
+
+fsFitPageButton.addEventListener("click", async () => {
+  if (!pdfDoc) return;
+  await renderPage(currentPage, await fitPageScale(currentPage));
+  updateFullscreenOverlayUi();
+  closeFullscreenOverlay();
+});
+
+fsResetZoomButton.addEventListener("click", async () => {
+  if (!pdfDoc) return;
+  await renderPage(currentPage, 1);
+  updateFullscreenOverlayUi();
+  closeFullscreenOverlay();
+});
+
+fsSearchButton.addEventListener("click", () => {
+  closeFullscreenOverlay();
+  setControlsVisible(true);
+  openSearchPanel();
+});
+
+fsExitButton.addEventListener("click", async () => {
+  closeFullscreenOverlay();
+  await exitFullscreen();
+});
+
 fullscreenButton.addEventListener("click", toggleFullscreen);
 
 function syncFullscreenState() {
   // If native fullscreen was closed with Esc/back gesture, also leave reader-only CSS mode.
   if (!nativeFullscreenActive() && document.body.classList.contains("fullscreen-reader")) {
     setFullscreenUi(false);
+    leaveImmersiveUi();
     window.setTimeout(async () => {
       if (!pdfDoc) return;
       try {
@@ -761,7 +918,17 @@ pageStage.addEventListener("touchend", async event => {
 
   // Short tap in document area toggles controls.
   const tap = dt < 280 && Math.abs(dx) < 12 && Math.abs(dy) < 12 && !gestureMoved;
-  if (tap) toggleControls();
+  if (tap) {
+    if (document.body.classList.contains("fullscreen-reader")) {
+      if (fullscreenOverlay.classList.contains("hidden")) {
+        openFullscreenOverlay();
+      } else {
+        closeFullscreenOverlay();
+      }
+    } else {
+      toggleControls();
+    }
+  }
 }, { passive: true });
 
 let resizeTimer = null;
@@ -775,4 +942,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Professional Reader UX geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Immersive Fullscreen UX geladen.`);
