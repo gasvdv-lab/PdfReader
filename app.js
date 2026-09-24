@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.2";
+const APP_VERSION = "0.2.2.1";
 
 const $ = id => document.getElementById(id);
 
@@ -26,6 +26,23 @@ const zoomInButton = $("zoomInButton");
 const fitWidthButton = $("fitWidthButton");
 const fitPageButton = $("fitPageButton");
 const fullscreenButton = $("fullscreenButton");
+
+const fullscreenButtonTop = $("fullscreenButtonTop");
+const openMenuButton = $("openMenuButton");
+const moreMenuButton = $("moreMenuButton");
+const sideMenu = $("sideMenu");
+const moreMenu = $("moreMenu");
+const menuBackdrop = $("menuBackdrop");
+const sideMenuCloseButton = $("sideMenuCloseButton");
+const openPdfMenuItem = $("openPdfMenuItem");
+const fitWidthMenuItem = $("fitWidthMenuItem");
+const fitPageMenuItem = $("fitPageMenuItem");
+const resetZoomMenuItem = $("resetZoomMenuItem");
+const toggleControlsMenuItem = $("toggleControlsMenuItem");
+const searchToggleButton = $("searchToggleButton");
+const searchPanel = $("searchPanel");
+const searchCloseButton = $("searchCloseButton");
+const topbarFileName = $("topbarFileName");
 const zoomLabel = $("zoomLabel");
 const searchInput = $("searchInput");
 const searchButton = $("searchButton");
@@ -55,6 +72,48 @@ function clampScale(value) {
 }
 
 
+
+function closeMenus() {
+  sideMenu.classList.add("hidden");
+  moreMenu.classList.add("hidden");
+  menuBackdrop.classList.add("hidden");
+  sideMenu.setAttribute("aria-hidden", "true");
+  moreMenu.setAttribute("aria-hidden", "true");
+}
+
+function openSideMenu() {
+  closeMenus();
+  sideMenu.classList.remove("hidden");
+  menuBackdrop.classList.remove("hidden");
+  sideMenu.setAttribute("aria-hidden", "false");
+}
+
+function openMoreMenu() {
+  closeMenus();
+  moreMenu.classList.remove("hidden");
+  menuBackdrop.classList.remove("hidden");
+  moreMenu.setAttribute("aria-hidden", "false");
+}
+
+function setControlsVisible(visible) {
+  document.body.classList.toggle("controls-hidden", !visible);
+  toggleControlsMenuItem.textContent = visible ? "Bediening verbergen" : "Bediening tonen";
+}
+
+function toggleControls() {
+  setControlsVisible(document.body.classList.contains("controls-hidden"));
+}
+
+function openSearchPanel() {
+  setControlsVisible(true);
+  searchPanel.classList.remove("hidden");
+  window.setTimeout(() => searchInput.focus(), 0);
+}
+
+function closeSearchPanel() {
+  searchPanel.classList.add("hidden");
+}
+
 function fullscreenSupported() {
   return Boolean(
     document.documentElement.requestFullscreen ||
@@ -68,11 +127,10 @@ function nativeFullscreenActive() {
 
 function setFullscreenUi(active) {
   document.body.classList.toggle("fullscreen-reader", active);
-  fullscreenButton.textContent = active ? "⛶ Sluiten" : "⛶ Fullscreen";
-  fullscreenButton.setAttribute(
-    "aria-label",
-    active ? "Fullscreen sluiten" : "Fullscreen openen"
-  );
+  fullscreenButton.textContent = active ? "Fullscreen sluiten" : "Fullscreen";
+  fullscreenButtonTop.textContent = active ? "⛶" : "⛶";
+  fullscreenButton.setAttribute("aria-label", active ? "Fullscreen sluiten" : "Fullscreen openen");
+  fullscreenButtonTop.setAttribute("aria-label", active ? "Fullscreen sluiten" : "Fullscreen openen");
 }
 
 async function enterFullscreen() {
@@ -362,6 +420,7 @@ async function openPdf(file) {
   }
 
   fileName.textContent = file.name || "Onbekend bestand";
+  topbarFileName.textContent = file.name || "Onbekend bestand";
   pageCount.textContent = "…";
   emptyState.classList.add("hidden");
   reader.classList.remove("hidden");
@@ -540,6 +599,48 @@ searchPrevButton.addEventListener("click", async () => {
 });
 
 
+
+openMenuButton.addEventListener("click", openSideMenu);
+moreMenuButton.addEventListener("click", openMoreMenu);
+menuBackdrop.addEventListener("click", closeMenus);
+sideMenuCloseButton.addEventListener("click", closeMenus);
+
+openPdfMenuItem.addEventListener("click", () => {
+  closeMenus();
+  fileInput.click();
+});
+
+fitWidthMenuItem.addEventListener("click", async () => {
+  closeMenus();
+  if (!pdfDoc) return;
+  await renderPage(currentPage, await fitWidthScale(currentPage));
+});
+
+fitPageMenuItem.addEventListener("click", async () => {
+  closeMenus();
+  if (!pdfDoc) return;
+  await renderPage(currentPage, await fitPageScale(currentPage));
+});
+
+resetZoomMenuItem.addEventListener("click", async () => {
+  closeMenus();
+  if (!pdfDoc) return;
+  await renderPage(currentPage, 1);
+});
+
+toggleControlsMenuItem.addEventListener("click", () => {
+  closeMenus();
+  toggleControls();
+});
+
+searchToggleButton.addEventListener("click", () => {
+  if (searchPanel.classList.contains("hidden")) openSearchPanel();
+  else closeSearchPanel();
+});
+
+searchCloseButton.addEventListener("click", closeSearchPanel);
+
+fullscreenButtonTop.addEventListener("click", toggleFullscreen);
 fullscreenButton.addEventListener("click", toggleFullscreen);
 
 function syncFullscreenState() {
@@ -560,6 +661,109 @@ function syncFullscreenState() {
 document.addEventListener("fullscreenchange", syncFullscreenState);
 document.addEventListener("webkitfullscreenchange", syncFullscreenState);
 
+
+let gestureStartX = 0;
+let gestureStartY = 0;
+let gestureStartTime = 0;
+let gestureMoved = false;
+let pinchStartDistance = 0;
+let pinchStartScale = 1;
+let pinchActive = false;
+
+function selectionActive() {
+  const selection = window.getSelection?.();
+  return Boolean(selection && !selection.isCollapsed && String(selection).trim());
+}
+
+function touchDistance(t1, t2) {
+  return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+}
+
+pageStage.addEventListener("touchstart", event => {
+  if (!pdfDoc) return;
+
+  if (event.touches.length === 2) {
+    pinchActive = true;
+    pinchStartDistance = touchDistance(event.touches[0], event.touches[1]);
+    pinchStartScale = currentScale;
+    return;
+  }
+
+  if (event.touches.length !== 1) return;
+
+  pinchActive = false;
+  gestureMoved = false;
+  gestureStartX = event.touches[0].clientX;
+  gestureStartY = event.touches[0].clientY;
+  gestureStartTime = performance.now();
+}, { passive: true });
+
+pageStage.addEventListener("touchmove", event => {
+  if (!pdfDoc) return;
+
+  if (event.touches.length === 2 && pinchActive) {
+    const distance = touchDistance(event.touches[0], event.touches[1]);
+    if (pinchStartDistance > 0) {
+      const factor = distance / pinchStartDistance;
+      const previewScale = clampScale(pinchStartScale * factor);
+      zoomLabel.textContent = `${Math.round(previewScale * 100)}%`;
+    }
+    gestureMoved = true;
+    return;
+  }
+
+  if (event.touches.length !== 1) return;
+  const dx = event.touches[0].clientX - gestureStartX;
+  const dy = event.touches[0].clientY - gestureStartY;
+  if (Math.abs(dx) > 8 || Math.abs(dy) > 8) gestureMoved = true;
+}, { passive: true });
+
+pageStage.addEventListener("touchend", async event => {
+  if (!pdfDoc) return;
+
+  if (pinchActive) {
+    pinchActive = false;
+    if (event.changedTouches.length >= 1) {
+      // Use last preview estimate from label when possible.
+      const pct = parseInt(zoomLabel.textContent, 10);
+      if (Number.isFinite(pct)) {
+        await renderPage(currentPage, clampScale(pct / 100));
+      }
+    }
+    return;
+  }
+
+  if (!event.changedTouches.length) return;
+
+  const endX = event.changedTouches[0].clientX;
+  const endY = event.changedTouches[0].clientY;
+  const dx = endX - gestureStartX;
+  const dy = endY - gestureStartY;
+  const dt = performance.now() - gestureStartTime;
+
+  if (selectionActive()) return;
+
+  // Horizontal swipe only when page itself is not horizontally scrolled at an edge conflict.
+  const horizontal = Math.abs(dx) > Math.abs(dy) * 1.35;
+  const fastEnough = dt < 700;
+  const farEnough = Math.abs(dx) >= 70;
+
+  if (horizontal && fastEnough && farEnough) {
+    if (dx < 0 && currentPage < pdfDoc.numPages) {
+      await renderPage(currentPage + 1, currentScale);
+      return;
+    }
+    if (dx > 0 && currentPage > 1) {
+      await renderPage(currentPage - 1, currentScale);
+      return;
+    }
+  }
+
+  // Short tap in document area toggles controls.
+  const tap = dt < 280 && Math.abs(dx) < 12 && Math.abs(dy) < 12 && !gestureMoved;
+  if (tap) toggleControls();
+}, { passive: true });
+
 let resizeTimer = null;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
@@ -571,4 +775,4 @@ window.addEventListener("resize", () => {
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Fullscreen Reader geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Professional Reader UX geladen.`);

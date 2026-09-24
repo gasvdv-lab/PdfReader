@@ -169,3 +169,255 @@ body.fullscreen-reader #fullscreenButton::after{
     max-height:none;
   }
 }
+
+
+/* v0.2.2.1 — Professional Reader UX */
+
+.topbar{
+  min-height:56px;
+  padding:8px 10px;
+  gap:8px;
+}
+.topbar-left,.topbar-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.topbar-file{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  text-align:center;
+  color:#cbd5e1;
+  font-size:13px;
+  font-weight:600;
+}
+.brand-mini{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.logo.mini{
+  width:34px;
+  height:34px;
+  border-radius:9px;
+  font-size:12px;
+}
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  line-height:1.05;
+}
+.brand-text strong{
+  font-size:14px;
+}
+.brand-text span{
+  margin-top:3px;
+  color:#64748b;
+  font-size:10px;
+}
+.icon-button{
+  border:1px solid #334155;
+  background:#111827;
+  color:#e5e7eb;
+  border-radius:10px;
+  min-width:40px;
+  min-height:40px;
+  padding:7px 10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  cursor:pointer;
+}
+.icon-button.large{
+  min-width:46px;
+  min-height:42px;
+}
+.icon-button:disabled{
+  opacity:.35;
+  cursor:default;
+}
+
+.mobile-toolbar{
+  position:sticky;
+  top:56px;
+  z-index:22;
+  padding:6px;
+  border-radius:12px;
+  background:rgba(13,22,38,.96);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.compact-nav{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.page-jump.compact{
+  flex:none;
+}
+.page-jump.compact input{
+  width:58px;
+  min-height:40px;
+}
+.zoom-compact{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.zoom-compact #zoomLabel{
+  min-width:52px;
+  font-size:13px;
+}
+.search-panel{
+  margin-top:6px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto auto auto;
+  gap:6px;
+  align-items:center;
+}
+.search-panel input{
+  min-height:40px;
+  border:1px solid #334155;
+  border-radius:10px;
+  background:#0f172a;
+  color:#fff;
+  padding:8px 10px;
+}
+.search-panel>button{
+  min-height:40px;
+}
+.search-status{
+  grid-column:1/-1;
+  font-size:11px;
+  color:#94a3b8;
+  padding:0 2px;
+}
+
+.side-menu{
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:80;
+  width:min(300px,84vw);
+  height:100vh;
+  height:100dvh;
+  padding:14px;
+  background:#0b1220;
+  border-right:1px solid #26344a;
+  box-shadow:16px 0 40px rgba(0,0,0,.35);
+}
+.menu-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+.menu-item{
+  width:100%;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  border:0;
+  border-bottom:1px solid #1e293b;
+  background:transparent;
+  color:#e5e7eb;
+  padding:10px 8px;
+  font-weight:600;
+  text-align:left;
+}
+.menu-item:hover{
+  background:#111827;
+}
+.popover-menu{
+  position:fixed;
+  top:60px;
+  right:8px;
+  z-index:85;
+  width:220px;
+  padding:8px;
+  border:1px solid #334155;
+  border-radius:12px;
+  background:#0b1220;
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+}
+.menu-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  background:rgba(0,0,0,.35);
+}
+
+body.controls-hidden .mobile-toolbar,
+body.controls-hidden .reader-meta,
+body.controls-hidden .message-box,
+body.controls-hidden .reader-status{
+  display:none!important;
+}
+body.controls-hidden .canvas-wrap{
+  max-height:calc(100vh - 70px);
+}
+
+.canvas-wrap{
+  touch-action:pan-x pan-y;
+}
+.page-stage{
+  touch-action:pan-x pan-y;
+}
+
+@media(max-width:640px){
+  .brand-text{
+    display:none;
+  }
+  .topbar-file{
+    text-align:left;
+    font-size:12px;
+  }
+  .compact-nav{
+    gap:4px;
+  }
+  .zoom-compact{
+    gap:3px;
+  }
+  .icon-button{
+    min-width:38px;
+    min-height:38px;
+  }
+  .search-panel{
+    grid-template-columns:minmax(0,1fr) auto auto auto;
+  }
+  .search-panel #searchCloseButton{
+    grid-column:auto;
+  }
+  .mobile-toolbar{
+    top:56px;
+  }
+}
+
+/* Fullscreen harmonisation for new shell */
+body.fullscreen-reader .topbar{
+  display:flex!important;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  background:rgba(6,11,20,.88);
+  border-bottom:1px solid #1e293b;
+}
+body.fullscreen-reader .mobile-toolbar{
+  top:56px;
+}
+body.fullscreen-reader main{
+  padding-top:56px;
+}
+body.fullscreen-reader.controls-hidden .topbar{
+  display:none!important;
+}
+body.fullscreen-reader.controls-hidden main{
+  padding-top:0;
+}

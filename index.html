@@ -5,27 +5,59 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.2.2">
-  <title>PdfReader v0.2.2</title>
+  <link rel="stylesheet" href="styles.css?v=0.2.2.1">
+  <title>PdfReader v0.2.2.1</title>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <div class="logo">PDF</div>
-    <div>
-      <h1>PdfReader</h1>
-      <span class="version-badge">v0.2.2</span>
+<header class="topbar" id="topbar">
+  <div class="topbar-left">
+    <button id="openMenuButton" class="icon-button" type="button" aria-label="Bestand openen">☰</button>
+    <div class="brand-mini">
+      <div class="logo mini">PDF</div>
+      <div class="brand-text">
+        <strong>PdfReader</strong>
+        <span>v0.2.2.1</span>
+      </div>
     </div>
   </div>
-  <label class="open-button compact" for="fileInput">PDF openen</label>
-  <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
+
+  <div class="topbar-file" id="topbarFileName">Geen PDF geopend</div>
+
+  <div class="topbar-actions">
+    <button id="searchToggleButton" class="icon-button" type="button" aria-label="Zoeken">⌕</button>
+    <button id="fullscreenButtonTop" class="icon-button" type="button" aria-label="Fullscreen">⛶</button>
+    <button id="moreMenuButton" class="icon-button" type="button" aria-label="Meer opties">⋮</button>
+  </div>
+
+    <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
 </header>
 
 <main>
+
+<div id="sideMenu" class="side-menu hidden" aria-hidden="true">
+  <div class="menu-header">
+    <strong>Document</strong>
+    <button id="sideMenuCloseButton" class="icon-button" type="button">✕</button>
+  </div>
+  <button id="openPdfMenuItem" class="menu-item" type="button">PDF openen</button>
+  <button id="fitWidthMenuItem" class="menu-item" type="button">Passend op breedte</button>
+  <button id="fitPageMenuItem" class="menu-item" type="button">Passend op pagina</button>
+  <button id="resetZoomMenuItem" class="menu-item" type="button">Zoom 100%</button>
+</div>
+
+<div id="moreMenu" class="popover-menu hidden" aria-hidden="true">
+  <button id="fitWidthButton" class="menu-item" type="button">Breedte</button>
+  <button id="fitPageButton" class="menu-item" type="button">Pagina</button>
+  <button id="fullscreenButton" class="menu-item" type="button">Fullscreen</button>
+  <button id="toggleControlsMenuItem" class="menu-item" type="button">Bediening verbergen</button>
+</div>
+
+<div id="menuBackdrop" class="menu-backdrop hidden"></div>
+
 <section class="panel">
   <div class="intro-block">
-    <h2>Fullscreen Reader</h2>
-    <p>Deze versie voegt alleen een echte fullscreen leesmodus toe aan de bewezen reader.</p>
+    <h2>Professional Reader UX</h2>
+    <p>Compacte menu's, gestures en document-focus bovenop de bewezen reader.</p>
   </div>
 
   <div id="emptyState" class="empty-state">
@@ -34,32 +66,29 @@
   </div>
 
   <div id="reader" class="reader hidden">
-    <div class="mobile-toolbar">
-      <div class="toolbar-row">
-        <button id="prevButton" type="button" aria-label="Vorige pagina">←</button>
-        <div class="page-jump">
+    <div class="mobile-toolbar" id="readerControls">
+      <div class="compact-nav">
+        <button id="prevButton" class="icon-button large" type="button" aria-label="Vorige pagina">←</button>
+        <div class="page-jump compact">
           <input id="pageInput" type="number" min="1" value="1" aria-label="Paginanummer">
           <span>/ <strong id="navPageCount">0</strong></span>
         </div>
-        <button id="nextButton" type="button" aria-label="Volgende pagina">→</button>
+        <button id="nextButton" class="icon-button large" type="button" aria-label="Volgende pagina">→</button>
+        <div class="zoom-compact">
+          <button id="zoomOutButton" class="icon-button" type="button" aria-label="Uitzoomen">−</button>
+          <span id="zoomLabel">100%</span>
+          <button id="zoomInButton" class="icon-button" type="button" aria-label="Inzoomen">+</button>
+        </div>
       </div>
 
-      <div class="toolbar-row">
-        <button id="zoomOutButton" type="button" aria-label="Uitzoomen">−</button>
-        <span id="zoomLabel">100%</span>
-        <button id="zoomInButton" type="button" aria-label="Inzoomen">+</button>
-        <button id="fitWidthButton" type="button" class="wide-button">Breedte</button>
-        <button id="fitPageButton" type="button" class="wide-button">Pagina</button>
-        <button id="fullscreenButton" type="button" class="wide-button" aria-label="Fullscreen openen">⛶ Fullscreen</button>
-      </div>
-
-      <div class="search-row">
-        <input id="searchInput" type="search" placeholder="Zoek tekst..." autocomplete="off">
+      <div id="searchPanel" class="search-panel hidden">
+        <input id="searchInput" type="search" placeholder="Zoek in document..." autocomplete="off">
         <button id="searchButton" type="button">Zoek</button>
-        <button id="searchPrevButton" type="button" aria-label="Vorig zoekresultaat">↑</button>
-        <button id="searchNextButton" type="button" aria-label="Volgend zoekresultaat">↓</button>
+        <button id="searchPrevButton" class="icon-button" type="button" aria-label="Vorig zoekresultaat">↑</button>
+        <button id="searchNextButton" class="icon-button" type="button" aria-label="Volgend zoekresultaat">↓</button>
+        <button id="searchCloseButton" class="icon-button" type="button" aria-label="Zoeken sluiten">✕</button>
+        <div id="searchStatus" class="search-status">Geen zoekopdracht</div>
       </div>
-      <div id="searchStatus" class="search-status">Geen zoekopdracht</div>
     </div>
 
     <div class="reader-meta">
@@ -92,10 +121,10 @@
 </main>
 
 <footer>
-  <span>PdfReader v0.2.2</span>
+  <span>PdfReader v0.2.2.1</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
-<script type="module" src="app.js?v=0.2.2"></script>
+<script type="module" src="app.js?v=0.2.2.1"></script>
 </body>
 </html>
