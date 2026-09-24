@@ -1,102 +1,80 @@
-# pdfReader Roadmap
+# PdfReader Roadmap
 
-## Productvisie
-
-pdfReader moet meer zijn dan een klassieke PDF-viewer.
-
-De uiteindelijke productpijlers zijn:
-
-1. Lezen
-2. Bewerken
-3. Begrijpen
-4. Vergelijken
-5. Meten
+Live app:
+https://gasvdv-lab.github.io/PdfReader/
 
 ## v0.1.0 — Reader Foundation
+Status: afgerond
 
-Status: eerste release
+## v0.1.1 — Mobile Layout Fix
+Status: huidige release
 
-- PWA/webapp
-- Android + Windows
-- PDF lokaal openen
-- renderen
-- pagina navigatie
-- zoom
-- passend op breedte
-- GitHub Pages
+- compactere Android-layout
+- kleinere toolbar
+- dynamische canvas-hoogte
+- verbeterde fit-to-width
+- rotatie/responsive fix
+- correcte GitHub Pages-link
+- `.nojekyll`
 
 ## v0.2.0 — Complete Reader
-
 Gepland:
 
-- continue scroll
+- continue scrollmodus
 - thumbnails
 - tekst zoeken
-- tekst selecteren
+- tekstselectie
 - fit page / fit width
 - recente bestanden
-- keyboard- en touchverbeteringen
-- lokaal gebundelde PDF-engine
+- verbeterde touch-bediening
+- lokale PDF.js-bundeling
 
 ## v0.3.0 — Annotaties
-
 Gepland:
 
 - highlight
-- vrije pen
+- pen
 - tekstvak
 - notitie
-- lijn
-- rechthoek
-- cirkel
-- verwijderen
+- vormen
 - undo/redo
 
 ## v0.4.0 — Pagina-editor
-
 Gepland:
 
-- pagina draaien
-- pagina verwijderen
-- pagina dupliceren
-- pagina herschikken
-- lege pagina toevoegen
-- PDF samenvoegen
-- pagina's extraheren
+- draaien
+- verwijderen
+- dupliceren
+- herschikken
+- samenvoegen
+- extraheren
 
 ## v0.5.0 — Export Engine
-
 Gepland:
 
-- bewerkte PDF genereren
-- opslaan als nieuwe PDF
-- annotaties in export verwerken
+- gewijzigde PDF exporteren
+- annotaties verwerken
 
 ## v0.6.0 — Document Inspector
-
 Gepland:
 
-- tabellen detecteren
-- datums herkennen
-- bedragen herkennen
-- deadlines/referenties herkennen
-- revisies signaleren
-- gestructureerde documentinformatie
+- tabellen
+- bedragen
+- datums
+- deadlines
+- revisies
+- gestructureerde extractie
 
 ## v0.7.0 — Compare Mode
-
 Gepland:
 
-- twee PDF-versies openen
-- visuele vergelijking
-- toevoegingen/verwijderingen/wijzigingen markeren
+- twee PDF-versies vergelijken
+- verschillen markeren
 
 ## v0.8.0 — Plan Mode
-
 Gepland:
 
-- schaal kalibreren
-- afstand meten
-- oppervlakte meten
-- hoeken meten
-- meetresultaten beheren
+- schaal
+- afstand
+- oppervlakte
+- hoeken

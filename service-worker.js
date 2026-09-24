@@ -1,11 +1,12 @@
-const CACHE_NAME = "pdfreader-v0.1.0";
+const CACHE_NAME = "pdfreader-v0.1.1";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
-  "./icon.svg"
+  "./icon.svg",
+  "./.nojekyll"
 ];
 
 self.addEventListener("install", event => {

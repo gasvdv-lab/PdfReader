@@ -19,12 +19,14 @@ const zoomLabel = document.getElementById("zoomLabel");
 const fitWidth = document.getElementById("fitWidth");
 const canvasWrap = document.getElementById("canvasWrap");
 const status = document.getElementById("status");
+const fileName = document.getElementById("fileName");
 
 let pdfDoc = null;
 let currentPage = 1;
-let scale = 1.0;
+let scale = 1;
 let renderTask = null;
 let renderSerial = 0;
+let activeFileName = "";
 
 function setStatus(message) {
   status.textContent = message;
@@ -56,8 +58,8 @@ async function renderPage(pageNo) {
     if (serial !== renderSerial) return;
 
     const viewport = page.getViewport({ scale });
-
     const outputScale = Math.max(1, window.devicePixelRatio || 1);
+
     canvas.width = Math.floor(viewport.width * outputScale);
     canvas.height = Math.floor(viewport.height * outputScale);
     canvas.style.width = `${Math.floor(viewport.width)}px`;
@@ -96,6 +98,8 @@ async function openPdf(file) {
     return;
   }
 
+  activeFileName = file.name;
+  fileName.textContent = file.name;
   setStatus(`"${file.name}" openen…`);
 
   try {
@@ -104,15 +108,14 @@ async function openPdf(file) {
     pdfDoc = await loadingTask.promise;
 
     currentPage = 1;
-    scale = 1.0;
+    scale = 1;
 
     welcome.classList.add("hidden");
     reader.classList.remove("hidden");
 
-    await renderPage(1);
     await fitPageToWidth();
 
-    document.title = `${file.name} - pdfReader`;
+    document.title = `${file.name} - PdfReader`;
   } catch (err) {
     console.error(err);
     setStatus("De PDF kon niet worden geopend.");
@@ -124,7 +127,10 @@ async function fitPageToWidth() {
 
   const page = await pdfDoc.getPage(currentPage);
   const baseViewport = page.getViewport({ scale: 1 });
-  const availableWidth = Math.max(240, canvasWrap.clientWidth - 34);
+
+  const horizontalPadding = window.innerWidth <= 640 ? 18 : 30;
+  const availableWidth = Math.max(220, canvasWrap.clientWidth - horizontalPadding);
+
   scale = Math.min(3, Math.max(0.25, availableWidth / baseViewport.width));
   updateControls();
   await renderPage(currentPage);
@@ -165,7 +171,7 @@ zoomOut.addEventListener("click", () => {
 
 fitWidth.addEventListener("click", fitPageToWidth);
 
-window.addEventListener("keydown", (event) => {
+window.addEventListener("keydown", event => {
   if (!pdfDoc) return;
 
   if (event.key === "ArrowLeft" && currentPage > 1) {
@@ -177,6 +183,14 @@ window.addEventListener("keydown", (event) => {
   } else if (event.key === "-") {
     zoomOut.click();
   }
+});
+
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (pdfDoc) fitPageToWidth();
+  }, 180);
 });
 
 if ("serviceWorker" in navigator) {

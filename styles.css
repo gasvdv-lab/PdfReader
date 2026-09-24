@@ -2,77 +2,135 @@
 :root{
   font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   color:#e5e7eb;
-  background:#0b1220;
+  background:#08111f;
 }
-html,body{margin:0;min-height:100%;background:#0b1220}
+html,body{margin:0;min-height:100%;background:#08111f}
 body{min-height:100vh;display:flex;flex-direction:column}
 button,input{font:inherit}
 button{cursor:pointer}
+a{color:#93c5fd;text-decoration:none}
+a:hover{text-decoration:underline}
+
 .topbar{
-  position:sticky;top:0;z-index:10;
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:12px 16px;background:#111827;border-bottom:1px solid #263244;
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;
+  background:#0f172a;
+  border-bottom:1px solid #22304a;
 }
-.brand{display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-text{min-width:0}
 .logo{
-  width:44px;height:44px;border-radius:12px;background:#ef4444;
-  display:grid;place-items:center;font-weight:800;color:#fff;
+  width:42px;height:42px;border-radius:11px;background:#ef4444;
+  display:grid;place-items:center;font-weight:800;color:#fff;flex:0 0 auto;
 }
-h1{font-size:18px;margin:0}
-.brand p{font-size:12px;color:#94a3b8;margin:2px 0 0}
-main{width:min(1200px,100%);margin:0 auto;padding:16px;flex:1}
-.panel{background:#111827;border:1px solid #243044;border-radius:16px}
-.welcome{
-  min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:28px;
-}
-.welcome h2{margin:0 0 10px;font-size:clamp(24px,5vw,42px)}
-.welcome p{max-width:680px;color:#b6c2d2;line-height:1.55}
-.primary-button,.file-button{
+h1{font-size:18px;margin:0;line-height:1.1}
+.brand p{font-size:11px;color:#94a3b8;margin:3px 0 0}
+
+main{width:min(1200px,100%);margin:0 auto;padding:12px;flex:1}
+.panel{background:#111827;border:1px solid #26344a;border-radius:15px}
+
+.file-button,.primary-button{
   display:inline-flex;align-items:center;justify-content:center;
-  border:0;border-radius:12px;background:#2563eb;color:white;font-weight:700;
-  padding:12px 18px;cursor:pointer;text-decoration:none;
+  border:0;border-radius:11px;background:#2563eb;color:#fff;font-weight:700;
+  padding:10px 14px;cursor:pointer;text-decoration:none;white-space:nowrap;
 }
-.file-button{padding:10px 14px;white-space:nowrap}
-.feature-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:22px}
+.file-button:hover,.primary-button:hover{text-decoration:none;background:#1d4ed8}
+
+.welcome{
+  min-height:55vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:28px 18px;
+}
+.welcome h2{margin:0 0 10px;font-size:clamp(24px,5vw,40px)}
+.welcome p{max-width:680px;color:#b6c2d2;line-height:1.55}
+.feature-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
 .feature-row span{padding:7px 10px;border:1px solid #334155;border-radius:999px;color:#cbd5e1;font-size:13px}
-.reader{display:flex;flex-direction:column;gap:10px}
+
+.reader{display:flex;flex-direction:column;gap:8px}
 .hidden{display:none!important}
+
 .toolbar{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  padding:10px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:8px;flex-wrap:wrap;
 }
+.toolbar-group{display:flex;align-items:center;gap:7px}
 .toolbar button{
   border:1px solid #334155;background:#172033;color:#f8fafc;
-  min-height:40px;min-width:42px;border-radius:10px;padding:8px 12px;
+  height:38px;min-width:38px;border-radius:9px;padding:7px 10px;
 }
 .toolbar button:hover{background:#202c42}
-.page-control{display:flex;align-items:center;gap:8px}
+.toolbar button:disabled{opacity:.4;cursor:default}
+.page-control{display:flex;align-items:center;gap:6px}
 .page-control input{
-  width:68px;border:1px solid #334155;background:#0f172a;color:#fff;
-  border-radius:9px;padding:8px;text-align:center;
+  width:62px;height:38px;
+  border:1px solid #334155;background:#0f172a;color:#fff;
+  border-radius:9px;padding:7px;text-align:center;
 }
-.spacer{flex:1}
-#zoomLabel{min-width:56px;text-align:center;color:#cbd5e1}
-.status{font-size:13px;color:#94a3b8;padding:0 4px}
+#zoomLabel{min-width:48px;text-align:center;color:#cbd5e1;font-size:14px}
+.fit-button{min-width:80px!important}
+
+.reader-meta{
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:0 4px;
+}
+.status,.filename{font-size:12px;color:#94a3b8}
+.filename{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 .canvas-wrap{
-  width:100%;min-height:60vh;overflow:auto;
-  display:flex;justify-content:center;align-items:flex-start;
-  padding:16px;background:#1f2937;border-radius:16px;border:1px solid #334155;
+  width:100%;
+  overflow:auto;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:10px;
+  background:#182235;
+  border-radius:14px;
+  border:1px solid #2f3d55;
+  min-height:0;
 }
 #pdfCanvas{
-  display:block;max-width:none;background:white;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  display:block;
+  max-width:none;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.32);
 }
+
 footer{
   display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
-  padding:14px 16px;color:#64748b;font-size:12px;border-top:1px solid #1e293b;
+  padding:12px 14px;color:#64748b;font-size:12px;border-top:1px solid #1e293b;
 }
+
 @media(max-width:640px){
-  .topbar{align-items:flex-start}
+  .topbar{padding:9px 10px}
+  .logo{width:40px;height:40px}
+  h1{font-size:16px}
   .brand p{display:none}
-  main{padding:10px}
-  .toolbar{position:sticky;top:69px;z-index:8}
-  .spacer{display:none}
-  #fitWidth{flex:1}
-  .canvas-wrap{padding:8px;min-height:65vh}
+  .file-button{padding:10px 12px;font-size:14px}
+  main{padding:8px}
+  .toolbar{
+    position:sticky;top:59px;z-index:12;
+    border-radius:13px;
+    gap:6px;
+  }
+  .toolbar-group{gap:5px}
+  .nav-group,.zoom-group{width:100%}
+  .nav-group{justify-content:space-between}
+  .zoom-group{justify-content:space-between}
+  .toolbar button{height:36px;min-width:36px;padding:6px 9px}
+  .page-control input{height:36px;width:58px}
+  .fit-button{flex:1;min-width:0!important}
+  #zoomLabel{min-width:44px;font-size:13px}
+  .reader-meta{padding:0 2px}
+  .filename{display:none}
+  .canvas-wrap{
+    padding:6px;
+    border-radius:12px;
+  }
+}
+
+@media(max-width:390px){
+  .file-button{font-size:13px;padding:9px 10px}
+  .toolbar button{min-width:34px}
+  .page-control input{width:54px}
 }
