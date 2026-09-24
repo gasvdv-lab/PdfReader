@@ -1,21 +1,18 @@
-# PdfReader v0.2.0.1 — Testing
+# PdfReader v0.2.0.2 — Testing
 
 Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.0.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0.2
 
-## Eerste controle
-Bovenaan moet exact `v0.2.0.1` staan.
+## Kritieke test
 
-## PDF test
-1. Open een PDF met meerdere pagina's.
-2. Controleer dat pagina 1 zichtbaar wordt.
-3. Scroll naar pagina 2.
-4. Test vorige/volgende.
-5. Test thumbnails.
-6. Test zoeken.
-7. Test Breedte en Pagina.
+1. Controleer dat bovenaan v0.2.0.2 staat.
+2. Kies dezelfde PDF die in v0.2.0.1 niet opende.
+3. De reader moet direct zichtbaar worden.
+4. Pagina 1 moet eerst verschijnen.
+5. Scroll vervolgens naar pagina 2.
+6. Open daarna pas de thumbnails.
+7. Test Breedte, Pagina, zoom en zoeken.
 
-## Versiesynchronisatie
-Als de bestanden niet bij elkaar horen, toont de app voortaan expliciet:
-`Versiebestanden komen niet overeen`
-in plaats van stil vast te lopen.
+Als openen mislukt, moet onder de toolbar nu letterlijk staan:
+`PDF openen mislukt: ...`
+Stuur die tekst terug; er is dan geen stille fout meer.

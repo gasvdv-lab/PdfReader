@@ -11,7 +11,7 @@ Status: afgerond
 - versie-indicatie
 - cache/updatefix
 
-## v0.2.0.1 — Version Sync Repair
+## v0.2.0.2 — Progressive Rendering Repair
 Status: huidige release
 
 - continue scroll

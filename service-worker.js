@@ -1,4 +1,4 @@
-const CACHE_NAME = "pdfreader-v0.2.0.1.1";
+const CACHE_NAME = "pdfreader-v0.2.0.2";
 const STATIC_ASSETS = [
   "./styles.css",
   "./app.js",
@@ -31,9 +31,9 @@ async function networkFirst(request) {
   try {
     return await fetch(request, { cache: "no-store" });
   } catch {
-    const cached = await caches.match("./index.html");
+    const cached = await caches.match(request);
     if (cached) return cached;
-    throw new Error("Offline en geen gecachte pagina beschikbaar.");
+    return new Response("Offline", { status: 503 });
   }
 }
 
@@ -48,7 +48,7 @@ async function staleWhileRevalidate(request) {
     })
     .catch(() => null);
 
-  return cached || networkPromise;
+  return cached || networkPromise || new Response("", { status: 504 });
 }
 
 self.addEventListener("fetch", event => {

@@ -1,35 +1,36 @@
-# PdfReader v0.2.0.1 — Version Sync Repair
+# PdfReader v0.2.0.2 — Progressive Rendering Repair
 
 Live app:
 https://gasvdv-lab.github.io/PdfReader/
 
-## Waarom deze patch?
+## Oorzaak van het probleem in v0.2.0 / v0.2.0.1
 
-De repository bevatte bestanden uit verschillende versies:
-- app.js was v0.2.0
-- index.html was nog v0.1.2
+De reader probeerde na het kiezen van een PDF:
+1. alle pagina's volledig te renderen;
+2. daarna alle thumbnails te renderen;
+3. dit op de hoge devicePixelRatio van Android.
 
-Daardoor kon een PDF wel gekozen worden, maar de nieuwe JavaScript vond de vereiste v0.2.0-interface niet en kon niet renderen.
+Daardoor werd de eerste pagina niet onmiddellijk getoond en kon mobiel veel canvasgeheugen worden gebruikt.
 
-## Wat deze release doet
+Daarnaast bevatte v0.2.0.1:
+- fout cache-id `pdfreader-v0.2.0.1.1`;
+- een fout in `fitToWidth(false)`: de parameter werd feitelijk genegeerd.
 
-- alle bestanden horen bij exact dezelfde versie: v0.2.0.1
-- continue scroll
-- thumbnails
-- zoeken
-- fit width
-- fit page
-- cache/updatefix
-- extra startupcontrole op ontbrekende UI-elementen
+## Reparatie v0.2.0.2
 
-## BELANGRIJK BIJ UPLOAD
+- pagina 1 wordt als eerste gerenderd;
+- overige pagina's gebruiken lazy/progressive rendering;
+- alleen pagina's dicht bij het scherm worden gerenderd;
+- maximale render pixelratio is begrensd op 2;
+- thumbnails worden pas na de eerste pagina opgebouwd;
+- op Android pas wanneer de thumbnailbalk wordt geopend;
+- expliciete foutmelding met technische fouttekst;
+- Android-bestandstype `application/octet-stream` wordt geaccepteerd voor `.pdf`;
+- cache-id gecorrigeerd naar `pdfreader-v0.2.0.2`.
 
-Verwijder of vervang ALLE bestaande projectbestanden in de repository-root met de bestanden uit deze ZIP.
+## Upload
 
-Controleer daarna:
-- index.html bevat v0.2.0.1
-- app.js bevat APP_VERSION = "0.2.0.1"
-- service-worker.js bevat pdfreader-v0.2.0.1
+Vervang alle bestaande rootbestanden door de bestanden uit deze ZIP.
 
 Cache-vrije testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.0.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.0.2

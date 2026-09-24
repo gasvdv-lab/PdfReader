@@ -161,3 +161,8 @@ footer{
   .file-button{font-size:13px;padding:9px 10px}
   .page-control input{width:54px}
 }
+
+.page-loading{
+  position:absolute;inset:0;display:grid;place-items:center;
+  color:#64748b;background:#f8fafc;font-size:13px;
+}
