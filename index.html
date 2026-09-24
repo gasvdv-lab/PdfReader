@@ -1,57 +1,48 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0f172a">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.0.1.1">
-  <title>PdfReader v0.0.1.1</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css?v=0.0.2">
+<title>PdfReader v0.0.2</title>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">PDF</div>
-      <div>
-        <h1>PdfReader</h1>
-        <span class="version-badge">v0.0.1.1</span>
-      </div>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">PDF</div>
+    <div><h1>PdfReader</h1><span class="version-badge">v0.0.2</span></div>
+  </div>
+</header>
+<main>
+<section class="hero panel">
+  <h2>PDF.js Load Test</h2>
+  <p>Deze versie test uitsluitend of de PDF-engine betrouwbaar laadt op Android en Windows.</p>
 
-  <main>
-    <section class="hero panel">
-      <h2>Clean Reset Foundation</h2>
-      <p>Deze patch verwijdert resten van de oude PdfReader-service worker en browsercaches.</p>
+  <div class="status-card">
+    <div class="status-row"><span>Versie</span><strong>v0.0.2</strong></div>
+    <div class="status-row"><span>PDF.js</span><strong id="engineStatus">Laden…</strong></div>
+    <div class="status-row"><span>Engineversie</span><strong id="engineVersion">Onbekend</strong></div>
+    <div class="status-row"><span>PDF openen</span><strong>Nog niet actief</strong></div>
+    <div class="status-row"><span>Service worker</span><strong>Niet aanwezig</strong></div>
+  </div>
 
-      <div class="status-card">
-        <div class="status-row"><span>Versie</span><strong>v0.0.1.1</strong></div>
-        <div class="status-row"><span>PDF-engine</span><strong>Nog niet geladen</strong></div>
-        <div class="status-row"><span>Nieuwe service worker</span><strong>Niet aanwezig</strong></div>
-        <div class="status-row"><span>Oude service workers</span><strong id="swStatus">Controleren…</strong></div>
-        <div class="status-row"><span>Oude caches</span><strong id="cacheStatus">Controleren…</strong></div>
-      </div>
+  <div class="diagnostics">
+    <h3>Diagnostiek</h3>
+    <p id="loadMessage">PDF.js import starten…</p>
+    <p id="browserInfo"></p>
+  </div>
 
-      <div class="diagnostics">
-        <h3>Diagnostiek</h3>
-        <p id="browserInfo">Browserinformatie laden…</p>
-        <p id="screenInfo">Scherminformatie laden…</p>
-        <p id="timeInfo">Laadtijd controleren…</p>
-      </div>
+  <div id="resultBox" class="result-box">Engine wordt getest…</div>
 
-      <div id="resultBox" class="result-box">Reset uitvoeren…</div>
-
-      <div class="next-step">
-        <strong>Pas na groen resultaat:</strong> v0.0.2 — PDF.js Load Test
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <span>PdfReader v0.0.1.1</span>
-    <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
-  </footer>
-
-  <script src="app.js?v=0.0.1.1"></script>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.1.0 — Minimal PDF Open</div>
+</section>
+</main>
+<footer>
+  <span>PdfReader v0.0.2</span>
+  <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
+</footer>
+<script type="module" src="app.js?v=0.0.2"></script>
 </body>
 </html>

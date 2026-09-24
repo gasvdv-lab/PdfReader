@@ -1,16 +1,14 @@
-# PdfReader v0.0.1.1 — Testing
+# PdfReader v0.0.2 — Testing
 
-1. Upload alle bestanden naar de repository-root.
-2. Wacht tot GitHub Pages klaar is.
-3. Open:
-   https://gasvdv-lab.github.io/PdfReader/?v=0.0.1.1-cleanreset
-4. Controleer:
-   - v0.0.1.1 zichtbaar
-   - browserinformatie ingevuld
-   - scherminformatie ingevuld
-   - laadtijd ingevuld
-   - service-worker cleanup heeft resultaat
-   - cache cleanup heeft resultaat
-   - groene melding 'Schone basis actief'
+Cache-vrije testlink:
+https://gasvdv-lab.github.io/PdfReader/?v=0.0.2
 
-Pas als dit werkt, doorgaan naar v0.0.2.
+Controleer op Android en Windows:
+- v0.0.2 zichtbaar
+- PDF.js toont ✓ Geladen
+- Engineversie toont een versienummer
+- groene melding dat de PDF-engine werkt
+- PDF openen staat nog op 'Nog niet actief'
+- geen service worker
+
+Pas bij succes doorgaan naar v0.1.0.

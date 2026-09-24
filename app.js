@@ -1,49 +1,39 @@
-(() => {
-  "use strict";
+const APP_VERSION = "0.0.2";
 
-  const VERSION = "0.0.1.1";
-  const $ = id => document.getElementById(id);
+const engineStatus = document.getElementById("engineStatus");
+const engineVersion = document.getElementById("engineVersion");
+const loadMessage = document.getElementById("loadMessage");
+const browserInfo = document.getElementById("browserInfo");
+const resultBox = document.getElementById("resultBox");
 
-  $("browserInfo").textContent = `Browser: ${navigator.userAgent}`;
-  $("screenInfo").textContent = `Scherm: ${window.innerWidth} × ${window.innerHeight} CSS px · DPR ${window.devicePixelRatio || 1}`;
-  $("timeInfo").textContent = `PdfReader ${VERSION} geladen om ${new Date().toLocaleTimeString()}`;
+browserInfo.textContent = `Browser: ${navigator.userAgent}`;
 
-  async function cleanup() {
-    let removedWorkers = 0;
-    let removedCaches = 0;
+async function testPdfJs() {
+  try {
+    loadMessage.textContent = "PDF.js module importeren…";
 
-    try {
-      if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const reg of regs) {
-          if (await reg.unregister()) removedWorkers++;
-        }
-      }
-      $("swStatus").textContent = `${removedWorkers} verwijderd`;
-    } catch (err) {
-      $("swStatus").textContent = `Fout: ${err.message}`;
+    const pdfjsLib = await import(
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.min.mjs"
+    );
+
+    if (!pdfjsLib || typeof pdfjsLib.getDocument !== "function") {
+      throw new Error("PDF.js geladen, maar getDocument ontbreekt.");
     }
 
-    try {
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        for (const key of keys) {
-          if (key.toLowerCase().includes("pdfreader")) {
-            if (await caches.delete(key)) removedCaches++;
-          }
-        }
-      }
-      $("cacheStatus").textContent = `${removedCaches} verwijderd`;
-    } catch (err) {
-      $("cacheStatus").textContent = `Fout: ${err.message}`;
-    }
-
-    const result = $("resultBox");
-    result.textContent = "✓ Schone basis actief — oude PdfReader service workers en caches zijn opgeruimd.";
-    result.classList.add("ok");
-
-    console.info(`PdfReader ${VERSION}: cleanup voltooid`, {removedWorkers, removedCaches});
+    const version = pdfjsLib.version || "onbekend";
+    engineStatus.textContent = "✓ Geladen";
+    engineVersion.textContent = version;
+    loadMessage.textContent = `PDF.js succesvol geïmporteerd in PdfReader ${APP_VERSION}.`;
+    resultBox.textContent = "✓ PDF-engine werkt. Klaar voor v0.1.0 — Minimal PDF Open.";
+    resultBox.classList.add("ok");
+  } catch (error) {
+    console.error(error);
+    engineStatus.textContent = "✗ Mislukt";
+    engineVersion.textContent = "Niet beschikbaar";
+    loadMessage.textContent = `Fout: ${error?.message || error}`;
+    resultBox.textContent = "✗ PDF-engine kon niet worden geladen.";
+    resultBox.classList.add("error");
   }
+}
 
-  cleanup();
-})();
+testPdfJs();

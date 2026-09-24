@@ -1,15 +1,17 @@
 # PdfReader Roadmap
 
 ## v0.0.1 — Static Foundation
-HTML-reset bewezen.
+Geslaagd.
 
 ## v0.0.1.1 — Cache & Service Worker Cleanup
-Huidige herstelrelease. Oude v0.2.x browserstate volledig opruimen.
+Geslaagd.
 
 ## v0.0.2 — PDF.js Load Test
-Pas na succesvolle cleanup.
+Huidige release.
 
 ## v0.1.0 — Minimal PDF Open
+Volgende stap.
+
 ## v0.1.1 — Page Navigation
 ## v0.1.2 — Zoom & Fit
 ## v0.1.3 — Mobile Reader UX

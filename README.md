@@ -1,26 +1,22 @@
-# PdfReader v0.0.1.1 — Cache & Service Worker Cleanup
+# PdfReader v0.0.2 — PDF.js Load Test
 
 ## Doel
-Eén technisch concept: alle resten van de oude v0.2.x service-worker/cachearchitectuur verwijderen.
+Deze release bewijst exact één technisch concept:
+PDF.js kan betrouwbaar worden geladen via GitHub Pages op Android en Windows.
 
-## Waarom?
-v0.0.1 HTML stond correct live, maar de diagnostiek bleef op 'laden…'. Dat bewijst dat oude assets nog tussenkwamen.
+Nog niet aanwezig:
+- PDF kiezen
+- canvas
+- paginaweergave
+- navigatie
+- service worker
+- PWA-cache
 
-## Deze release
-- registreert GEEN nieuwe service worker
-- unregistert bestaande service workers voor deze origin
-- verwijdert caches waarvan de naam `pdfreader` bevat
-- gebruikt cache-busters op CSS en JS
-- toont daarna een groen resetresultaat
+Repository:
+https://github.com/gasvdv-lab/PdfReader
 
-## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.0.1.1-cleanreset
+Cache-vrije testlink:
+https://gasvdv-lab.github.io/PdfReader/?v=0.0.2
 
-## Verwacht
-- PdfReader v0.0.1.1
-- browserinfo ingevuld
-- scherminfo ingevuld
-- laadtijd ingevuld
-- Oude service workers: x verwijderd
-- Oude caches: x verwijderd
-- groene melding: Schone basis actief
+Vaste app-link:
+https://gasvdv-lab.github.io/PdfReader/
