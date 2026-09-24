@@ -11,8 +11,9 @@ v0.2.0 — Text Layer — geslaagd
 v0.2.1.1 — Search Stability Fix — geslaagd
 v0.2.2 — Fullscreen Reader — geslaagd
 v0.2.2.1 — Professional Reader UX — geslaagd
+v0.2.2.2 — Immersive Fullscreen UX — geslaagd
 
-## v0.2.2.2 — Immersive Fullscreen UX
+## v0.2.2.3 — True Fullscreen Viewport
 Huidige release.
 
 ## v0.2.3 — Thumbnails
@@ -21,7 +22,6 @@ Volgende stap.
 ## v0.2.4 — Continuous Scroll
 ## v0.2.5 — PWA Foundation
 ## v0.2.6 — Offline Engine
-
 ## v0.3.x — Annotaties
 ## v0.4.x — PDF Editing
 ## v0.5.x — Export Engine

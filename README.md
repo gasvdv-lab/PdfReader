@@ -1,29 +1,22 @@
-# PdfReader v0.2.2.2 — Immersive Fullscreen UX
+# PdfReader v0.2.2.3 — True Fullscreen Viewport
 
 ## Doel
-Fullscreen document-first maken: zo weinig mogelijk permanente interface, met één duidelijke toegang tot menu's.
+Fullscreen moet niet alleen technisch fullscreen zijn: de PDF-weergave moet de volledige viewport benutten.
 
 ## Nieuw
-- fullscreen verbergt alle gewone reader-controls
-- alleen de PDF blijft centraal zichtbaar
-- kleine floating `⋯`-handle blijft beschikbaar
-- tik op `⋯` opent een compacte fullscreen overlay
-- tik op de PDF opent/sluit dezelfde overlay
-- overlay bevat:
-  - vorige/volgende pagina
-  - huidige pagina / totaal
-  - zoom - / + / percentage
-  - zoeken
-  - passend op breedte
-  - passend op pagina
-  - zoom 100%
-  - fullscreen verlaten
-- swipe links/rechts blijft werken
-- pinch zoom blijft werken
-- tekstselectie blijft beschermd tegen pagina-swipe
+- fullscreen gebruikt exact 100vw × 100dvh
+- standaard fullscreenmodus = `Vul scherm`
+- extra fullscreenmodus `Vul scherm` in het overlaymenu
+- `Pagina` = volledige pagina zichtbaar
+- `Breedte` = volledige schermbreedte
+- `Vul scherm` = scherm volledig gevuld, met panning waar nodig
+- automatische herberekening bij schermrotatie
+- horizontaal en verticaal pannen bij ingezoomde/fill-weergave
+- swipe naar andere pagina alleen aan de horizontale rand van een gepande pagina
+- fullscreen blijft document-first met alleen de `⋯`-handle permanent zichtbaar
 
-## Behouden
-Alle bewezen functies uit v0.2.2.1.
+## Belangrijk
+Een A4-pagina en een smartphonescherm hebben verschillende beeldverhoudingen. `Vul scherm` gebruikt daarom een cover-schaal: het scherm is volledig gevuld, terwijl een deel van de pagina buiten de viewport kan vallen en via panning bereikbaar blijft.
 
 ## Nog niet
 - thumbnails
@@ -32,7 +25,7 @@ Alle bewezen functies uit v0.2.2.1.
 - PWA-cache
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.2
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.3
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

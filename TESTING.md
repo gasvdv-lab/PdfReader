@@ -1,37 +1,30 @@
-# PdfReader v0.2.2.2 — Testing
+# PdfReader v0.2.2.3 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.2
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.2.3
 
 ## Android
-1. Open een PDF.
+1. Open dezelfde A4-PDF.
 2. Activeer fullscreen.
-3. Controleer dat topbar, paginabalk, zoekbalk en statusregels verdwijnen.
-4. Alleen PDF + kleine `⋯`-handle mogen permanent zichtbaar blijven.
-5. Tik `⋯`.
-6. Controleer overlay:
-   - vorige/volgende
-   - pagina/totaal
-   - zoom -/+
-   - zoeken
-   - breedte
-   - pagina
-   - zoom 100%
-   - fullscreen verlaten
-7. Sluit overlay.
-8. Swipe links/rechts terwijl overlay dicht is.
-9. Pinch zoom.
-10. Tik kort op PDF → overlay opent.
-11. Tik buiten overlay → overlay sluit.
-12. Selecteer tekst en controleer dat swipe niet per ongeluk pagina wisselt.
-13. Test zoeken vanuit fullscreen overlay.
-14. Verlaat fullscreen.
-15. Controleer dat normale professionele UI correct terugkomt.
+3. Controleer dat de fullscreen-viewer exact het volledige scherm gebruikt.
+4. Standaard moet `Vul scherm` actief zijn.
+5. Controleer dat er geen grote ongebruikte zwarte helft meer is.
+6. Pan horizontaal/verticaal wanneer delen van de PDF buiten beeld vallen.
+7. Open `⋯`.
+8. Test `Pagina`.
+9. Test `Breedte`.
+10. Test `Vul scherm`.
+11. Draai portrait → landscape → portrait.
+12. Controleer dat de gekozen modus opnieuw correct wordt berekend.
+13. In `Vul scherm`: swipe horizontaal binnen een ingezoomde pagina moet eerst pannen.
+14. Pas aan de rand mag een duidelijke swipe naar vorige/volgende pagina navigeren.
+15. Test pinch zoom.
+16. Verlaat fullscreen en controleer dat normale UI correct terugkomt.
 
 ## Windows
-Herhaal fullscreen, overlaymenu, Esc, zoeken, zoom en navigatie.
+Herhaal de drie fullscreenmodi, fullscreen verlaten, resize van venster en navigatie.
 
 ## Acceptatie
-v0.2.2.2 is geslaagd wanneer fullscreen vrijwel alleen de PDF toont en alle functies toch bereikbaar blijven via één discrete menu-handle.
+v0.2.2.3 is geslaagd wanneer fullscreen werkelijk de volledige viewport gebruikt, `Vul scherm` het scherm visueel vult en panning/navigatie niet met elkaar botsen.
 
 Pas daarna doorgaan naar v0.2.3 — Thumbnails.

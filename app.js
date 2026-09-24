@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.2.2";
+const APP_VERSION = "0.2.2.3";
 
 const $ = id => document.getElementById(id);
 
@@ -59,6 +59,7 @@ const fsZoomLabel = $("fsZoomLabel");
 const fsSearchButton = $("fsSearchButton");
 const fsFitWidthButton = $("fsFitWidthButton");
 const fsFitPageButton = $("fsFitPageButton");
+const fsFillScreenButton = $("fsFillScreenButton");
 const fsResetZoomButton = $("fsResetZoomButton");
 const fsExitButton = $("fsExitButton");
 const zoomLabel = $("zoomLabel");
@@ -135,6 +136,64 @@ function closeSearchPanel() {
 
 let fullscreenControlsTimer = null;
 
+let fullscreenViewMode = "fill-screen";
+
+function setFullscreenViewMode(mode) {
+  fullscreenViewMode = mode;
+  document.body.classList.remove(
+    "fullscreen-mode-fit-page",
+    "fullscreen-mode-fit-width",
+    "fullscreen-mode-fill-screen"
+  );
+  document.body.classList.add(`fullscreen-mode-${mode}`);
+
+  [fsFitPageButton, fsFitWidthButton, fsFillScreenButton].forEach(btn => {
+    btn?.classList.remove("active-mode");
+  });
+
+  if (mode === "fit-page") fsFitPageButton?.classList.add("active-mode");
+  if (mode === "fit-width") fsFitWidthButton?.classList.add("active-mode");
+  if (mode === "fill-screen") fsFillScreenButton?.classList.add("active-mode");
+}
+
+async function fullscreenScaleForMode(mode, pageNumber) {
+  if (!pdfDoc) return currentScale;
+
+  const page = await pdfDoc.getPage(pageNumber);
+  const base = page.getViewport({ scale: 1 });
+
+  const vw = Math.max(1, window.innerWidth);
+  const vh = Math.max(1, window.innerHeight);
+
+  if (mode === "fit-page") {
+    return clampScale(Math.min(vw / base.width, vh / base.height));
+  }
+
+  if (mode === "fit-width") {
+    return clampScale(vw / base.width);
+  }
+
+  // fill-screen: cover entire viewport, allowing overflow/panning on one axis.
+  return clampScale(Math.max(vw / base.width, vh / base.height));
+}
+
+async function applyFullscreenViewMode(mode = fullscreenViewMode, { recenter = true } = {}) {
+  if (!pdfDoc || !document.body.classList.contains("fullscreen-reader")) return;
+
+  setFullscreenViewMode(mode);
+  const scale = await fullscreenScaleForMode(mode, currentPage);
+  await renderPage(currentPage, scale);
+
+  if (recenter) {
+    requestAnimationFrame(() => {
+      const maxX = Math.max(0, canvasWrap.scrollWidth - canvasWrap.clientWidth);
+      const maxY = Math.max(0, canvasWrap.scrollHeight - canvasWrap.clientHeight);
+      canvasWrap.scrollLeft = Math.round(maxX / 2);
+      canvasWrap.scrollTop = Math.round(maxY / 2);
+    });
+  }
+}
+
 function updateFullscreenOverlayUi() {
   if (!pdfDoc) return;
   fsCurrentPage.textContent = String(currentPage);
@@ -191,6 +250,7 @@ function enterImmersiveUi() {
   closeSearchPanel();
   closeFullscreenOverlay();
   showFullscreenHandle();
+  setFullscreenViewMode("fill-screen");
 }
 
 function leaveImmersiveUi() {
@@ -226,6 +286,7 @@ async function enterFullscreen() {
   // this remains as a safe browser fallback.
   setFullscreenUi(true);
   enterImmersiveUi();
+  fullscreenViewMode = "fill-screen";
 
   try {
     const root = document.documentElement;
@@ -242,7 +303,15 @@ async function enterFullscreen() {
   window.setTimeout(async () => {
     if (!pdfDoc) return;
     try {
+      if (document.body.classList.contains("fullscreen-reader")) {
+        await applyFullscreenViewMode(fullscreenViewMode);
+      } else {
+        if (document.body.classList.contains("fullscreen-reader")) {
+      await applyFullscreenViewMode(fullscreenViewMode);
+    } else {
       await renderPage(currentPage, await fitWidthScale(currentPage));
+    }
+      }
     } catch (error) {
       console.warn("Herfit na fullscreen mislukt.", error);
     }
@@ -266,7 +335,15 @@ async function exitFullscreen() {
   window.setTimeout(async () => {
     if (!pdfDoc) return;
     try {
+      if (document.body.classList.contains("fullscreen-reader")) {
+        await applyFullscreenViewMode(fullscreenViewMode);
+      } else {
+        if (document.body.classList.contains("fullscreen-reader")) {
+      await applyFullscreenViewMode(fullscreenViewMode);
+    } else {
       await renderPage(currentPage, await fitWidthScale(currentPage));
+    }
+      }
     } catch (error) {
       console.warn("Herfit na fullscreen afsluiten mislukt.", error);
     }
@@ -767,14 +844,21 @@ fsZoomInButton.addEventListener("click", async () => {
 
 fsFitWidthButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
-  await renderPage(currentPage, await fitWidthScale(currentPage));
+  await applyFullscreenViewMode("fit-width");
   updateFullscreenOverlayUi();
   closeFullscreenOverlay();
 });
 
 fsFitPageButton.addEventListener("click", async () => {
   if (!pdfDoc) return;
-  await renderPage(currentPage, await fitPageScale(currentPage));
+  await applyFullscreenViewMode("fit-page");
+  updateFullscreenOverlayUi();
+  closeFullscreenOverlay();
+});
+
+fsFillScreenButton.addEventListener("click", async () => {
+  if (!pdfDoc) return;
+  await applyFullscreenViewMode("fill-screen");
   updateFullscreenOverlayUi();
   closeFullscreenOverlay();
 });
@@ -807,7 +891,15 @@ function syncFullscreenState() {
     window.setTimeout(async () => {
       if (!pdfDoc) return;
       try {
-        await renderPage(currentPage, await fitWidthScale(currentPage));
+        if (document.body.classList.contains("fullscreen-reader")) {
+        await applyFullscreenViewMode(fullscreenViewMode);
+      } else {
+        if (document.body.classList.contains("fullscreen-reader")) {
+      await applyFullscreenViewMode(fullscreenViewMode);
+    } else {
+      await renderPage(currentPage, await fitWidthScale(currentPage));
+    }
+      }
       } catch (error) {
         console.warn("Herfit na extern fullscreen-einde mislukt.", error);
       }
@@ -906,13 +998,33 @@ pageStage.addEventListener("touchend", async event => {
   const farEnough = Math.abs(dx) >= 70;
 
   if (horizontal && fastEnough && farEnough) {
-    if (dx < 0 && currentPage < pdfDoc.numPages) {
-      await renderPage(currentPage + 1, currentScale);
-      return;
+    const maxScrollX = Math.max(0, canvasWrap.scrollWidth - canvasWrap.clientWidth);
+    const atLeftEdge = canvasWrap.scrollLeft <= 2;
+    const atRightEdge = canvasWrap.scrollLeft >= maxScrollX - 2;
+    const hasHorizontalPan = maxScrollX > 4;
+
+    // When zoomed/fill-screen, horizontal swipes first belong to panning.
+    // Page navigation is only allowed once the user reaches the relevant edge.
+    if (dx < 0) {
+      if (hasHorizontalPan && !atRightEdge) return;
+      if (currentPage < pdfDoc.numPages) {
+        await renderPage(currentPage + 1, currentScale);
+        if (document.body.classList.contains("fullscreen-reader")) {
+          await applyFullscreenViewMode(fullscreenViewMode);
+        }
+        return;
+      }
     }
-    if (dx > 0 && currentPage > 1) {
-      await renderPage(currentPage - 1, currentScale);
-      return;
+
+    if (dx > 0) {
+      if (hasHorizontalPan && !atLeftEdge) return;
+      if (currentPage > 1) {
+        await renderPage(currentPage - 1, currentScale);
+        if (document.body.classList.contains("fullscreen-reader")) {
+          await applyFullscreenViewMode(fullscreenViewMode);
+        }
+        return;
+      }
     }
   }
 
@@ -931,15 +1043,33 @@ pageStage.addEventListener("touchend", async event => {
   }
 }, { passive: true });
 
+
+window.addEventListener("orientationchange", () => {
+  window.setTimeout(async () => {
+    if (!pdfDoc) return;
+    try {
+      if (document.body.classList.contains("fullscreen-reader")) {
+        await applyFullscreenViewMode(fullscreenViewMode);
+      }
+    } catch (error) {
+      console.warn("Fullscreen herberekenen na rotatie mislukt.", error);
+    }
+  }, 220);
+});
+
 let resizeTimer = null;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(async () => {
     if (!pdfDoc) return;
-    await renderPage(currentPage, await fitWidthScale(currentPage));
+    if (document.body.classList.contains("fullscreen-reader")) {
+      await applyFullscreenViewMode(fullscreenViewMode);
+    } else {
+      await renderPage(currentPage, await fitWidthScale(currentPage));
+    }
   }, 180);
 });
 
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Immersive Fullscreen UX geladen.`);
+console.info(`PdfReader ${APP_VERSION} — True Fullscreen Viewport geladen.`);
