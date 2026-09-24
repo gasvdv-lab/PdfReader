@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.4.1";
+const APP_VERSION = "0.2.5";
 
 const $ = id => document.getElementById(id);
 
@@ -56,6 +56,9 @@ const continuousScrollMenuItem = $("continuousScrollMenuItem");
 const fsContinuousScrollButton = $("fsContinuousScrollButton");
 const continuousViewer = $("continuousViewer");
 const continuousPages = $("continuousPages");
+
+const installAppMenuItem = $("installAppMenuItem");
+const installStatus = $("installStatus");
 
 const fullscreenHandle = $("fullscreenHandle");
 const fullscreenHandleButton = $("fullscreenHandleButton");
@@ -165,6 +168,8 @@ let continuousPageObserver = null;
 let continuousRendered = new Set();
 let continuousRendering = new Set();
 let continuousVisibilityRatios = new Map();
+
+let deferredInstallPrompt = null;
 
 function setFullscreenViewMode(mode) {
   fullscreenViewMode = mode;
@@ -736,6 +741,66 @@ async function toggleContinuousScroll() {
 
   closeMenus();
   closeFullscreenOverlay();
+}
+
+
+function isStandaloneMode() {
+  return window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.navigator.standalone === true;
+}
+
+function setInstallStatus(message = "", visible = false) {
+  if (!installStatus) return;
+  installStatus.textContent = message;
+  installStatus.classList.toggle("hidden", !visible || !message);
+}
+
+function refreshInstallUi() {
+  if (!installAppMenuItem) return;
+
+  if (isStandaloneMode()) {
+    installAppMenuItem.classList.add("hidden");
+    setInstallStatus("PdfReader draait als geïnstalleerde app.", false);
+    return;
+  }
+
+  installAppMenuItem.classList.toggle("hidden", !deferredInstallPrompt);
+}
+
+async function installPwa() {
+  if (isStandaloneMode()) {
+    closeMenus();
+    return;
+  }
+
+  if (!deferredInstallPrompt) {
+    setInstallStatus(
+      "Installatie is niet rechtstreeks beschikbaar. Gebruik in Chrome/Edge het browsermenu en kies 'App installeren' of 'Toevoegen aan startscherm'.",
+      true
+    );
+    closeMenus();
+    return;
+  }
+
+  const promptEvent = deferredInstallPrompt;
+  deferredInstallPrompt = null;
+  refreshInstallUi();
+
+  try {
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+
+    if (choice?.outcome === "accepted") {
+      setInstallStatus("Installatie gestart.", true);
+    } else {
+      setInstallStatus("Installatie geannuleerd.", true);
+    }
+  } catch (error) {
+    console.warn("PWA installatieprompt kon niet worden geopend.", error);
+    setInstallStatus("Installatieprompt kon niet worden geopend.", true);
+  }
+
+  closeMenus();
 }
 
 function fullscreenSupported() {
@@ -1327,6 +1392,20 @@ fullscreenButtonTop.addEventListener("click", toggleFullscreen);
 
 thumbnailsMenuItem.addEventListener("click", openThumbnailDrawer);
 continuousScrollMenuItem.addEventListener("click", toggleContinuousScroll);
+
+installAppMenuItem.addEventListener("click", installPwa);
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  refreshInstallUi();
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  refreshInstallUi();
+  setInstallStatus("PdfReader is geïnstalleerd.", true);
+});
 fsContinuousScrollButton.addEventListener("click", toggleContinuousScroll);
 fsThumbnailsButton.addEventListener("click", openThumbnailDrawer);
 thumbnailDrawerClose.addEventListener("click", closeThumbnailDrawer);
@@ -1595,6 +1674,7 @@ window.addEventListener("resize", () => {
   }, 180);
 });
 
+refreshInstallUi();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Reader Stability Fix geladen.`);
+console.info(`PdfReader ${APP_VERSION} — PWA Foundation geladen.`);

@@ -1,31 +1,33 @@
-# PdfReader v0.2.4.1 — Testing
+# PdfReader v0.2.5 — Testing
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.4.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.5
 
-## Kritieke Android-test
-1. Open een PDF met meerdere pagina's.
-2. Test single-page vorige/volgende.
-3. Open `Doorlopend scrollen`.
-4. Controleer dat de pagina's werkelijk zichtbaar zijn en onder elkaar staan.
-5. Scroll over meerdere pagina's en controleer het actieve paginanummer.
-6. Gebruik vorige/volgende terwijl continuous mode actief is.
-7. Kies een pagina via thumbnails; continuous mode moet behouden blijven.
-8. Zoek naar tekst op een andere pagina; de viewer moet naar die pagina scrollen.
-9. Schakel terug naar `Single page weergave`.
-10. Test tekstselectie en zoeken opnieuw.
-11. Activeer fullscreen in single-page mode; standaard moet `Pagina` gelden.
-12. Open `⋯` > Zoeken; het zoekpaneel moet zichtbaar zijn in fullscreen.
-13. Verlaat fullscreen.
-14. Activeer continuous mode en daarna fullscreen.
-15. Continuous mode moet zichtbaar blijven en scrollbaar zijn.
-16. Draai portrait ↔ landscape.
-17. Open daarna een andere PDF; deze moet schoon in single-page mode starten.
+## Android / Chrome
+1. Upload alle bestanden uit de ZIP naar de GitHub repo-root.
+2. Open de cache-vrije testlink.
+3. Controleer dat PdfReader normaal opent.
+4. Open een PDF en test single-page, thumbnails, continuous scroll en fullscreen.
+5. Open Chrome-menu.
+6. Controleer of `App installeren` of `Toevoegen aan startscherm` beschikbaar is.
+7. Als het menu-item `App installeren` in PdfReader verschijnt, test dit.
+8. Installeer de app.
+9. Start PdfReader vanaf het Android-startscherm.
+10. Controleer dat de app als standalone venster opent.
+11. Controleer dat er geen oude offline/cacheversie wordt geladen.
+12. Verwijder de geïnstalleerde testapp desgewenst na validatie.
 
-## Windows
-Herhaal dezelfde flow in Chrome of Edge en test ook native fullscreen met Esc.
+## Windows / Chrome of Edge
+1. Open dezelfde Pages-link.
+2. Controleer of de browser installatie aanbiedt.
+3. Installeer PdfReader.
+4. Start via Startmenu/appvenster.
+5. Controleer standalone gedrag en alle readerfuncties.
+
+## Kritieke controle
+Deze release bevat bewust GEEN service worker. Als de browser offline wordt gezet, hoeft de app dus nog niet te laden.
 
 ## Acceptatie
-Deze patch is geslaagd als single-page, thumbnails, continuous scroll, zoeken en fullscreen zonder verborgen viewer, verkeerde navigatie of mode-conflicten samenwerken.
+v0.2.5 is geslaagd wanneer Android en Windows de app correct als web-app kunnen installeren/aan startscherm toevoegen en alle readerfuncties online ongewijzigd blijven werken.
 
-Ga pas daarna door naar v0.2.5 — PWA Foundation.
+Pas daarna v0.2.6 — Offline Engine.

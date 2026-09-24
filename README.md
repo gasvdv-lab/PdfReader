@@ -1,28 +1,28 @@
-# PdfReader v0.2.4.1 — Reader Stability Fix
+# PdfReader v0.2.5 — PWA Foundation
 
-## Waarom deze patch
-v0.2.4 bevatte meerdere interactiefouten die door losse eerdere patches waren ontstaan.
+## Doel
+PdfReader install-ready maken op Android en Windows zonder opnieuw vroegtijdig caching of een service worker in te voeren.
 
-## Belangrijkste fixes
-- `continuousViewer` staat nu correct naast `canvasWrap` in plaats van erin
-- continuous scroll wordt daardoor niet meer samen met de single-page viewer verborgen
-- normale vorige/volgende/directe paginanavigatie respecteert continuous mode
-- thumbnails navigeren correct binnen continuous mode
-- een nieuwe PDF start altijd schoon in single-page mode
-- fullscreen behoudt continuous mode zonder verborgen single-page renders
-- dubbele/geneste fullscreen-herberekeningslogica verwijderd
-- fullscreen zoeken is nu zichtbaar en bruikbaar
-- zoekresultaten in continuous mode proberen niet meer de verkeerde tekstlaag te scrollen
-- zoom/fit schakelt voorspelbaar terug naar single-page mode
-- continuous pages krijgen per pagina een correcte breedteschaal
-- actieve pagina-detectie gebruikt blijvende intersection-ratio's en is stabieler
-- resize en schermrotatie gebruiken één centrale herberekeningsroute
+## Nieuw
+- `manifest.webmanifest`
+- standalone app-modus
+- app-naam, theme color en start URL
+- 192×192 en 512×512 PNG-iconen
+- Android/Windows installatie-metadata
+- `beforeinstallprompt` ondersteuning waar de browser dit aanbiedt
+- menu-item `App installeren` verschijnt alleen wanneer een install prompt beschikbaar is
+- fallbacktekst wanneer handmatige installatie via het browsermenu nodig is
 
-## Bewust nog niet
-Continuous scroll heeft nog geen eigen selecteerbare tekstlaag. Tekstselectie/highlighting blijft in deze release een single-page functie.
+## Bewust nog NIET toegevoegd
+- geen service worker
+- geen offline cache
+- geen PDF.js precache
+- geen background sync
+
+Dit komt pas in v0.2.6 — Offline Engine, na fysieke validatie van deze PWA-basis.
 
 ## Cache-vrije testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.4.1
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.5
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

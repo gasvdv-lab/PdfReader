@@ -3,10 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="application-name" content="PdfReader">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PdfReader">
+  <link rel="manifest" href="manifest.webmanifest?v=0.2.5">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.5">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.2.5">
+
   <meta name="theme-color" content="#0f172a">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.2.4.1">
-  <title>PdfReader v0.2.4.1</title>
+  <link rel="stylesheet" href="styles.css?v=0.2.5">
+  <title>PdfReader v0.2.5</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -16,7 +26,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.2.4.1</span>
+        <span>v0.2.5</span>
       </div>
     </div>
   </div>
@@ -42,6 +52,7 @@
   <button id="openPdfMenuItem" class="menu-item" type="button">PDF openen</button>
   <button id="thumbnailsMenuItem" class="menu-item" type="button">Paginaminiaturen</button>
   <button id="continuousScrollMenuItem" class="menu-item" type="button">Doorlopend scrollen</button>
+  <button id="installAppMenuItem" class="menu-item hidden" type="button">App installeren</button>
   <button id="fitWidthMenuItem" class="menu-item" type="button">Passend op breedte</button>
   <button id="fitPageMenuItem" class="menu-item" type="button">Passend op pagina</button>
   <button id="resetZoomMenuItem" class="menu-item" type="button">Zoom 100%</button>
@@ -58,8 +69,8 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Reader Stability Fix</h2>
-    <p>Stabiliteitspatch voor continuous scroll, thumbnails, zoeken en fullscreen-interacties.</p>
+    <h2>PWA Foundation</h2>
+    <p>Deze versie maakt de app install-ready op Android en Windows zonder offline cache of service worker.</p>
   </div>
 
   <div id="emptyState" class="empty-state">
@@ -98,7 +109,8 @@
       <span id="pageLabel">Pagina 1</span>
     </div>
 
-    <div id="messageBox" class="message-box">PDF gereed.</div>
+    <div id="installStatus" class="install-status hidden" role="status"></div>
+<div id="messageBox" class="message-box">PDF gereed.</div>
 
     <div id="canvasWrap" class="canvas-wrap">
       <div id="pageStage" class="page-stage">
@@ -127,7 +139,7 @@
 </main>
 
 <footer>
-  <span>PdfReader v0.2.4.1</span>
+  <span>PdfReader v0.2.5</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -186,6 +198,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.2.4.1"></script>
+<script type="module" src="app.js?v=0.2.5"></script>
 </body>
 </html>
