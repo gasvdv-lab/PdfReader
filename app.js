@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.6";
+const APP_VERSION = "0.3.0";
 
 const $ = id => document.getElementById(id);
 
@@ -56,6 +56,10 @@ const continuousScrollMenuItem = $("continuousScrollMenuItem");
 const fsContinuousScrollButton = $("fsContinuousScrollButton");
 const continuousViewer = $("continuousViewer");
 const continuousPages = $("continuousPages");
+const annotationLayer = $("annotationLayer");
+const annotationModeMenuItem = $("annotationModeMenuItem");
+const fsAnnotationModeButton = $("fsAnnotationModeButton");
+const annotationStatusChip = $("annotationStatusChip");
 
 const installAppMenuItem = $("installAppMenuItem");
 const installStatus = $("installStatus");
@@ -732,6 +736,7 @@ async function jumpToContinuousPage(pageNumber, { smooth = true } = {}) {
 
 async function enableContinuousScroll() {
   if (!pdfDoc || continuousScrollEnabled) return;
+  if (annotationModeEnabled) setAnnotationMode(false);
   setContinuousScrollEnabled(true);
   await buildContinuousPages();
 }
@@ -918,6 +923,10 @@ async function installPwa() {
 
 
 let offlineEngineReady = false;
+let annotationModeEnabled = false;
+let annotationIdCounter = 1;
+const annotationsByPage = new Map();
+let selectedAnnotationId = null;
 
 function updateOfflineUi() {
   if (!diagOffline) return;
@@ -944,7 +953,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.2.6",
+      "./service-worker.js?v=0.3.0",
       {
         scope: "./",
         updateViaCache: "none"
@@ -986,6 +995,72 @@ window.addEventListener("offline", () => {
 });
 
 syncOnlineState();
+
+
+function annotationPageList(pageNumber = currentPage) {
+  if (!annotationsByPage.has(pageNumber)) annotationsByPage.set(pageNumber, []);
+  return annotationsByPage.get(pageNumber);
+}
+function nextAnnotationId() { return `ann-${Date.now()}-${annotationIdCounter++}`; }
+function setAnnotationMode(enabled) {
+  annotationModeEnabled = Boolean(enabled);
+  document.body.classList.toggle("annotation-mode", annotationModeEnabled);
+  annotationLayer.classList.toggle("annotation-layer-active", annotationModeEnabled);
+  annotationStatusChip?.classList.toggle("hidden", !annotationModeEnabled);
+  annotationModeMenuItem.textContent = annotationModeEnabled ? "Annotatiemodus uitschakelen" : "Annotatiemodus";
+  if (fsAnnotationModeButton) fsAnnotationModeButton.textContent = annotationModeEnabled ? "Annotatiemodus uitschakelen" : "Annotatiemodus";
+  if (!annotationModeEnabled) { selectedAnnotationId = null; renderAnnotationsForCurrentPage(); }
+}
+function toggleAnnotationMode() {
+  if (!pdfDoc) return;
+  if (continuousScrollEnabled) {
+    setInstallStatus("Annotaties werken in v0.3.0 voorlopig in single-page weergave.", true);
+    return;
+  }
+  setAnnotationMode(!annotationModeEnabled);
+  closeMenus(); closeFullscreenOverlay();
+}
+function normalizePoint(clientX, clientY) {
+  const rect = pageStage.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+  const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+  return { x: rect.width > 0 ? x / rect.width : 0, y: rect.height > 0 ? y / rect.height : 0 };
+}
+function createFoundationAnnotation(point) {
+  const annotation = { id: nextAnnotationId(), type: "foundation-point", page: currentPage, x: point.x, y: point.y, createdAt: new Date().toISOString() };
+  annotationPageList(currentPage).push(annotation); selectedAnnotationId = annotation.id; renderAnnotationsForCurrentPage(); return annotation;
+}
+function deleteSelectedAnnotation() {
+  if (!selectedAnnotationId) return;
+  const list = annotationPageList(currentPage); const index = list.findIndex(item => item.id === selectedAnnotationId);
+  if (index >= 0) list.splice(index, 1);
+  selectedAnnotationId = null; renderAnnotationsForCurrentPage();
+}
+function renderAnnotationsForCurrentPage() {
+  if (!annotationLayer) return;
+  annotationLayer.replaceChildren();
+  const list = annotationsByPage.get(currentPage) || [];
+  for (const annotation of list) {
+    const item = document.createElement("button"); item.type="button"; item.className="annotation-object annotation-foundation-point"; item.dataset.annotationId=annotation.id; item.setAttribute("aria-label", `Annotatie ${annotation.id}`); item.style.left=`${annotation.x*100}%`; item.style.top=`${annotation.y*100}%`;
+    if (annotation.id === selectedAnnotationId) item.classList.add("selected");
+    item.addEventListener("click", event => { event.stopPropagation(); if (!annotationModeEnabled) return; selectedAnnotationId=annotation.id; renderAnnotationsForCurrentPage(); });
+    annotationLayer.appendChild(item);
+  }
+  annotationLayer.classList.toggle("has-annotations", list.length>0);
+}
+function resetAnnotationDocumentState() {
+  annotationsByPage.clear(); selectedAnnotationId=null; annotationIdCounter=1; setAnnotationMode(false); renderAnnotationsForCurrentPage();
+}
+annotationLayer.addEventListener("click", event => {
+  if (!annotationModeEnabled || !pdfDoc || continuousScrollEnabled) return;
+  if (event.target.closest(".annotation-object")) return;
+  createFoundationAnnotation(normalizePoint(event.clientX,event.clientY));
+});
+window.addEventListener("keydown", event => {
+  if (!annotationModeEnabled) return;
+  if ((event.key === "Delete" || event.key === "Backspace") && selectedAnnotationId) { event.preventDefault(); deleteSelectedAnnotation(); }
+  if (event.key === "Escape") { selectedAnnotationId=null; renderAnnotationsForCurrentPage(); }
+});
 
 function fullscreenSupported() {
   return Boolean(
@@ -1110,6 +1185,7 @@ function updateUi() {
   zoomStatus.textContent = ready ? `${pct}%` : "—";
   if (ready) updateFullscreenOverlayUi();
   if (ready) updateActiveThumbnail();
+  if (ready) renderAnnotationsForCurrentPage();
 }
 
 async function loadPdfJs() {
@@ -1332,6 +1408,7 @@ async function openPdf(file) {
     currentPage = 1;
     currentScale = 1;
     pageTextCache.clear();
+    resetAnnotationDocumentState();
     resetThumbnails();
     setContinuousScrollEnabled(false);
     resetContinuousScroll();
@@ -1576,6 +1653,8 @@ fullscreenButtonTop.addEventListener("click", toggleFullscreen);
 
 thumbnailsMenuItem.addEventListener("click", openThumbnailDrawer);
 continuousScrollMenuItem.addEventListener("click", toggleContinuousScroll);
+annotationModeMenuItem.addEventListener("click", toggleAnnotationMode);
+if (fsAnnotationModeButton) fsAnnotationModeButton.addEventListener("click", toggleAnnotationMode);
 
 installAppMenuItem.addEventListener("click", installPwa);
 installPanelClose.addEventListener("click", closeInstallPanel);
@@ -1879,4 +1958,4 @@ await registerOfflineEngine();
 void updateInstallDiagnostics();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Offline Engine geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Annotation Foundation geladen.`);

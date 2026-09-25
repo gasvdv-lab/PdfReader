@@ -1,32 +1,24 @@
-# PdfReader v0.2.6 — Testing
+# PdfReader v0.3.0 — Testing
 
 ## Testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.6
+https://gasvdv-lab.github.io/PdfReader/?v=0.3.0
 
-## Eerste online test
-1. Upload alle bestanden naar de repository-root.
-2. Open de testlink online.
-3. Controleer dat v0.2.6 zichtbaar is.
-4. Open ☰ → App installeren → Installatiediagnose.
-5. `Offline engine` moet `KLAAR` tonen.
-6. Open een PDF en test reader, zoeken, thumbnails, continuous scroll en fullscreen.
+## Android
+1. Open een PDF.
+2. ☰ → Annotatiemodus.
+3. Tik op drie plaatsen: drie blauwe foundation points.
+4. Selecteer een point: gele outline.
+5. Zoom, fit pagina/breedte, fullscreen en roteer.
+6. Points moeten op dezelfde PDF-posities blijven.
+7. Plaats een point op pagina 2 en ga terug naar pagina 1.
+8. Activeer continuous scroll: annotatiemodus moet uitschakelen.
+9. Open een tweede PDF: oude annotaties mogen niet meegaan.
 
-## Echte offline test
-1. Sluit PdfReader volledig.
-2. Zet wifi én mobiele data uit.
-3. Open PdfReader opnieuw.
-4. De app-shell moet laden.
-5. Kies een lokale PDF.
-6. De PDF moet renderen.
-7. Test pagina's, zoom en fullscreen.
+## Windows
+Herhaal en test Delete/Backspace voor geselecteerde point en Escape voor deselectie.
 
-## Update-test
-1. Zet internet opnieuw aan.
-2. Herlaad v0.2.6.
-3. Er mag geen terugval naar v0.2.5.x optreden.
-4. Alleen caches met prefix `pdfreader-` mogen beheerd worden.
+## Offline regressietest
+Na online initialisatie moet de app offline blijven starten zoals v0.2.6.
 
 ## Acceptatie
-v0.2.6 is geslaagd wanneer de app na één online initialisatie offline kan starten en een lokale PDF kan openen/renderen.
-
-Pas daarna v0.3.0 — Annotation Foundation.
+v0.3.0 is geslaagd wanneer annotaties per pagina correct blijven zitten bij zoom, fullscreen, rotatie en rerender.

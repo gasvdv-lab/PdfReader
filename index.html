@@ -9,12 +9,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.2.6">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.6">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.2.6">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.0">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.0">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.0">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.2.6">
-  <title>PdfReader v0.2.6</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.0">
+  <title>PdfReader v0.3.0</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -24,7 +24,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.2.6</span>
+        <span>v0.3.0</span>
       </div>
     </div>
   </div>
@@ -50,6 +50,7 @@
   <button id="openPdfMenuItem" class="menu-item" type="button">PDF openen</button>
   <button id="thumbnailsMenuItem" class="menu-item" type="button">Paginaminiaturen</button>
   <button id="continuousScrollMenuItem" class="menu-item" type="button">Doorlopend scrollen</button>
+  <button id="annotationModeMenuItem" class="menu-item" type="button">Annotatiemodus</button>
   <button id="installAppMenuItem" class="menu-item" type="button">App installeren</button>
   <button id="fitWidthMenuItem" class="menu-item" type="button">Passend op breedte</button>
   <button id="fitPageMenuItem" class="menu-item" type="button">Passend op pagina</button>
@@ -67,8 +68,8 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Offline Engine</h2>
-    <p>Na één succesvolle online initialisatie kan PdfReader ook zonder internet starten en lokale PDF's openen.</p>
+    <h2>Annotation Foundation</h2>
+    <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
 
@@ -106,6 +107,7 @@
     </div>
 
     <div class="reader-meta">
+      <span id="annotationStatusChip" class="annotation-status-chip hidden">ANNOTATIE</span>
       <span id="fileName">Geen bestand</span>
       <span id="pageLabel">Pagina 1</span>
     </div>
@@ -116,6 +118,7 @@
       <div id="pageStage" class="page-stage">
         <canvas id="pdfCanvas"></canvas>
         <div id="textLayer" class="text-layer" aria-label="Selecteerbare PDF-tekst"></div>
+        <div id="annotationLayer" class="annotation-layer" aria-label="Annotatielaag"></div>
       </div>
     </div>
 
@@ -131,12 +134,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.0 — Annotation Foundation</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.1 — Highlight / Markeren</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.2.6</span>
+  <span>PdfReader v0.3.0</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -184,7 +187,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.2.6</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.0</dd></div>
       </dl>
     </details>
   </section>
@@ -236,6 +239,7 @@
       <button id="fsSearchButton" class="menu-item" type="button">Zoeken</button>
       <button id="fsThumbnailsButton" class="menu-item" type="button">Paginaminiaturen</button>
       <button id="fsContinuousScrollButton" class="menu-item" type="button">Doorlopend scrollen</button>
+      <button id="fsAnnotationModeButton" class="menu-item" type="button">Annotatiemodus</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -246,6 +250,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.2.6"></script>
+<script type="module" src="app.js?v=0.3.0"></script>
 </body>
 </html>

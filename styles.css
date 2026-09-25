@@ -1105,3 +1105,14 @@ body.is-offline .topbar::after{
   font-weight:800;
   letter-spacing:.08em;
 }
+
+
+/* v0.3.0 — Annotation Foundation */
+.annotation-layer{position:absolute;inset:0;z-index:6;pointer-events:none}
+.annotation-layer.annotation-layer-active{pointer-events:auto;cursor:crosshair}
+.annotation-object{position:absolute;transform:translate(-50%,-50%);pointer-events:auto}
+.annotation-foundation-point{width:18px;height:18px;padding:0;border:2px solid rgba(255,255,255,.92);border-radius:999px;background:rgba(37,99,235,.78);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.annotation-foundation-point.selected{width:24px;height:24px;outline:2px solid #facc15;outline-offset:2px}
+.annotation-status-chip{display:inline-flex;align-items:center;min-height:20px;padding:2px 7px;border:1px solid #1d4ed8;border-radius:999px;background:#172554;color:#bfdbfe;font-size:9px;font-weight:800;letter-spacing:.06em}
+body.annotation-mode .text-layer{pointer-events:none;user-select:none}
+body.annotation-mode .page-stage{cursor:crosshair}
