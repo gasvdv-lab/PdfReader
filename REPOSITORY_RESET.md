@@ -1,8 +1,6 @@
-# Repository update — v0.3.1.1
+# Repository update — v0.3.1.2
 
-Upload alle bestanden uit deze ZIP rechtstreeks naar de repository-root en vervang de bestanden van v0.3.1.
+Upload alle bestanden rechtstreeks naar de repository-root.
 
-Test daarna:
-https://gasvdv-lab.github.io/PdfReader/?v=0.3.1.1
-
-De service worker gebruikt cacheversie `pdfreader-0.3.1.1`.
+Test:
+https://gasvdv-lab.github.io/PdfReader/?v=0.3.1.2

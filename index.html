@@ -9,12 +9,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.1.1">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.1.1">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.1.1">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.1.2">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.1.2">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.1.2">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.1.1">
-  <title>PdfReader v0.3.1.1</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.1.2">
+  <title>PdfReader v0.3.1.2</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -24,7 +24,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.1.1</span>
+        <span>v0.3.1.2</span>
       </div>
     </div>
   </div>
@@ -75,7 +75,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Highlight Stability Fix</h2>
+    <h2>Highlight Action Bar UX Fix</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -121,6 +121,13 @@
 
 <div id="messageBox" class="message-box">PDF gereed.</div>
 
+    <div id="highlightToolbarSlot" class="highlight-toolbar-slot"><div id="highlightActionBar" class="highlight-action-bar hidden" role="toolbar" aria-label="Tekst markeren">
+  <span id="highlightActionLabel">Selecteer tekst in de PDF</span>
+  <button id="applyHighlightButton" type="button">Markeren</button>
+  <button id="deleteHighlightButton" class="hidden" type="button">Verwijderen</button>
+  <button id="closeHighlightActionButton" type="button">Sluiten</button>
+</div></div>
+
     <div id="canvasWrap" class="canvas-wrap">
       <div id="pageStage" class="page-stage">
         <canvas id="pdfCanvas"></canvas>
@@ -146,7 +153,7 @@
 </main>
 
 <footer>
-  <span>PdfReader v0.3.1.1</span>
+  <span>PdfReader v0.3.1.2</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -194,7 +201,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.1.1</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.1.2</dd></div>
       </dl>
     </details>
   </section>
@@ -215,13 +222,6 @@
 
 <div id="thumbnailBackdrop" class="thumbnail-backdrop hidden"></div>
 
-
-<div id="highlightActionBar" class="highlight-action-bar hidden" role="toolbar" aria-label="Tekst markeren">
-  <span id="highlightActionLabel">Selecteer tekst in de PDF</span>
-  <button id="applyHighlightButton" type="button">Markeren</button>
-  <button id="deleteHighlightButton" class="hidden" type="button">Verwijderen</button>
-  <button id="closeHighlightActionButton" type="button">Sluiten</button>
-</div>
 
 <div id="fullscreenHandle" class="fullscreen-handle hidden" aria-hidden="true">
   <button id="fullscreenHandleButton" type="button" aria-label="Fullscreen menu openen">⋯</button>
@@ -266,6 +266,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.1.1"></script>
+<script type="module" src="app.js?v=0.3.1.2"></script>
 </body>
 </html>

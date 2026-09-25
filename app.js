@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.1.1";
+const APP_VERSION = "0.3.1.2";
 
 const $ = id => document.getElementById(id);
 
@@ -967,7 +967,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.1.1",
+      "./service-worker.js?v=0.3.1.2",
       {
         scope: "./",
         updateViaCache: "none"
@@ -2434,4 +2434,4 @@ await registerOfflineEngine();
 void updateInstallDiagnostics();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Highlight Stability Fix geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Highlight Action Bar UX Fix geladen.`);
