@@ -1184,3 +1184,21 @@ body.highlight-mode .annotation-highlight{pointer-events:auto}
   background:#172033;
   color:#fff;
 }
+
+
+/* v0.3.1.1 — Highlight Stability Fix */
+body.highlight-mode .annotation-layer,
+body.highlight-mode .annotation-object,
+body.highlight-mode .annotation-highlight{
+  pointer-events:none!important;
+}
+.annotation-highlight{
+  pointer-events:none!important;
+}
+.highlight-action-bar button:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}
+body.highlight-mode .text-layer span{
+  -webkit-touch-callout:default;
+}

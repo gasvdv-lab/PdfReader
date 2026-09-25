@@ -9,12 +9,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.1">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.1">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.1">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.1.1">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.1.1">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.1.1">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.1">
-  <title>PdfReader v0.3.1</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.1.1">
+  <title>PdfReader v0.3.1.1</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -24,7 +24,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.1</span>
+        <span>v0.3.1.1</span>
       </div>
     </div>
   </div>
@@ -50,7 +50,7 @@
   <button id="openPdfMenuItem" class="menu-item" type="button">PDF openen</button>
   <button id="thumbnailsMenuItem" class="menu-item" type="button">Paginaminiaturen</button>
   <button id="continuousScrollMenuItem" class="menu-item" type="button">Doorlopend scrollen</button>
-  <button id="annotationModeMenuItem" class="menu-item" type="button">Annotatiemodus</button>
+  <button id="annotationModeMenuItem" class="menu-item hidden" type="button">Annotatiemodus</button>
   <button id="highlightModeMenuItem" class="menu-item" type="button">Markeren</button>
   <div class="highlight-color-row" aria-label="Markeerkleur">
     <button class="highlight-color-button active" data-highlight-color="yellow" type="button" aria-label="Geel"></button>
@@ -75,7 +75,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Highlight / Markeren</h2>
+    <h2>Highlight Stability Fix</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -146,7 +146,7 @@
 </main>
 
 <footer>
-  <span>PdfReader v0.3.1</span>
+  <span>PdfReader v0.3.1.1</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -194,7 +194,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.1</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.1.1</dd></div>
       </dl>
     </details>
   </section>
@@ -217,7 +217,7 @@
 
 
 <div id="highlightActionBar" class="highlight-action-bar hidden" role="toolbar" aria-label="Tekst markeren">
-  <span id="highlightActionLabel">Selecteer tekst</span>
+  <span id="highlightActionLabel">Selecteer tekst in de PDF</span>
   <button id="applyHighlightButton" type="button">Markeren</button>
   <button id="deleteHighlightButton" class="hidden" type="button">Verwijderen</button>
   <button id="closeHighlightActionButton" type="button">Sluiten</button>
@@ -254,7 +254,7 @@
       <button id="fsSearchButton" class="menu-item" type="button">Zoeken</button>
       <button id="fsThumbnailsButton" class="menu-item" type="button">Paginaminiaturen</button>
       <button id="fsContinuousScrollButton" class="menu-item" type="button">Doorlopend scrollen</button>
-      <button id="fsAnnotationModeButton" class="menu-item" type="button">Annotatiemodus</button>
+      <button id="fsAnnotationModeButton" class="menu-item hidden" type="button">Annotatiemodus</button>
       <button id="fsHighlightModeButton" class="menu-item" type="button">Markeren</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
@@ -266,6 +266,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.1"></script>
+<script type="module" src="app.js?v=0.3.1.1"></script>
 </body>
 </html>
