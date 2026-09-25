@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
   <meta name="application-name" content="PdfReader">
-  <meta name="pdfreader-version" content="0.3.4">
+  <meta name="pdfreader-version" content="0.3.5">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.4">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.4">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.4">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.5">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.5">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.5">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.4">
-  <title>PdfReader v0.3.4</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.5">
+  <title>PdfReader v0.3.5</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -25,7 +25,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.4</span>
+        <span>v0.3.5</span>
       </div>
     </div>
   </div>
@@ -56,6 +56,7 @@
   <button id="textModeMenuItem" class="menu-item" type="button">Tekst toevoegen</button>
   <button id="penModeMenuItem" class="menu-item" type="button">Pen / Vrij tekenen</button>
   <button id="noteModeMenuItem" class="menu-item" type="button">Notitie toevoegen</button>
+  <button id="shapeModeMenuItem" class="menu-item" type="button">Vormen</button>
   <div class="highlight-color-row" aria-label="Markeerkleur">
     <button class="highlight-color-button active" data-highlight-color="yellow" type="button" aria-label="Geel"></button>
     <button class="highlight-color-button" data-highlight-color="green" type="button" aria-label="Groen"></button>
@@ -79,7 +80,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Notities</h2>
+    <h2>Vormen</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -144,6 +145,31 @@
           <button id="saveNoteButton" type="button">Opslaan</button>
           <button id="deleteNoteButton" class="hidden" type="button">Verwijderen</button>
           <button id="cancelNoteButton" type="button">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="shapeToolbarSlot" class="shape-toolbar-slot hidden">
+      <div class="shape-action-bar" role="toolbar" aria-label="Vormen">
+        <div class="shape-type-row">
+          <button class="shape-type-button active" data-shape-type="rect" type="button">Rechthoek</button>
+          <button class="shape-type-button" data-shape-type="ellipse" type="button">Ellips</button>
+          <button class="shape-type-button" data-shape-type="line" type="button">Lijn</button>
+          <button class="shape-type-button" data-shape-type="arrow" type="button">Pijl</button>
+        </div>
+        <div class="shape-style-row">
+          <input id="shapeColorPicker" type="color" value="#2563eb" aria-label="Vormkleur">
+          <label class="shape-fill-label"><input id="shapeFillToggle" type="checkbox"> Vullen</label>
+          <label for="shapeWidthRange">Dikte</label>
+          <input id="shapeWidthRange" type="range" min="1" max="12" step="1" value="3">
+          <span id="shapeWidthLabel">3</span>
+        </div>
+        <div class="shape-actions">
+          <button id="shapeSelectModeButton" type="button">Selecteren</button>
+          <button id="deleteShapeButton" class="hidden" type="button">Verwijderen</button>
+          <button id="clearShapesPageButton" type="button">Wis vormen</button>
+          <button id="closeShapeModeButton" type="button">Sluiten</button>
         </div>
       </div>
     </div>
@@ -237,6 +263,7 @@
         <canvas id="pdfCanvas"></canvas>
         <div id="textLayer" class="text-layer" aria-label="Selecteerbare PDF-tekst"></div>
         <svg id="penLayer" class="pen-layer" aria-label="Tekenlaag" preserveAspectRatio="none"></svg>
+        <svg id="shapeLayer" class="shape-layer" aria-label="Vormenlaag" preserveAspectRatio="none"></svg>
         <div id="annotationLayer" class="annotation-layer" aria-label="Annotatielaag"></div>
       </div>
     </div>
@@ -253,12 +280,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.5 — Vormen</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.6 — Selectie + Undo/Redo</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.3.4</span>
+  <span>PdfReader v0.3.5</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -306,7 +333,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.4</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.5</dd></div>
       </dl>
     </details>
   </section>
@@ -364,6 +391,7 @@
       <button id="fsTextModeButton" class="menu-item" type="button">Tekst toevoegen</button>
       <button id="fsPenModeButton" class="menu-item" type="button">Pen / Vrij tekenen</button>
       <button id="fsNoteModeButton" class="menu-item" type="button">Notitie toevoegen</button>
+      <button id="fsShapeModeButton" class="menu-item" type="button">Vormen</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -374,6 +402,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.4"></script>
+<script type="module" src="app.js?v=0.3.5"></script>
 </body>
 </html>
