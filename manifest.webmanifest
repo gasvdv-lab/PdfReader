@@ -26,5 +26,12 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "lang": "nl",
+  "dir": "ltr"
 }

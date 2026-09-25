@@ -9,14 +9,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.2.5.1">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.5.1">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.2.5.1">
-
-  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.webmanifest?v=0.2.5.2">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.5.2">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.2.5.2">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.2.5.1">
-  <title>PdfReader v0.2.5.1</title>
+  <link rel="stylesheet" href="styles.css?v=0.2.5.2">
+  <title>PdfReader v0.2.5.2</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -26,7 +24,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.2.5.1</span>
+        <span>v0.2.5.2</span>
       </div>
     </div>
   </div>
@@ -52,7 +50,7 @@
   <button id="openPdfMenuItem" class="menu-item" type="button">PDF openen</button>
   <button id="thumbnailsMenuItem" class="menu-item" type="button">Paginaminiaturen</button>
   <button id="continuousScrollMenuItem" class="menu-item" type="button">Doorlopend scrollen</button>
-  <button id="installAppMenuItem" class="menu-item hidden" type="button">App installeren</button>
+  <button id="installAppMenuItem" class="menu-item" type="button">App installeren</button>
   <button id="fitWidthMenuItem" class="menu-item" type="button">Passend op breedte</button>
   <button id="fitPageMenuItem" class="menu-item" type="button">Passend op pagina</button>
   <button id="resetZoomMenuItem" class="menu-item" type="button">Zoom 100%</button>
@@ -69,9 +67,12 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Repository Cleanup & PWA Repair</h2>
-    <p>Deze herstelversie ruimt oude service workers/caches op en synchroniseert de repository naar één consistente codebasis.</p>
+    <h2>PWA Installability Repair</h2>
+    <p>Installatie werkt nu ook wanneer de browser geen automatische installatieprompt aanbiedt.</p>
   </div>
+
+
+  <div id="installStatus" class="install-status hidden" role="status"></div>
 
   <div id="emptyState" class="empty-state">
     <strong>Open een PDF om te beginnen.</strong>
@@ -109,7 +110,6 @@
       <span id="pageLabel">Pagina 1</span>
     </div>
 
-    <div id="installStatus" class="install-status hidden" role="status"></div>
 <div id="messageBox" class="message-box">PDF gereed.</div>
 
     <div id="canvasWrap" class="canvas-wrap">
@@ -131,17 +131,64 @@
     </div>
   </div>
 
-  <div class="next-step">
-    <strong>Volgende stap bij succes:</strong>
-    v0.2.5 — PWA Foundation
-  </div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.2.6 — Offline Engine</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.2.5.1</span>
+  <span>PdfReader v0.2.5.2</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
+
+<div id="installPanel" class="install-panel hidden" aria-hidden="true">
+  <div id="installPanelBackdrop" class="install-panel-backdrop"></div>
+  <section class="install-panel-card" role="dialog" aria-modal="true" aria-labelledby="installPanelTitle">
+    <div class="install-panel-head">
+      <div>
+        <strong id="installPanelTitle">PdfReader installeren</strong>
+        <span id="installPanelSubtitle">Installatiecontrole</span>
+      </div>
+      <button id="installPanelClose" class="icon-button" type="button" aria-label="Installatievenster sluiten">✕</button>
+    </div>
+
+    <div id="installReadyBlock" class="install-block hidden">
+      <strong>Klaar om te installeren</strong>
+      <p>Deze browser biedt de native installatieprompt aan.</p>
+      <button id="nativeInstallButton" class="primary-install-button" type="button">PdfReader installeren</button>
+    </div>
+
+    <div id="androidBrowserBlock" class="install-block hidden">
+      <strong>Open eerst in Chrome</strong>
+      <p>Je lijkt PdfReader vanuit een in-app browser te openen. Daar is de PWA-installatieprompt vaak niet beschikbaar.</p>
+      <a id="openChromeButton" class="primary-install-button" href="#">Open PdfReader in Chrome</a>
+      <p class="install-help">Open daarna Chrome-menu ⋮ en kies <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</p>
+    </div>
+
+    <div id="manualInstallBlock" class="install-block hidden">
+      <strong>Handmatige installatie</strong>
+      <p id="manualInstallText">Gebruik het browsermenu om PdfReader te installeren.</p>
+      <a id="openRegularBrowserLink" class="secondary-install-button" href="https://gasvdv-lab.github.io/PdfReader/?v=0.2.5.2" target="_blank" rel="noopener">Open de app in een nieuw browsertabblad</a>
+    </div>
+
+    <div id="installedBlock" class="install-block success hidden">
+      <strong>PdfReader is geïnstalleerd</strong>
+      <p>De app draait al in standalone modus.</p>
+    </div>
+
+    <details class="install-diagnostics">
+      <summary>Installatiediagnose</summary>
+      <dl>
+        <div><dt>HTTPS</dt><dd id="diagHttps">—</dd></div>
+        <div><dt>Manifest</dt><dd id="diagManifest">—</dd></div>
+        <div><dt>Standalone</dt><dd id="diagStandalone">—</dd></div>
+        <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
+        <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
+        <div><dt>Versie</dt><dd>v0.2.5.2</dd></div>
+      </dl>
+    </details>
+  </section>
+</div>
+
 
 
 <div id="thumbnailDrawer" class="thumbnail-drawer hidden" aria-hidden="true">
@@ -198,6 +245,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.2.5.1"></script>
+<script type="module" src="app.js?v=0.2.5.2"></script>
 </body>
 </html>

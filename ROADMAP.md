@@ -1,29 +1,20 @@
 # PdfReader Roadmap
 
-v0.0.1 — Static Foundation — geslaagd
-v0.0.1.1 — Cache & Service Worker Cleanup — geslaagd
-v0.0.2 — PDF.js Load Test — geslaagd
-v0.1.0 — Minimal PDF Open — geslaagd
-v0.1.1 — Page Navigation — geslaagd
-v0.1.2 — Zoom & Fit — geslaagd
-v0.1.3 — Mobile Reader UX — geslaagd
+v0.0.x — Foundation — geslaagd
+v0.1.x — Reader basis — geslaagd
 v0.2.0 — Text Layer — geslaagd
 v0.2.1.1 — Search Stability Fix — geslaagd
-v0.2.2 — Fullscreen Reader — geslaagd
-v0.2.2.1 — Professional Reader UX — geslaagd
-v0.2.2.2 — Immersive Fullscreen UX — geslaagd
-v0.2.2.3 — True Fullscreen Viewport — geslaagd
-v0.2.2.4 — Fullscreen Fit Page Default — geslaagd
+v0.2.2.x — Fullscreen & Professional UX — geslaagd
 v0.2.3 — Thumbnails — geslaagd
-v0.2.4 — Continuous Scroll — vervangen wegens stability issues
 v0.2.4.1 — Reader Stability Fix — stabiele readerbasis
-v0.2.5 — PWA Foundation — technisch correct, maar repository was gemengd met oude bestanden
+v0.2.5 — PWA Foundation — installatie-UX onvoldoende
+v0.2.5.1 — Repository Cleanup & PWA Repair — cleanup verbeterd, installatie-UX nog onvoldoende
 
-## v0.2.5.1 — Repository Cleanup & PWA Repair
-Huidige herstelrelease.
+## v0.2.5.2 — PWA Installability Repair
+Huidige release.
 
 ## v0.2.6 — Offline Engine
-Pas starten nadat repository + live Pages fysiek als v0.2.5.1 bevestigd zijn.
+Volgende stap na fysieke installatievalidatie.
 
 ## v0.3.x — Annotaties
 ## v0.4.x — PDF Editing

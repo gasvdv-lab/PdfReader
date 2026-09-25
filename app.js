@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.5.1";
+const APP_VERSION = "0.2.5.2";
 
 const $ = id => document.getElementById(id);
 
@@ -59,6 +59,24 @@ const continuousPages = $("continuousPages");
 
 const installAppMenuItem = $("installAppMenuItem");
 const installStatus = $("installStatus");
+
+const installPanel = $("installPanel");
+const installPanelBackdrop = $("installPanelBackdrop");
+const installPanelClose = $("installPanelClose");
+const installPanelSubtitle = $("installPanelSubtitle");
+const installReadyBlock = $("installReadyBlock");
+const androidBrowserBlock = $("androidBrowserBlock");
+const manualInstallBlock = $("manualInstallBlock");
+const installedBlock = $("installedBlock");
+const nativeInstallButton = $("nativeInstallButton");
+const openChromeButton = $("openChromeButton");
+const openRegularBrowserLink = $("openRegularBrowserLink");
+const manualInstallText = $("manualInstallText");
+const diagHttps = $("diagHttps");
+const diagManifest = $("diagManifest");
+const diagStandalone = $("diagStandalone");
+const diagPrompt = $("diagPrompt");
+const diagPlatform = $("diagPlatform");
 
 const fullscreenHandle = $("fullscreenHandle");
 const fullscreenHandleButton = $("fullscreenHandleButton");
@@ -753,39 +771,48 @@ async function cleanupLegacyPwaState() {
     cachesRemoved: 0
   };
 
+  const appPath = "/PdfReader/";
+  const appScopePrefix = `${location.origin}${appPath}`;
+  const cacheNamePattern = /pdfreader/i;
+
   try {
     if ("serviceWorker" in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
-      report.registrationsFound = registrations.length;
+      const ownRegistrations = registrations.filter(registration =>
+        String(registration.scope || "").startsWith(appScopePrefix)
+      );
 
-      for (const registration of registrations) {
+      report.registrationsFound = ownRegistrations.length;
+
+      for (const registration of ownRegistrations) {
         try {
           const removed = await registration.unregister();
           if (removed) report.registrationsRemoved += 1;
         } catch (error) {
-          console.warn("Oude service worker kon niet worden verwijderd.", error);
+          console.warn("Oude PdfReader service worker kon niet worden verwijderd.", error);
         }
       }
     }
 
     if ("caches" in window) {
       const keys = await caches.keys();
-      report.cachesFound = keys.length;
+      const ownKeys = keys.filter(key => cacheNamePattern.test(key));
+      report.cachesFound = ownKeys.length;
 
-      for (const key of keys) {
+      for (const key of ownKeys) {
         try {
           const removed = await caches.delete(key);
           if (removed) report.cachesRemoved += 1;
         } catch (error) {
-          console.warn(`Cache ${key} kon niet worden verwijderd.`, error);
+          console.warn(`PdfReader cache ${key} kon niet worden verwijderd.`, error);
         }
       }
     }
 
-    console.info("Legacy PWA cleanup:", report);
+    console.info("PdfReader legacy cleanup:", report);
     return report;
   } catch (error) {
-    console.warn("Legacy PWA cleanup kon niet volledig worden uitgevoerd.", error);
+    console.warn("PdfReader legacy cleanup kon niet volledig worden uitgevoerd.", error);
     return report;
   }
 }
@@ -795,36 +822,112 @@ function isStandaloneMode() {
     window.navigator.standalone === true;
 }
 
+function isAndroidPlatform() {
+  const ua = navigator.userAgent || "";
+  return /Android/i.test(ua);
+}
+
+function platformLabel() {
+  const ua = navigator.userAgent || "";
+  if (/Android/i.test(ua)) return "Android";
+  if (/Windows/i.test(ua)) return "Windows";
+  if (/iPhone|iPad|iPod/i.test(ua)) return "iOS/iPadOS";
+  if (/Macintosh|Mac OS X/i.test(ua)) return "macOS";
+  return navigator.platform || "Onbekend";
+}
+
+function chromeIntentUrl() {
+  const pathAndQuery = `${location.host}${location.pathname}?v=0.2.5.2`;
+  return `intent://${pathAndQuery}#Intent;scheme=https;package=com.android.chrome;end`;
+}
+
 function setInstallStatus(message = "", visible = false) {
   if (!installStatus) return;
   installStatus.textContent = message;
   installStatus.classList.toggle("hidden", !visible || !message);
 }
 
+async function manifestReachable() {
+  try {
+    const link = document.querySelector('link[rel="manifest"]');
+    if (!link?.href) return false;
+    const response = await fetch(link.href, { cache: "no-store" });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function updateInstallDiagnostics() {
+  if (!diagHttps) return;
+
+  diagHttps.textContent = window.isSecureContext ? "OK" : "NEE";
+  diagStandalone.textContent = isStandaloneMode() ? "JA" : "NEE";
+  diagPrompt.textContent = deferredInstallPrompt ? "BESCHIKBAAR" : "NIET BESCHIKBAAR";
+  diagPlatform.textContent = platformLabel();
+  diagManifest.textContent = (await manifestReachable()) ? "OK" : "NIET BEREIKBAAR";
+}
+
+async function openInstallPanel() {
+  closeMenus();
+
+  installPanel.classList.remove("hidden");
+  installPanel.setAttribute("aria-hidden", "false");
+
+  installReadyBlock.classList.add("hidden");
+  androidBrowserBlock.classList.add("hidden");
+  manualInstallBlock.classList.add("hidden");
+  installedBlock.classList.add("hidden");
+
+  if (isStandaloneMode()) {
+    installPanelSubtitle.textContent = "Reeds geïnstalleerd";
+    installedBlock.classList.remove("hidden");
+  } else if (deferredInstallPrompt) {
+    installPanelSubtitle.textContent = "Native installatie beschikbaar";
+    installReadyBlock.classList.remove("hidden");
+  } else if (isAndroidPlatform()) {
+    installPanelSubtitle.textContent = "Open in volledige browser";
+    androidBrowserBlock.classList.remove("hidden");
+    manualInstallBlock.classList.remove("hidden");
+    manualInstallText.textContent =
+      "Als Chrome geen automatische prompt toont: open Chrome-menu ⋮ en kies 'App installeren' of 'Toevoegen aan startscherm'.";
+    openChromeButton.href = chromeIntentUrl();
+  } else {
+    installPanelSubtitle.textContent = "Handmatige installatie";
+    manualInstallBlock.classList.remove("hidden");
+    manualInstallText.textContent =
+      "Gebruik in Chrome of Edge het browsermenu en kies 'App installeren'.";
+  }
+
+  await updateInstallDiagnostics();
+}
+
+function closeInstallPanel() {
+  installPanel.classList.add("hidden");
+  installPanel.setAttribute("aria-hidden", "true");
+}
+
 function refreshInstallUi() {
   if (!installAppMenuItem) return;
 
+  // Critical fix: never hide the installation route just because
+  // beforeinstallprompt has not fired.
   if (isStandaloneMode()) {
-    installAppMenuItem.classList.add("hidden");
-    setInstallStatus("PdfReader draait als geïnstalleerde app.", false);
-    return;
+    installAppMenuItem.textContent = "App geïnstalleerd";
+  } else if (deferredInstallPrompt) {
+    installAppMenuItem.textContent = "App installeren";
+  } else if (isAndroidPlatform()) {
+    installAppMenuItem.textContent = "App installeren / Open in Chrome";
+  } else {
+    installAppMenuItem.textContent = "App installeren";
   }
 
-  installAppMenuItem.classList.toggle("hidden", !deferredInstallPrompt);
+  installAppMenuItem.classList.remove("hidden");
 }
 
-async function installPwa() {
-  if (isStandaloneMode()) {
-    closeMenus();
-    return;
-  }
-
+async function triggerNativeInstall() {
   if (!deferredInstallPrompt) {
-    setInstallStatus(
-      "Installatie is niet rechtstreeks beschikbaar. Gebruik in Chrome/Edge het browsermenu en kies 'App installeren' of 'Toevoegen aan startscherm'.",
-      true
-    );
-    closeMenus();
+    await openInstallPanel();
     return;
   }
 
@@ -838,15 +941,20 @@ async function installPwa() {
 
     if (choice?.outcome === "accepted") {
       setInstallStatus("Installatie gestart.", true);
+      closeInstallPanel();
     } else {
       setInstallStatus("Installatie geannuleerd.", true);
+      await openInstallPanel();
     }
   } catch (error) {
     console.warn("PWA installatieprompt kon niet worden geopend.", error);
     setInstallStatus("Installatieprompt kon niet worden geopend.", true);
+    await openInstallPanel();
   }
+}
 
-  closeMenus();
+async function installPwa() {
+  await openInstallPanel();
 }
 
 function fullscreenSupported() {
@@ -1440,17 +1548,31 @@ thumbnailsMenuItem.addEventListener("click", openThumbnailDrawer);
 continuousScrollMenuItem.addEventListener("click", toggleContinuousScroll);
 
 installAppMenuItem.addEventListener("click", installPwa);
+installPanelClose.addEventListener("click", closeInstallPanel);
+installPanelBackdrop.addEventListener("click", closeInstallPanel);
+nativeInstallButton.addEventListener("click", triggerNativeInstall);
+
 
 window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault();
   deferredInstallPrompt = event;
   refreshInstallUi();
+  void updateInstallDiagnostics();
+
+  if (!installPanel.classList.contains("hidden")) {
+    installReadyBlock.classList.remove("hidden");
+    androidBrowserBlock.classList.add("hidden");
+    manualInstallBlock.classList.add("hidden");
+    installPanelSubtitle.textContent = "Native installatie beschikbaar";
+  }
 });
 
 window.addEventListener("appinstalled", () => {
   deferredInstallPrompt = null;
   refreshInstallUi();
   setInstallStatus("PdfReader is geïnstalleerd.", true);
+  void updateInstallDiagnostics();
+  closeInstallPanel();
 });
 fsContinuousScrollButton.addEventListener("click", toggleContinuousScroll);
 fsThumbnailsButton.addEventListener("click", openThumbnailDrawer);
@@ -1725,12 +1847,12 @@ if (
   legacyCleanupReport.registrationsRemoved > 0 ||
   legacyCleanupReport.cachesRemoved > 0
 ) {
-  setInstallStatus(
-    `Oude app-cache opgeschoond: ${legacyCleanupReport.registrationsRemoved} service worker(s), ${legacyCleanupReport.cachesRemoved} cache(s).`,
-    true
+  console.info(
+    `PdfReader cleanup: ${legacyCleanupReport.registrationsRemoved} service worker(s), ${legacyCleanupReport.cachesRemoved} cache(s).`
   );
 }
 refreshInstallUi();
+void updateInstallDiagnostics();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Repository Cleanup & PWA Repair geladen.`);
+console.info(`PdfReader ${APP_VERSION} — PWA Installability Repair geladen.`);

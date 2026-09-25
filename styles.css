@@ -956,3 +956,138 @@ body.fullscreen-reader.fullscreen-search-open .search-panel{
   font-size:12px;
   line-height:1.4;
 }
+
+
+/* v0.2.5.2 — PWA Installability Repair */
+.install-status{
+  margin:0 0 10px;
+}
+.install-panel{
+  position:fixed;
+  inset:0;
+  z-index:220;
+  display:grid;
+  place-items:end center;
+  padding:10px;
+}
+.install-panel-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(2,6,23,.72);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+.install-panel-card{
+  position:relative;
+  z-index:1;
+  width:min(520px,100%);
+  max-height:88vh;
+  overflow:auto;
+  border:1px solid #334155;
+  border-radius:18px;
+  background:#0b1220;
+  box-shadow:0 24px 70px rgba(0,0,0,.55);
+  padding:12px;
+}
+.install-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:10px;
+  border-bottom:1px solid #1e293b;
+}
+.install-panel-head>div{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  gap:3px;
+}
+.install-panel-head strong{
+  font-size:16px;
+}
+.install-panel-head span{
+  color:#94a3b8;
+  font-size:12px;
+}
+.install-block{
+  margin-top:10px;
+  padding:12px;
+  border:1px solid #26344a;
+  border-radius:12px;
+  background:#111827;
+}
+.install-block.success{
+  border-color:#166534;
+  background:#0f2a1b;
+}
+.install-block strong{
+  display:block;
+  margin-bottom:5px;
+}
+.install-block p{
+  margin:5px 0 10px;
+  color:#cbd5e1;
+  font-size:13px;
+  line-height:1.45;
+}
+.primary-install-button,
+.secondary-install-button{
+  display:flex;
+  width:100%;
+  min-height:46px;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #3b82f6;
+  border-radius:11px;
+  padding:10px 12px;
+  background:#2563eb;
+  color:#fff;
+  text-decoration:none;
+  font-weight:750;
+  text-align:center;
+}
+.secondary-install-button{
+  border-color:#334155;
+  background:#172033;
+}
+.install-help{
+  margin-bottom:0!important;
+  color:#94a3b8!important;
+}
+.install-diagnostics{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px solid #26344a;
+  border-radius:12px;
+  background:#0f172a;
+}
+.install-diagnostics summary{
+  cursor:pointer;
+  color:#cbd5e1;
+  font-size:13px;
+  font-weight:700;
+}
+.install-diagnostics dl{
+  margin:10px 0 0;
+}
+.install-diagnostics dl div{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:6px 0;
+  border-top:1px solid #1e293b;
+}
+.install-diagnostics dt{
+  color:#94a3b8;
+}
+.install-diagnostics dd{
+  margin:0;
+  color:#e5e7eb;
+  font-weight:700;
+}
+@media(min-width:700px){
+  .install-panel{
+    place-items:center;
+  }
+}
