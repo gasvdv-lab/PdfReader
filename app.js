@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.2.2";
+const APP_VERSION = "0.3.2.3";
 
 const $ = id => document.getElementById(id);
 
@@ -955,6 +955,9 @@ async function installPwa() {
 
 
 let offlineEngineReady = false;
+
+let serviceWorkerReloadedForVersion = false;
+const EXPECTED_RUNTIME_VERSION = "0.3.2.3";
 let annotationModeEnabled = false;
 let annotationIdCounter = 1;
 const annotationsByPage = new Map();
@@ -977,6 +980,100 @@ let textMovePointerId = null;
 let movingTextAnnotation = null;
 let movingTextElement = null;
 let movingTextOffset = { x: 0, y: 0 };
+
+
+function htmlRuntimeVersion() {
+  return document.querySelector('meta[name="pdfreader-version"]')?.content || "";
+}
+
+function runtimeVersionMatches() {
+  return htmlRuntimeVersion() === EXPECTED_RUNTIME_VERSION &&
+    APP_VERSION === EXPECTED_RUNTIME_VERSION;
+}
+
+function resetReaderAfterFatalError(message) {
+  try {
+    ++renderGeneration;
+
+    if (renderTask) {
+      try { renderTask.cancel(); } catch {}
+      renderTask = null;
+    }
+
+    if (pdfDoc) {
+      try { pdfDoc.destroy(); } catch {}
+    }
+
+    pdfDoc = null;
+    currentPage = 1;
+    currentScale = 1;
+
+    pageCount.textContent = "—";
+    navPageCount.textContent = "—";
+    pageInput.value = "1";
+    pageInput.max = "1";
+    zoomLabel.textContent = "—";
+
+    fileName.textContent = "Geen PDF geopend";
+    topbarFileName.textContent = "Geen PDF geopend";
+
+    searchResults = [];
+    activeSearchIndex = -1;
+    searchInput.value = "";
+    searchStatus.textContent = "Geen zoekopdracht";
+    searchMiniStatus.textContent = "Wachten";
+
+    resetThumbnails();
+    setContinuousScrollEnabled(false);
+    resetContinuousScroll();
+    resetAnnotationDocumentState();
+
+    textLayer.replaceChildren();
+    annotationLayer.replaceChildren();
+
+    const ctx = pdfCanvas.getContext("2d");
+    pdfCanvas.width = 1;
+    pdfCanvas.height = 1;
+    ctx?.clearRect(0, 0, 1, 1);
+
+    reader.classList.add("hidden");
+    emptyState.classList.remove("hidden");
+
+    updateUi();
+    setMessage(message || "PDF openen mislukt.", "error");
+  } catch (resetError) {
+    console.warn("Reader reset na fatale fout niet volledig gelukt.", resetError);
+  }
+}
+
+async function verifyRuntimeCoherency() {
+  if (runtimeVersionMatches()) {
+    sessionStorage.removeItem("pdfreader-runtime-reload");
+    return true;
+  }
+
+  setInstallStatus(
+    "Versiemix gedetecteerd. PdfReader wordt schoon herladen.",
+    true
+  );
+
+  const alreadyReloaded =
+    sessionStorage.getItem("pdfreader-runtime-reload") ===
+    EXPECTED_RUNTIME_VERSION;
+
+  if (!alreadyReloaded) {
+    sessionStorage.setItem(
+      "pdfreader-runtime-reload",
+      EXPECTED_RUNTIME_VERSION
+    );
+
+    const url = new URL(location.href);
+    url.searchParams.set("v", EXPECTED_RUNTIME_VERSION);
+    location.replace(url.toString());
+  }
+
+  return false;
+}
 
 function updateOfflineUi() {
   if (!diagOffline) return;
@@ -1003,22 +1100,33 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.2.2",
+      "./service-worker.js?v=0.3.2.3",
       {
         scope: "./",
         updateViaCache: "none"
       }
     );
 
-    await navigator.serviceWorker.ready;
-
     try {
       await registration.update();
     } catch (error) {
-      console.warn("Service worker update check overgeslagen.", error);
+      console.warn("Service worker update-check mislukt.", error);
     }
 
-    offlineEngineReady = true;
+    const readyRegistration = await navigator.serviceWorker.ready;
+    const activeWorker =
+      readyRegistration.active ||
+      registration.active ||
+      registration.waiting;
+
+    if (activeWorker) {
+      activeWorker.postMessage({
+        type: "PDFREADER_VERSION_CHECK",
+        expectedVersion: EXPECTED_RUNTIME_VERSION
+      });
+    }
+
+    offlineEngineReady = Boolean(activeWorker);
     updateOfflineUi();
   } catch (error) {
     offlineEngineReady = false;
@@ -1029,6 +1137,35 @@ async function registerOfflineEngine() {
     );
     updateOfflineUi();
   }
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (serviceWorkerReloadedForVersion) return;
+    serviceWorkerReloadedForVersion = true;
+
+    const url = new URL(location.href);
+    url.searchParams.set("v", EXPECTED_RUNTIME_VERSION);
+    location.replace(url.toString());
+  });
+
+  navigator.serviceWorker.addEventListener("message", event => {
+    const data = event.data || {};
+
+    if (
+      data.type === "PDFREADER_VERSION_RESULT" &&
+      data.version !== EXPECTED_RUNTIME_VERSION
+    ) {
+      setInstallStatus(
+        "Oude offline-engine gedetecteerd. PdfReader wordt herladen.",
+        true
+      );
+
+      const url = new URL(location.href);
+      url.searchParams.set("v", EXPECTED_RUNTIME_VERSION);
+      location.replace(url.toString());
+    }
+  });
 }
 
 window.addEventListener("online", () => {
@@ -2309,14 +2446,9 @@ async function openPdf(file) {
     await renderPage(1, currentScale);
   } catch (error) {
     console.error(error);
-    pdfDoc = null;
-    pageCount.textContent = "—";
-    navPageCount.textContent = "0";
-    currentScale = 1;
-    searchResults = [];
-    activeSearchIndex = -1;
-    updateUi();
-    setMessage(`PDF openen mislukt: ${error?.message || error}`, "error");
+    resetReaderAfterFatalError(
+      `PDF openen mislukt: ${error?.message || error}`
+    );
   }
 }
 
@@ -2994,10 +3126,13 @@ window.addEventListener("resize", () => {
 });
 
 await cleanupLegacyPwaState();
-refreshInstallUi();
-updateOfflineUi();
-await registerOfflineEngine();
-void updateInstallDiagnostics();
-await loadPdfJs();
+
+if (await verifyRuntimeCoherency()) {
+  refreshInstallUi();
+  updateOfflineUi();
+  await registerOfflineEngine();
+  void updateInstallDiagnostics();
+  await loadPdfJs();
+}
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Advanced Text Style geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Cache Coherency & Runtime Recovery geladen.`);
