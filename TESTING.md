@@ -1,38 +1,32 @@
-# PdfReader v0.2.5.2 — Testing
+# PdfReader v0.2.6 — Testing
 
 ## Testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.5.2
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.6
 
-## Android — belangrijk
-1. Open de link vanuit ChatGPT zoals je eerder deed.
-2. Open PdfReader-menu ☰.
-3. `App installeren / Open in Chrome` moet zichtbaar zijn, ook wanneer Chrome geen `beforeinstallprompt` event gaf.
-4. Open dit item.
-5. Het installatiepaneel moet verschijnen.
-6. Tik `Open PdfReader in Chrome`.
-7. PdfReader moet in de volledige Chrome-app openen.
-8. Open Chrome-menu ⋮.
-9. Kies `App installeren` of `Toevoegen aan startscherm` als Chrome dit aanbiedt.
-10. Indien de native prompt binnen PdfReader beschikbaar wordt, moet het paneel automatisch naar `Klaar om te installeren` omschakelen.
-11. Open `Installatiediagnose` en controleer:
-   - HTTPS = OK
-   - Manifest = OK
-   - Standalone = NEE vóór installatie
-   - Platform = Android
-12. Start de geïnstalleerde app.
-13. Diagnose moet Standalone = JA aangeven.
+## Eerste online test
+1. Upload alle bestanden naar de repository-root.
+2. Open de testlink online.
+3. Controleer dat v0.2.6 zichtbaar is.
+4. Open ☰ → App installeren → Installatiediagnose.
+5. `Offline engine` moet `KLAAR` tonen.
+6. Open een PDF en test reader, zoeken, thumbnails, continuous scroll en fullscreen.
 
-## Reader regressietest
-Open daarna een PDF en controleer:
-- single-page
-- zoeken
-- thumbnails
-- continuous scroll
-- fullscreen
-- portrait/landscape
+## Echte offline test
+1. Sluit PdfReader volledig.
+2. Zet wifi én mobiele data uit.
+3. Open PdfReader opnieuw.
+4. De app-shell moet laden.
+5. Kies een lokale PDF.
+6. De PDF moet renderen.
+7. Test pagina's, zoom en fullscreen.
 
-## Veiligheidscontrole
-Deze versie mag uitsluitend oude PdfReader-serviceworkers opruimen. Andere GitHub Pages-projecten onder dezelfde `gasvdv-lab.github.io` origin mogen niet geraakt worden.
+## Update-test
+1. Zet internet opnieuw aan.
+2. Herlaad v0.2.6.
+3. Er mag geen terugval naar v0.2.5.x optreden.
+4. Alleen caches met prefix `pdfreader-` mogen beheerd worden.
 
 ## Acceptatie
-v0.2.5.2 is geslaagd wanneer de gebruiker altijd een zichtbare installatieroute heeft en Android vanuit een in-app browser naar volledige Chrome kan worden geleid.
+v0.2.6 is geslaagd wanneer de app na één online initialisatie offline kan starten en een lokale PDF kan openen/renderen.
+
+Pas daarna v0.3.0 — Annotation Foundation.

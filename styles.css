@@ -1091,3 +1091,17 @@ body.fullscreen-reader.fullscreen-search-open .search-panel{
     place-items:center;
   }
 }
+
+
+/* v0.2.6 — Offline Engine */
+body.is-offline .topbar::after{
+  content:"OFFLINE";
+  margin-left:auto;
+  padding:3px 7px;
+  border:1px solid #475569;
+  border-radius:999px;
+  color:#cbd5e1;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+}

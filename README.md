@@ -1,33 +1,34 @@
-# PdfReader v0.2.5.2 — PWA Installability Repair
+# PdfReader v0.2.6 — Offline Engine
 
-## Hoofdprobleem in v0.2.5 / v0.2.5.1
-De installatieknop was gekoppeld aan `beforeinstallprompt`. Als dat browser-event niet kwam, werd de knop verborgen. In een in-app browser / Android Custom Tab is dat juist een veelvoorkomende situatie.
+## Doel
+PdfReader na één succesvolle online initialisatie bruikbaar maken zonder internet.
 
-Daardoor had de gebruiker geen bruikbare installatieroute.
+## Nieuw
+- versiegebonden service worker `pdfreader-0.2.6`
+- offline app-shell
+- PDF.js 5.4.149 en de worker worden tijdens installatie in de PdfReader-cache gezet
+- lokale PDF-bestanden worden rechtstreeks vanaf het toestel geopend
+- navigatie: network-first met offline fallback
+- statische assets: cache-first met achtergrond-update
+- alleen caches met prefix `pdfreader-` worden beheerd
+- andere GitHub Pages-projecten worden niet geraakt
+- `skipWaiting()` + `clients.claim()`
+- registratie met `updateViaCache: "none"`
+- installatiediagnose toont de status van de Offline Engine
 
-## Gefixt
-- `App installeren` blijft altijd bereikbaar zolang de app niet standalone draait
-- eigen installatiepaneel met duidelijke status
-- native installatieprompt wordt gebruikt zodra die beschikbaar is
-- Android krijgt expliciete `Open PdfReader in Chrome`-knop
-- handmatige Chrome/Edge-installatiestappen zijn altijd bereikbaar
-- installatiemelding staat buiten de verborgen PDF-reader en is dus ook zichtbaar zonder geopende PDF
-- installatiediagnose: HTTPS, manifest, standalone, native prompt, platform en versie
-- foutieve oude `Volgende stap: v0.2.5` tekst vervangen door `v0.2.6 — Offline Engine`
-- dubbele `theme-color` metadata verwijderd
-- `prefer_related_applications: false` expliciet toegevoegd
-- legacy cleanup is nu beperkt tot PdfReader en wist niet langer service workers/caches van andere projecten op `gasvdv-lab.github.io`
+## Belangrijk
+De eerste start van v0.2.6 moet online gebeuren zodat de service worker de benodigde bestanden kan cachen.
 
-## Nog bewust niet
-- geen nieuwe service worker
-- geen offline cache
+## Offline test
+1. Start v0.2.6 online.
+2. Wacht tot `Offline engine = KLAAR`.
+3. Sluit PdfReader volledig.
+4. Zet wifi en mobiele data uit.
+5. Open PdfReader opnieuw.
+6. Open een lokale PDF.
 
-## Android test
-Open bij voorkeur rechtstreeks in Chrome:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.5.2
-
-Als je vanuit ChatGPT/in-app browser opent:
-Menu ☰ → `App installeren / Open in Chrome` → `Open PdfReader in Chrome`.
+## Testlink
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.6
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

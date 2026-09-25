@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.5.2";
+const APP_VERSION = "0.2.6";
 
 const $ = id => document.getElementById(id);
 
@@ -76,6 +76,7 @@ const diagHttps = $("diagHttps");
 const diagManifest = $("diagManifest");
 const diagStandalone = $("diagStandalone");
 const diagPrompt = $("diagPrompt");
+const diagOffline = $("diagOffline");
 const diagPlatform = $("diagPlatform");
 
 const fullscreenHandle = $("fullscreenHandle");
@@ -764,57 +765,14 @@ async function toggleContinuousScroll() {
 
 
 async function cleanupLegacyPwaState() {
-  const report = {
+  // v0.2.6 gebruikt bewust opnieuw een service worker.
+  // Verouderde PdfReader-caches worden veilig door de nieuwe service worker beheerd.
+  return {
     registrationsFound: 0,
     registrationsRemoved: 0,
     cachesFound: 0,
     cachesRemoved: 0
   };
-
-  const appPath = "/PdfReader/";
-  const appScopePrefix = `${location.origin}${appPath}`;
-  const cacheNamePattern = /pdfreader/i;
-
-  try {
-    if ("serviceWorker" in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      const ownRegistrations = registrations.filter(registration =>
-        String(registration.scope || "").startsWith(appScopePrefix)
-      );
-
-      report.registrationsFound = ownRegistrations.length;
-
-      for (const registration of ownRegistrations) {
-        try {
-          const removed = await registration.unregister();
-          if (removed) report.registrationsRemoved += 1;
-        } catch (error) {
-          console.warn("Oude PdfReader service worker kon niet worden verwijderd.", error);
-        }
-      }
-    }
-
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      const ownKeys = keys.filter(key => cacheNamePattern.test(key));
-      report.cachesFound = ownKeys.length;
-
-      for (const key of ownKeys) {
-        try {
-          const removed = await caches.delete(key);
-          if (removed) report.cachesRemoved += 1;
-        } catch (error) {
-          console.warn(`PdfReader cache ${key} kon niet worden verwijderd.`, error);
-        }
-      }
-    }
-
-    console.info("PdfReader legacy cleanup:", report);
-    return report;
-  } catch (error) {
-    console.warn("PdfReader legacy cleanup kon niet volledig worden uitgevoerd.", error);
-    return report;
-  }
 }
 
 function isStandaloneMode() {
@@ -866,6 +824,7 @@ async function updateInstallDiagnostics() {
   diagPrompt.textContent = deferredInstallPrompt ? "BESCHIKBAAR" : "NIET BESCHIKBAAR";
   diagPlatform.textContent = platformLabel();
   diagManifest.textContent = (await manifestReachable()) ? "OK" : "NIET BEREIKBAAR";
+  updateOfflineUi();
 }
 
 async function openInstallPanel() {
@@ -956,6 +915,77 @@ async function triggerNativeInstall() {
 async function installPwa() {
   await openInstallPanel();
 }
+
+
+let offlineEngineReady = false;
+
+function updateOfflineUi() {
+  if (!diagOffline) return;
+
+  if (!("serviceWorker" in navigator)) {
+    diagOffline.textContent = "NIET ONDERSTEUND";
+  } else if (offlineEngineReady) {
+    diagOffline.textContent = "KLAAR";
+  } else {
+    diagOffline.textContent = "INITIALISEREN";
+  }
+}
+
+function syncOnlineState() {
+  document.body.classList.toggle("is-offline", !navigator.onLine);
+}
+
+async function registerOfflineEngine() {
+  if (!("serviceWorker" in navigator)) {
+    offlineEngineReady = false;
+    updateOfflineUi();
+    return;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register(
+      "./service-worker.js?v=0.2.6",
+      {
+        scope: "./",
+        updateViaCache: "none"
+      }
+    );
+
+    await navigator.serviceWorker.ready;
+
+    try {
+      await registration.update();
+    } catch (error) {
+      console.warn("Service worker update check overgeslagen.", error);
+    }
+
+    offlineEngineReady = true;
+    updateOfflineUi();
+  } catch (error) {
+    offlineEngineReady = false;
+    console.error("Offline Engine registratie mislukt.", error);
+    setInstallStatus(
+      "Offline Engine kon niet worden geactiveerd. Online lezen blijft beschikbaar.",
+      true
+    );
+    updateOfflineUi();
+  }
+}
+
+window.addEventListener("online", () => {
+  syncOnlineState();
+  setInstallStatus("", false);
+});
+
+window.addEventListener("offline", () => {
+  syncOnlineState();
+  setInstallStatus(
+    "Offline modus actief. Lokale PDF's blijven beschikbaar.",
+    true
+  );
+});
+
+syncOnlineState();
 
 function fullscreenSupported() {
   return Boolean(
@@ -1842,17 +1872,11 @@ window.addEventListener("resize", () => {
   }, 180);
 });
 
-const legacyCleanupReport = await cleanupLegacyPwaState();
-if (
-  legacyCleanupReport.registrationsRemoved > 0 ||
-  legacyCleanupReport.cachesRemoved > 0
-) {
-  console.info(
-    `PdfReader cleanup: ${legacyCleanupReport.registrationsRemoved} service worker(s), ${legacyCleanupReport.cachesRemoved} cache(s).`
-  );
-}
+await cleanupLegacyPwaState();
 refreshInstallUi();
+updateOfflineUi();
+await registerOfflineEngine();
 void updateInstallDiagnostics();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — PWA Installability Repair geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Offline Engine geladen.`);

@@ -1,6 +1,6 @@
-# Repository update — v0.2.5.2
+# Repository update — v0.2.6
 
-Gebruik de inhoud van deze ZIP als volledige repository-root.
+Upload de volledige inhoud van deze ZIP rechtstreeks naar de repository-root.
 
 ## Rootbestanden
 - .nojekyll
@@ -14,9 +14,12 @@ Gebruik de inhoud van deze ZIP als volledige repository-root.
 - icon-512.png
 - index.html
 - manifest.webmanifest
+- service-worker.js
 - styles.css
 
-Verwijder een oude `service-worker.js` of `sw.js` als die nog in GitHub staat.
+`service-worker.js` hoort vanaf v0.2.6 bewust bij PdfReader.
 
-Test daarna:
-https://gasvdv-lab.github.io/PdfReader/?v=0.2.5.2
+Test eerst online:
+https://gasvdv-lab.github.io/PdfReader/?v=0.2.6
+
+Voer daarna de offline test uit uit TESTING.md.
