@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
   <meta name="application-name" content="PdfReader">
-  <meta name="pdfreader-version" content="0.3.3">
+  <meta name="pdfreader-version" content="0.3.4">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.3">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.3">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.3">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.4">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.4">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.4">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.3">
-  <title>PdfReader v0.3.3</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.4">
+  <title>PdfReader v0.3.4</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -25,7 +25,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.3</span>
+        <span>v0.3.4</span>
       </div>
     </div>
   </div>
@@ -55,6 +55,7 @@
   <button id="highlightModeMenuItem" class="menu-item" type="button">Markeren</button>
   <button id="textModeMenuItem" class="menu-item" type="button">Tekst toevoegen</button>
   <button id="penModeMenuItem" class="menu-item" type="button">Pen / Vrij tekenen</button>
+  <button id="noteModeMenuItem" class="menu-item" type="button">Notitie toevoegen</button>
   <div class="highlight-color-row" aria-label="Markeerkleur">
     <button class="highlight-color-button active" data-highlight-color="yellow" type="button" aria-label="Geel"></button>
     <button class="highlight-color-button" data-highlight-color="green" type="button" aria-label="Groen"></button>
@@ -78,7 +79,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Pen / Vrij tekenen</h2>
+    <h2>Notities</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -124,7 +125,30 @@
 
 <div id="messageBox" class="message-box">PDF gereed.</div>
 
-    <div id="highlightToolbarSlot" class="highlight-toolbar-slot"><div id="highlightActionBar" class="highlight-action-bar hidden" role="toolbar" aria-label="Tekst markeren">
+    
+    <div id="noteToolbarSlot" class="note-toolbar-slot hidden">
+      <div class="note-action-bar" role="dialog" aria-modal="false" aria-label="Notitie">
+        <div class="note-action-head">
+          <strong id="noteEditorTitle">Nieuwe notitie</strong>
+          <button id="closeNoteEditorButton" type="button" aria-label="Notitie sluiten">✕</button>
+        </div>
+        <input id="noteTitleInput" type="text" maxlength="80" placeholder="Titel (optioneel)" aria-label="Notitietitel">
+        <textarea id="noteBodyInput" rows="5" maxlength="3000" placeholder="Schrijf je notitie…" aria-label="Notitietekst"></textarea>
+        <div class="note-color-row" aria-label="Notitiekleur">
+          <button class="note-color-button active" type="button" data-note-color="yellow" aria-label="Geel"></button>
+          <button class="note-color-button" type="button" data-note-color="blue" aria-label="Blauw"></button>
+          <button class="note-color-button" type="button" data-note-color="green" aria-label="Groen"></button>
+          <button class="note-color-button" type="button" data-note-color="pink" aria-label="Roze"></button>
+        </div>
+        <div class="note-actions">
+          <button id="saveNoteButton" type="button">Opslaan</button>
+          <button id="deleteNoteButton" class="hidden" type="button">Verwijderen</button>
+          <button id="cancelNoteButton" type="button">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+<div id="highlightToolbarSlot" class="highlight-toolbar-slot"><div id="highlightActionBar" class="highlight-action-bar hidden" role="toolbar" aria-label="Tekst markeren">
   <span id="highlightActionLabel">Selecteer tekst in de PDF</span>
   <button id="applyHighlightButton" type="button">Markeren</button>
   <button id="deleteHighlightButton" class="hidden" type="button">Verwijderen</button>
@@ -229,12 +253,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.4 — Notities</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.5 — Vormen</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.3.3</span>
+  <span>PdfReader v0.3.4</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -282,7 +306,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.3</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.4</dd></div>
       </dl>
     </details>
   </section>
@@ -339,6 +363,7 @@
       <button id="fsHighlightModeButton" class="menu-item" type="button">Markeren</button>
       <button id="fsTextModeButton" class="menu-item" type="button">Tekst toevoegen</button>
       <button id="fsPenModeButton" class="menu-item" type="button">Pen / Vrij tekenen</button>
+      <button id="fsNoteModeButton" class="menu-item" type="button">Notitie toevoegen</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -349,6 +374,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.3"></script>
+<script type="module" src="app.js?v=0.3.4"></script>
 </body>
 </html>

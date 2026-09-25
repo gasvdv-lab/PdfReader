@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.3";
+const APP_VERSION = "0.3.4";
 
 const $ = id => document.getElementById(id);
 
@@ -58,6 +58,16 @@ const continuousViewer = $("continuousViewer");
 const continuousPages = $("continuousPages");
 const annotationLayer = $("annotationLayer");
 const penLayer = $("penLayer");
+const noteModeMenuItem = $("noteModeMenuItem");
+const fsNoteModeButton = $("fsNoteModeButton");
+const noteToolbarSlot = $("noteToolbarSlot");
+const noteEditorTitle = $("noteEditorTitle");
+const noteTitleInput = $("noteTitleInput");
+const noteBodyInput = $("noteBodyInput");
+const closeNoteEditorButton = $("closeNoteEditorButton");
+const saveNoteButton = $("saveNoteButton");
+const deleteNoteButton = $("deleteNoteButton");
+const cancelNoteButton = $("cancelNoteButton");
 const annotationModeMenuItem = $("annotationModeMenuItem");
 const fsAnnotationModeButton = $("fsAnnotationModeButton");
 const annotationStatusChip = $("annotationStatusChip");
@@ -781,6 +791,7 @@ async function enableContinuousScroll() {
   if (highlightModeEnabled) setHighlightMode(false);
   if (textModeEnabled) setTextMode(false);
   if (penModeEnabled) setPenMode(false);
+    if (noteModeEnabled) setNoteMode(false);
   setContinuousScrollEnabled(true);
   await buildContinuousPages();
 }
@@ -969,7 +980,7 @@ async function installPwa() {
 let offlineEngineReady = false;
 
 let serviceWorkerReloadedForVersion = false;
-const EXPECTED_RUNTIME_VERSION = "0.3.3";
+const EXPECTED_RUNTIME_VERSION = "0.3.4";
 let annotationModeEnabled = false;
 let annotationIdCounter = 1;
 const annotationsByPage = new Map();
@@ -999,6 +1010,10 @@ let penWidth = 3;
 let activePenPointerId = null;
 let activePenStroke = null;
 let activePenPathElement = null;
+let noteModeEnabled = false;
+let noteColor = "yellow";
+let pendingNotePoint = null;
+let editingNoteId = null;
 
 
 function htmlRuntimeVersion() {
@@ -1119,7 +1134,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.3",
+      "./service-worker.js?v=0.3.4",
       {
         scope: "./",
         updateViaCache: "none"
@@ -1213,6 +1228,7 @@ function setAnnotationMode(enabled) {
   if (annotationModeEnabled && highlightModeEnabled) setHighlightMode(false);
   if (annotationModeEnabled && textModeEnabled) setTextMode(false);
   if (annotationModeEnabled && penModeEnabled) setPenMode(false);
+  if (annotationModeEnabled && noteModeEnabled) setNoteMode(false);
   document.body.classList.toggle("annotation-mode", annotationModeEnabled);
   annotationLayer.classList.toggle("annotation-layer-active", annotationModeEnabled);
   annotationStatusChip?.classList.toggle("hidden", !annotationModeEnabled);
@@ -1271,6 +1287,28 @@ function renderAnnotationsForCurrentPage() {
   const list = annotationsByPage.get(currentPage) || [];
 
   for (const annotation of list) {
+    if (annotation.type === "note") {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "annotation-object annotation-note";
+      button.dataset.annotationId = annotation.id;
+      button.style.left = `${annotation.x * 100}%`;
+      button.style.top = `${annotation.y * 100}%`;
+      const palette = NOTE_COLORS[annotation.color] || NOTE_COLORS.yellow;
+      button.style.background = palette.bg;
+      button.style.borderColor = palette.border;
+      button.style.color = palette.text;
+      button.textContent = "📝";
+      if (annotation.id === selectedAnnotationId) button.classList.add("selected");
+      button.addEventListener("click", event => {
+        event.stopPropagation();
+        if (!noteModeEnabled) return;
+        openNoteEditorForAnnotation(annotation);
+      });
+      annotationLayer.appendChild(button);
+      continue;
+    }
+
     if (annotation.type === "text") {
       const item = document.createElement("button");
       item.type = "button";
@@ -1361,6 +1399,7 @@ function resetAnnotationDocumentState() {
   setHighlightMode(false);
   setTextMode(false);
   setPenMode(false);
+  setNoteMode(false);
   renderAnnotationsForCurrentPage();
   renderPenStrokesForCurrentPage();
 }
@@ -1378,6 +1417,12 @@ pageStage.addEventListener("click", event => {
   if (event.target.closest?.(".annotation-object")) return;
 
   openTextEditorAt(normalizePoint(event.clientX, event.clientY));
+});
+
+pageStage.addEventListener("click", event => {
+  if (!noteModeEnabled || !pdfDoc || continuousScrollEnabled) return;
+  if (event.target.closest?.(".annotation-object")) return;
+  openNoteEditorAt(normalizePoint(event.clientX, event.clientY));
 });
 window.addEventListener("keydown", event => {
   const active = document.activeElement;
@@ -1892,6 +1937,7 @@ function updateTextAnnotationElementPosition(element, annotation) {
 function setTextMode(enabled) {
   textModeEnabled = Boolean(enabled);
   if (textModeEnabled && penModeEnabled) setPenMode(false);
+  if (textModeEnabled && noteModeEnabled) setNoteMode(false);
   document.body.classList.toggle("text-mode", textModeEnabled);
   annotationLayer.classList.toggle("text-layer-active", textModeEnabled);
 
@@ -2111,6 +2157,162 @@ function endPenStroke(e){if(!activePenStroke||activePenPointerId!==e.pointerId)r
 function selectPenStrokeAtPoint(clientX,clientY){if(!penModeEnabled||!penSelectModeEnabled)return;const r=pageStage.getBoundingClientRect();const x=clientX-r.left,y=clientY-r.top;let best=null,dist=Infinity;for(const a of penStrokeList(currentPage)){for(const p of a.points||[]){const d=Math.hypot(p.x*r.width-x,p.y*r.height-y);if(d<dist){dist=d;best=a;}}}if(best&&dist<=22){selectedAnnotationId=best.id;deletePenStrokeButton.classList.remove("hidden");}else{selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");}renderPenStrokesForCurrentPage();}
 function deleteSelectedPenStroke(){if(!selectedAnnotationId)return;const l=annotationPageList(currentPage),i=l.findIndex(a=>a.id===selectedAnnotationId&&a.type==="pen");if(i>=0)l.splice(i,1);selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");renderPenStrokesForCurrentPage();}
 function clearPenStrokesForCurrentPage(){annotationsByPage.set(currentPage,annotationPageList(currentPage).filter(a=>a.type!=="pen"));selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");renderPenStrokesForCurrentPage();}
+
+
+const NOTE_COLORS = {
+  yellow:{bg:"#fef3c7",border:"#f59e0b",text:"#78350f"},
+  blue:{bg:"#dbeafe",border:"#3b82f6",text:"#1e3a8a"},
+  green:{bg:"#dcfce7",border:"#22c55e",text:"#14532d"},
+  pink:{bg:"#fce7f3",border:"#ec4899",text:"#831843"}
+};
+
+function setNoteColor(color) {
+  if (!NOTE_COLORS[color]) return;
+  noteColor = color;
+  document.querySelectorAll("[data-note-color]").forEach(button => {
+    button.classList.toggle("active", button.dataset.noteColor === noteColor);
+  });
+}
+
+function hideNoteEditor() {
+  noteToolbarSlot.classList.add("hidden");
+  noteTitleInput.value = "";
+  noteBodyInput.value = "";
+  deleteNoteButton.classList.add("hidden");
+}
+
+function setNoteMode(enabled) {
+  noteModeEnabled = Boolean(enabled);
+  document.body.classList.toggle("note-mode", noteModeEnabled);
+
+  if (noteModeEnabled) {
+    if (annotationModeEnabled) setAnnotationMode(false);
+    if (highlightModeEnabled) setHighlightMode(false);
+    if (textModeEnabled) setTextMode(false);
+    if (penModeEnabled) setPenMode(false);
+    selectedAnnotationId = null;
+    pendingNotePoint = null;
+    editingNoteId = null;
+    hideNoteEditor();
+    setInstallStatus("Notitiemodus actief: tik op de PDF om een notitie te plaatsen.", true);
+  } else {
+    selectedAnnotationId = null;
+    pendingNotePoint = null;
+    editingNoteId = null;
+    hideNoteEditor();
+  }
+
+  noteModeMenuItem.textContent = noteModeEnabled ? "Notitiemodus uitschakelen" : "Notitie toevoegen";
+  if (fsNoteModeButton) {
+    fsNoteModeButton.textContent = noteModeEnabled ? "Notitiemodus uitschakelen" : "Notitie toevoegen";
+  }
+  renderAnnotationsForCurrentPage();
+}
+
+function toggleNoteMode() {
+  if (!pdfDoc) return;
+  if (continuousScrollEnabled) {
+    setInstallStatus("Notities werken in v0.3.4 alleen in single-page weergave.", true);
+    return;
+  }
+  setNoteMode(!noteModeEnabled);
+  closeMenus();
+  closeFullscreenOverlay();
+}
+
+function openNoteEditorAt(point) {
+  pendingNotePoint = point;
+  editingNoteId = null;
+  selectedAnnotationId = null;
+  noteEditorTitle.textContent = "Nieuwe notitie";
+  noteTitleInput.value = "";
+  noteBodyInput.value = "";
+  deleteNoteButton.classList.add("hidden");
+  noteToolbarSlot.classList.remove("hidden");
+  setNoteColor(noteColor);
+  window.setTimeout(() => noteBodyInput.focus(), 30);
+}
+
+function openNoteEditorForAnnotation(annotation) {
+  if (!annotation || annotation.type !== "note") return;
+  pendingNotePoint = {x:annotation.x,y:annotation.y};
+  editingNoteId = annotation.id;
+  selectedAnnotationId = annotation.id;
+  noteEditorTitle.textContent = "Notitie bewerken";
+  noteTitleInput.value = annotation.title || "";
+  noteBodyInput.value = annotation.body || "";
+  setNoteColor(annotation.color || "yellow");
+  deleteNoteButton.classList.remove("hidden");
+  noteToolbarSlot.classList.remove("hidden");
+  renderAnnotationsForCurrentPage();
+  window.setTimeout(() => noteBodyInput.focus(), 30);
+}
+
+function saveNote() {
+  if (!noteModeEnabled || !pdfDoc || continuousScrollEnabled) return;
+  const title = noteTitleInput.value.trim();
+  const body = noteBodyInput.value.trim();
+
+  if (!body) {
+    setInstallStatus("Schrijf eerst een notitie.", true);
+    noteBodyInput.focus();
+    return;
+  }
+
+  if (editingNoteId) {
+    const annotation = annotationPageList(currentPage).find(item => item.id === editingNoteId && item.type === "note");
+    if (annotation) {
+      annotation.title = title;
+      annotation.body = body;
+      annotation.color = noteColor;
+      annotation.updatedAt = new Date().toISOString();
+      selectedAnnotationId = annotation.id;
+    }
+  } else {
+    if (!pendingNotePoint) {
+      setInstallStatus("Tik eerst op de PDF waar de notitie moet komen.", true);
+      return;
+    }
+    const annotation = {
+      id: nextAnnotationId(),
+      type: "note",
+      page: currentPage,
+      x: pendingNotePoint.x,
+      y: pendingNotePoint.y,
+      title,
+      body,
+      color: noteColor,
+      createdAt: new Date().toISOString()
+    };
+    annotationPageList(currentPage).push(annotation);
+    selectedAnnotationId = annotation.id;
+  }
+
+  pendingNotePoint = null;
+  editingNoteId = null;
+  hideNoteEditor();
+  renderAnnotationsForCurrentPage();
+}
+
+function cancelNoteEdit() {
+  pendingNotePoint = null;
+  editingNoteId = null;
+  selectedAnnotationId = null;
+  hideNoteEditor();
+  renderAnnotationsForCurrentPage();
+}
+
+function deleteEditingNote() {
+  if (!editingNoteId) return;
+  const list = annotationPageList(currentPage);
+  const index = list.findIndex(item => item.id === editingNoteId && item.type === "note");
+  if (index >= 0) list.splice(index, 1);
+  editingNoteId = null;
+  selectedAnnotationId = null;
+  pendingNotePoint = null;
+  hideNoteEditor();
+  renderAnnotationsForCurrentPage();
+}
 
 function fullscreenSupported() {
   return Boolean(
@@ -2802,6 +3004,19 @@ pageStage.addEventListener("pointerup", endTextMove);
 pageStage.addEventListener("pointercancel", endTextMove);
 
 
+
+noteModeMenuItem.addEventListener("click", toggleNoteMode);
+if (fsNoteModeButton) fsNoteModeButton.addEventListener("click", toggleNoteMode);
+
+document.querySelectorAll("[data-note-color]").forEach(button => {
+  button.addEventListener("click", () => setNoteColor(button.dataset.noteColor));
+});
+
+saveNoteButton.addEventListener("click", saveNote);
+deleteNoteButton.addEventListener("click", deleteEditingNote);
+cancelNoteButton.addEventListener("click", cancelNoteEdit);
+closeNoteEditorButton.addEventListener("click", cancelNoteEdit);
+
 penModeMenuItem.addEventListener("click", togglePenMode);
 if (fsPenModeButton) fsPenModeButton.addEventListener("click", togglePenMode);
 document.querySelectorAll("[data-pen-color]").forEach(button=>button.addEventListener("click",()=>setPenColor(button.dataset.penColor)));
@@ -3190,4 +3405,4 @@ if (await verifyRuntimeCoherency()) {
   await loadPdfJs();
 }
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Pen / Vrij tekenen geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Notities geladen.`);

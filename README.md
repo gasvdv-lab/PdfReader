@@ -1,5 +1,16 @@
-# PdfReader v0.3.3 — Pen / Vrij tekenen
+# PdfReader v0.3.4 — Notities
 
-Vrij tekenen met vinger, stylus of muis; kleuren; vrije kleurkiezer; lijndikte 1–12; selecteren/verwijderen; per pagina opgeslagen.
+Nieuw:
+- notitiepin op gekozen PDF-positie
+- optionele titel
+- langere notitietekst
+- kleuren geel/blauw/groen/roze
+- bestaande notitie openen, bewerken en verwijderen
+- per pagina opgeslagen
+- positie blijft correct bij zoom/fullscreen/rotatie
 
-Testlink: https://gasvdv-lab.github.io/PdfReader/?v=0.3.3
+Testlink:
+https://gasvdv-lab.github.io/PdfReader/?v=0.3.4
+
+Vaste app-link:
+https://gasvdv-lab.github.io/PdfReader/
