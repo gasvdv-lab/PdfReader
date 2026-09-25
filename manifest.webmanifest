@@ -2,7 +2,7 @@
   "id": "/PdfReader/",
   "name": "PdfReader",
   "short_name": "PdfReader",
-  "description": "Lokale PDF-reader voor Android en Windows met offline ondersteuning en annotatiebasis.",
+  "description": "Lokale PDF-reader voor Android en Windows met offline ondersteuning en tekstmarkeringen.",
   "start_url": "/PdfReader/",
   "scope": "/PdfReader/",
   "display": "standalone",

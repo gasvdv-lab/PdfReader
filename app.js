@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.0";
+const APP_VERSION = "0.3.1";
 
 const $ = id => document.getElementById(id);
 
@@ -60,6 +60,14 @@ const annotationLayer = $("annotationLayer");
 const annotationModeMenuItem = $("annotationModeMenuItem");
 const fsAnnotationModeButton = $("fsAnnotationModeButton");
 const annotationStatusChip = $("annotationStatusChip");
+
+const highlightModeMenuItem = $("highlightModeMenuItem");
+const fsHighlightModeButton = $("fsHighlightModeButton");
+const highlightActionBar = $("highlightActionBar");
+const highlightActionLabel = $("highlightActionLabel");
+const applyHighlightButton = $("applyHighlightButton");
+const deleteHighlightButton = $("deleteHighlightButton");
+const closeHighlightActionButton = $("closeHighlightActionButton");
 
 const installAppMenuItem = $("installAppMenuItem");
 const installStatus = $("installStatus");
@@ -737,6 +745,7 @@ async function jumpToContinuousPage(pageNumber, { smooth = true } = {}) {
 async function enableContinuousScroll() {
   if (!pdfDoc || continuousScrollEnabled) return;
   if (annotationModeEnabled) setAnnotationMode(false);
+  if (highlightModeEnabled) setHighlightMode(false);
   setContinuousScrollEnabled(true);
   await buildContinuousPages();
 }
@@ -928,6 +937,9 @@ let annotationIdCounter = 1;
 const annotationsByPage = new Map();
 let selectedAnnotationId = null;
 
+let highlightModeEnabled = false;
+let highlightColor = "yellow";
+
 function updateOfflineUi() {
   if (!diagOffline) return;
 
@@ -953,7 +965,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.0",
+      "./service-worker.js?v=0.3.1",
       {
         scope: "./",
         updateViaCache: "none"
@@ -1004,12 +1016,13 @@ function annotationPageList(pageNumber = currentPage) {
 function nextAnnotationId() { return `ann-${Date.now()}-${annotationIdCounter++}`; }
 function setAnnotationMode(enabled) {
   annotationModeEnabled = Boolean(enabled);
+  if (annotationModeEnabled && highlightModeEnabled) setHighlightMode(false);
   document.body.classList.toggle("annotation-mode", annotationModeEnabled);
   annotationLayer.classList.toggle("annotation-layer-active", annotationModeEnabled);
   annotationStatusChip?.classList.toggle("hidden", !annotationModeEnabled);
   annotationModeMenuItem.textContent = annotationModeEnabled ? "Annotatiemodus uitschakelen" : "Annotatiemodus";
   if (fsAnnotationModeButton) fsAnnotationModeButton.textContent = annotationModeEnabled ? "Annotatiemodus uitschakelen" : "Annotatiemodus";
-  if (!annotationModeEnabled) { selectedAnnotationId = null; renderAnnotationsForCurrentPage(); }
+  if (!annotationModeEnabled) { selectedAnnotationId = null; if (highlightModeEnabled) resetHighlightActionForSelection(); else renderAnnotationsForCurrentPage(); }
 }
 function toggleAnnotationMode() {
   if (!pdfDoc) return;
@@ -1039,17 +1052,63 @@ function deleteSelectedAnnotation() {
 function renderAnnotationsForCurrentPage() {
   if (!annotationLayer) return;
   annotationLayer.replaceChildren();
+
   const list = annotationsByPage.get(currentPage) || [];
+
   for (const annotation of list) {
-    const item = document.createElement("button"); item.type="button"; item.className="annotation-object annotation-foundation-point"; item.dataset.annotationId=annotation.id; item.setAttribute("aria-label", `Annotatie ${annotation.id}`); item.style.left=`${annotation.x*100}%`; item.style.top=`${annotation.y*100}%`;
+    if (annotation.type === "highlight") {
+      for (const box of annotation.boxes || []) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "annotation-object annotation-highlight";
+        item.dataset.annotationId = annotation.id;
+        item.setAttribute("aria-label", "Tekstmarkering");
+        item.style.left = `${box.x * 100}%`;
+        item.style.top = `${box.y * 100}%`;
+        item.style.width = `${box.width * 100}%`;
+        item.style.height = `${box.height * 100}%`;
+        item.style.background = HIGHLIGHT_COLORS[annotation.color] || HIGHLIGHT_COLORS.yellow;
+
+        if (annotation.id === selectedAnnotationId) item.classList.add("selected");
+
+        item.addEventListener("click", event => {
+          event.stopPropagation();
+          if (!highlightModeEnabled) return;
+          selectedAnnotationId = annotation.id;
+          renderAnnotationsForCurrentPage();
+          showSelectedHighlight(annotation);
+        });
+
+        annotationLayer.appendChild(item);
+      }
+      continue;
+    }
+
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "annotation-object annotation-foundation-point";
+    item.dataset.annotationId = annotation.id;
+    item.setAttribute("aria-label", `Annotatie ${annotation.id}`);
+    item.style.left = `${annotation.x * 100}%`;
+    item.style.top = `${annotation.y * 100}%`;
+
     if (annotation.id === selectedAnnotationId) item.classList.add("selected");
-    item.addEventListener("click", event => { event.stopPropagation(); if (!annotationModeEnabled) return; selectedAnnotationId=annotation.id; renderAnnotationsForCurrentPage(); });
+
+    item.addEventListener("click", event => {
+      event.stopPropagation();
+      if (!annotationModeEnabled) return;
+      selectedAnnotationId = annotation.id;
+      renderAnnotationsForCurrentPage();
+    });
+
     annotationLayer.appendChild(item);
   }
-  annotationLayer.classList.toggle("has-annotations", list.length>0);
+
+  annotationLayer.classList.toggle("has-annotations", list.length > 0);
 }
+
 function resetAnnotationDocumentState() {
-  annotationsByPage.clear(); selectedAnnotationId=null; annotationIdCounter=1; setAnnotationMode(false); renderAnnotationsForCurrentPage();
+  annotationsByPage.clear(); selectedAnnotationId=null; annotationIdCounter=1; setAnnotationMode(false); setHighlightMode(false); renderAnnotationsForCurrentPage();
 }
 annotationLayer.addEventListener("click", event => {
   if (!annotationModeEnabled || !pdfDoc || continuousScrollEnabled) return;
@@ -1061,6 +1120,143 @@ window.addEventListener("keydown", event => {
   if ((event.key === "Delete" || event.key === "Backspace") && selectedAnnotationId) { event.preventDefault(); deleteSelectedAnnotation(); }
   if (event.key === "Escape") { selectedAnnotationId=null; renderAnnotationsForCurrentPage(); }
 });
+
+
+const HIGHLIGHT_COLORS = {
+  yellow: "rgba(250, 204, 21, 0.42)",
+  green: "rgba(34, 197, 94, 0.36)",
+  blue: "rgba(59, 130, 246, 0.34)",
+  pink: "rgba(236, 72, 153, 0.34)"
+};
+
+function setHighlightColor(color) {
+  if (!HIGHLIGHT_COLORS[color]) return;
+  highlightColor = color;
+  document.querySelectorAll("[data-highlight-color]").forEach(button => {
+    button.classList.toggle("active", button.dataset.highlightColor === color);
+  });
+}
+
+function setHighlightMode(enabled) {
+  highlightModeEnabled = Boolean(enabled);
+  document.body.classList.toggle("highlight-mode", highlightModeEnabled);
+
+  if (highlightModeEnabled) {
+    if (annotationModeEnabled) setAnnotationMode(false);
+    highlightActionBar.classList.remove("hidden");
+    highlightActionLabel.textContent = "Selecteer tekst en tik Markeren";
+    applyHighlightButton.classList.remove("hidden");
+    deleteHighlightButton.classList.add("hidden");
+  } else {
+    window.getSelection()?.removeAllRanges();
+    selectedAnnotationId = null;
+    highlightActionBar.classList.add("hidden");
+  }
+
+  highlightModeMenuItem.textContent = highlightModeEnabled ? "Markeren uitschakelen" : "Markeren";
+  if (fsHighlightModeButton) fsHighlightModeButton.textContent = highlightModeEnabled ? "Markeren uitschakelen" : "Markeren";
+  renderAnnotationsForCurrentPage();
+}
+
+function toggleHighlightMode() {
+  if (!pdfDoc) return;
+  if (continuousScrollEnabled) {
+    setInstallStatus("Markeren werkt in v0.3.1 alleen in single-page weergave.", true);
+    return;
+  }
+  setHighlightMode(!highlightModeEnabled);
+  closeMenus();
+  closeFullscreenOverlay();
+}
+
+function selectionRangeInTextLayer() {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || selection.rangeCount === 0) return null;
+  const range = selection.getRangeAt(0);
+
+  const parentOf = node => node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  const start = parentOf(range.startContainer);
+  const end = parentOf(range.endContainer);
+
+  if (!start?.closest?.("#textLayer") || !end?.closest?.("#textLayer")) return null;
+  return { selection, range };
+}
+
+function normalizeSelectionRect(rect, stageRect) {
+  const left = Math.max(stageRect.left, rect.left);
+  const top = Math.max(stageRect.top, rect.top);
+  const right = Math.min(stageRect.right, rect.right);
+  const bottom = Math.min(stageRect.bottom, rect.bottom);
+  const width = right - left;
+  const height = bottom - top;
+
+  if (width <= 1 || height <= 1 || stageRect.width <= 0 || stageRect.height <= 0) return null;
+
+  return {
+    x: (left - stageRect.left) / stageRect.width,
+    y: (top - stageRect.top) / stageRect.height,
+    width: width / stageRect.width,
+    height: height / stageRect.height
+  };
+}
+
+function applyCurrentTextSelectionAsHighlight() {
+  if (!highlightModeEnabled || !pdfDoc || continuousScrollEnabled) return;
+
+  const selected = selectionRangeInTextLayer();
+  if (!selected) {
+    highlightActionLabel.textContent = "Selecteer eerst tekst in de PDF";
+    return;
+  }
+
+  const stageRect = pageStage.getBoundingClientRect();
+  const boxes = Array.from(selected.range.getClientRects())
+    .map(rect => normalizeSelectionRect(rect, stageRect))
+    .filter(Boolean);
+
+  if (!boxes.length) {
+    highlightActionLabel.textContent = "Selectie kon niet gemarkeerd worden";
+    return;
+  }
+
+  const text = selected.selection.toString().trim();
+  const annotation = {
+    id: nextAnnotationId(),
+    type: "highlight",
+    page: currentPage,
+    color: highlightColor,
+    boxes,
+    text,
+    createdAt: new Date().toISOString()
+  };
+
+  annotationPageList(currentPage).push(annotation);
+  selectedAnnotationId = annotation.id;
+  selected.selection.removeAllRanges();
+  renderAnnotationsForCurrentPage();
+  showSelectedHighlight(annotation);
+}
+
+function showSelectedHighlight(annotation) {
+  if (!annotation || annotation.type !== "highlight") return;
+  const text = String(annotation.text || "").replace(/\s+/g, " ").trim();
+  highlightActionBar.classList.remove("hidden");
+  highlightActionLabel.textContent = text
+    ? `Markering: ${text.slice(0, 42)}${text.length > 42 ? "…" : ""}`
+    : "Markering geselecteerd";
+  applyHighlightButton.classList.add("hidden");
+  deleteHighlightButton.classList.remove("hidden");
+}
+
+function resetHighlightActionForSelection() {
+  if (!highlightModeEnabled) return;
+  selectedAnnotationId = null;
+  highlightActionBar.classList.remove("hidden");
+  highlightActionLabel.textContent = "Selecteer tekst en tik Markeren";
+  applyHighlightButton.classList.remove("hidden");
+  deleteHighlightButton.classList.add("hidden");
+  renderAnnotationsForCurrentPage();
+}
 
 function fullscreenSupported() {
   return Boolean(
@@ -1654,7 +1850,17 @@ fullscreenButtonTop.addEventListener("click", toggleFullscreen);
 thumbnailsMenuItem.addEventListener("click", openThumbnailDrawer);
 continuousScrollMenuItem.addEventListener("click", toggleContinuousScroll);
 annotationModeMenuItem.addEventListener("click", toggleAnnotationMode);
+highlightModeMenuItem.addEventListener("click", toggleHighlightMode);
+document.querySelectorAll("[data-highlight-color]").forEach(button => {
+  button.addEventListener("click", () => setHighlightColor(button.dataset.highlightColor));
+});
+applyHighlightButton.addEventListener("click", applyCurrentTextSelectionAsHighlight);
+deleteHighlightButton.addEventListener("click", deleteSelectedAnnotation);
+closeHighlightActionButton.addEventListener("click", () => {
+  setHighlightMode(false);
+});
 if (fsAnnotationModeButton) fsAnnotationModeButton.addEventListener("click", toggleAnnotationMode);
+if (fsHighlightModeButton) fsHighlightModeButton.addEventListener("click", toggleHighlightMode);
 
 installAppMenuItem.addEventListener("click", installPwa);
 installPanelClose.addEventListener("click", closeInstallPanel);
@@ -1958,4 +2164,4 @@ await registerOfflineEngine();
 void updateInstallDiagnostics();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Annotation Foundation geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Highlight / Markeren geladen.`);
