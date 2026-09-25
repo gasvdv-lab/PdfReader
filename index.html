@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
   <meta name="application-name" content="PdfReader">
-  <meta name="pdfreader-version" content="0.3.2.3">
+  <meta name="pdfreader-version" content="0.3.3">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.2.3">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.2.3">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.2.3">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.3">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.3">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.3">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.2.3">
-  <title>PdfReader v0.3.2.3</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.3">
+  <title>PdfReader v0.3.3</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -25,7 +25,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.2.3</span>
+        <span>v0.3.3</span>
       </div>
     </div>
   </div>
@@ -54,6 +54,7 @@
   <button id="annotationModeMenuItem" class="menu-item hidden" type="button">Annotatiemodus</button>
   <button id="highlightModeMenuItem" class="menu-item" type="button">Markeren</button>
   <button id="textModeMenuItem" class="menu-item" type="button">Tekst toevoegen</button>
+  <button id="penModeMenuItem" class="menu-item" type="button">Pen / Vrij tekenen</button>
   <div class="highlight-color-row" aria-label="Markeerkleur">
     <button class="highlight-color-button active" data-highlight-color="yellow" type="button" aria-label="Geel"></button>
     <button class="highlight-color-button" data-highlight-color="green" type="button" aria-label="Groen"></button>
@@ -77,7 +78,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Cache Coherency & Runtime Recovery</h2>
+    <h2>Pen / Vrij tekenen</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -192,10 +193,26 @@
     </div>
 
 
+    <div id="penToolbarSlot" class="pen-toolbar-slot hidden">
+      <div class="pen-action-bar" role="toolbar" aria-label="Tekengereedschap">
+        <div class="pen-color-row">
+          <button class="pen-color-button active" type="button" data-pen-color="#111827" style="--pen:#111827"></button>
+          <button class="pen-color-button" type="button" data-pen-color="#dc2626" style="--pen:#dc2626"></button>
+          <button class="pen-color-button" type="button" data-pen-color="#2563eb" style="--pen:#2563eb"></button>
+          <button class="pen-color-button" type="button" data-pen-color="#16a34a" style="--pen:#16a34a"></button>
+          <button class="pen-color-button" type="button" data-pen-color="#7c3aed" style="--pen:#7c3aed"></button>
+          <input id="penColorPicker" type="color" value="#111827" aria-label="Vrije penkleur">
+        </div>
+        <div class="pen-width-row"><label for="penWidthRange">Dikte</label><input id="penWidthRange" type="range" min="1" max="12" step="1" value="3"><span id="penWidthLabel">3</span></div>
+        <div class="pen-actions"><button id="penSelectModeButton" type="button">Selecteren</button><button id="deletePenStrokeButton" class="hidden" type="button">Verwijderen</button><button id="clearPenPageButton" type="button">Wis pagina</button><button id="closePenModeButton" type="button">Sluiten</button></div>
+      </div>
+    </div>
+
     <div id="canvasWrap" class="canvas-wrap">
       <div id="pageStage" class="page-stage">
         <canvas id="pdfCanvas"></canvas>
         <div id="textLayer" class="text-layer" aria-label="Selecteerbare PDF-tekst"></div>
+        <svg id="penLayer" class="pen-layer" aria-label="Tekenlaag" preserveAspectRatio="none"></svg>
         <div id="annotationLayer" class="annotation-layer" aria-label="Annotatielaag"></div>
       </div>
     </div>
@@ -212,12 +229,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.3 — Pen / Vrij tekenen</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.4 — Notities</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.3.2.3</span>
+  <span>PdfReader v0.3.3</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -265,7 +282,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.2.3</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.3</dd></div>
       </dl>
     </details>
   </section>
@@ -321,6 +338,7 @@
       <button id="fsAnnotationModeButton" class="menu-item hidden" type="button">Annotatiemodus</button>
       <button id="fsHighlightModeButton" class="menu-item" type="button">Markeren</button>
       <button id="fsTextModeButton" class="menu-item" type="button">Tekst toevoegen</button>
+      <button id="fsPenModeButton" class="menu-item" type="button">Pen / Vrij tekenen</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -331,6 +349,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.2.3"></script>
+<script type="module" src="app.js?v=0.3.3"></script>
 </body>
 </html>

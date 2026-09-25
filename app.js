@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.2.3";
+const APP_VERSION = "0.3.3";
 
 const $ = id => document.getElementById(id);
 
@@ -57,6 +57,7 @@ const fsContinuousScrollButton = $("fsContinuousScrollButton");
 const continuousViewer = $("continuousViewer");
 const continuousPages = $("continuousPages");
 const annotationLayer = $("annotationLayer");
+const penLayer = $("penLayer");
 const annotationModeMenuItem = $("annotationModeMenuItem");
 const fsAnnotationModeButton = $("fsAnnotationModeButton");
 const annotationStatusChip = $("annotationStatusChip");
@@ -83,6 +84,16 @@ const textColorPalette = $("textColorPalette");
 const saveTextAnnotationButton = $("saveTextAnnotationButton");
 const deleteTextAnnotationButton = $("deleteTextAnnotationButton");
 const cancelTextAnnotationButton = $("cancelTextAnnotationButton");
+const penModeMenuItem = $("penModeMenuItem");
+const fsPenModeButton = $("fsPenModeButton");
+const penToolbarSlot = $("penToolbarSlot");
+const penColorPicker = $("penColorPicker");
+const penWidthRange = $("penWidthRange");
+const penWidthLabel = $("penWidthLabel");
+const penSelectModeButton = $("penSelectModeButton");
+const deletePenStrokeButton = $("deletePenStrokeButton");
+const clearPenPageButton = $("clearPenPageButton");
+const closePenModeButton = $("closePenModeButton");
 const textBoldButton = $("textBoldButton");
 const textItalicButton = $("textItalicButton");
 const textUnderlineButton = $("textUnderlineButton");
@@ -769,6 +780,7 @@ async function enableContinuousScroll() {
   if (annotationModeEnabled) setAnnotationMode(false);
   if (highlightModeEnabled) setHighlightMode(false);
   if (textModeEnabled) setTextMode(false);
+  if (penModeEnabled) setPenMode(false);
   setContinuousScrollEnabled(true);
   await buildContinuousPages();
 }
@@ -957,7 +969,7 @@ async function installPwa() {
 let offlineEngineReady = false;
 
 let serviceWorkerReloadedForVersion = false;
-const EXPECTED_RUNTIME_VERSION = "0.3.2.3";
+const EXPECTED_RUNTIME_VERSION = "0.3.3";
 let annotationModeEnabled = false;
 let annotationIdCounter = 1;
 const annotationsByPage = new Map();
@@ -980,6 +992,13 @@ let textMovePointerId = null;
 let movingTextAnnotation = null;
 let movingTextElement = null;
 let movingTextOffset = { x: 0, y: 0 };
+let penModeEnabled = false;
+let penSelectModeEnabled = false;
+let penColor = "#111827";
+let penWidth = 3;
+let activePenPointerId = null;
+let activePenStroke = null;
+let activePenPathElement = null;
 
 
 function htmlRuntimeVersion() {
@@ -1100,7 +1119,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.2.3",
+      "./service-worker.js?v=0.3.3",
       {
         scope: "./",
         updateViaCache: "none"
@@ -1193,6 +1212,7 @@ function setAnnotationMode(enabled) {
   annotationModeEnabled = Boolean(enabled);
   if (annotationModeEnabled && highlightModeEnabled) setHighlightMode(false);
   if (annotationModeEnabled && textModeEnabled) setTextMode(false);
+  if (annotationModeEnabled && penModeEnabled) setPenMode(false);
   document.body.classList.toggle("annotation-mode", annotationModeEnabled);
   annotationLayer.classList.toggle("annotation-layer-active", annotationModeEnabled);
   annotationStatusChip?.classList.toggle("hidden", !annotationModeEnabled);
@@ -1238,6 +1258,7 @@ function deleteSelectedAnnotation() {
     pendingTextPoint = null;
     hideTextEditor();
     renderAnnotationsForCurrentPage();
+    renderPenStrokesForCurrentPage();
   } else {
     renderAnnotationsForCurrentPage();
   }
@@ -1339,7 +1360,9 @@ function resetAnnotationDocumentState() {
   setAnnotationMode(false);
   setHighlightMode(false);
   setTextMode(false);
+  setPenMode(false);
   renderAnnotationsForCurrentPage();
+  renderPenStrokesForCurrentPage();
 }
 
 annotationLayer.addEventListener("click", event => {
@@ -1442,6 +1465,7 @@ function setHighlightMode(enabled) {
   if (highlightModeEnabled) {
     if (annotationModeEnabled) setAnnotationMode(false);
     if (textModeEnabled) setTextMode(false);
+    if (penModeEnabled) setPenMode(false);
 
     selectedAnnotationId = null;
     clearPendingHighlightSelection();
@@ -1867,6 +1891,7 @@ function updateTextAnnotationElementPosition(element, annotation) {
 
 function setTextMode(enabled) {
   textModeEnabled = Boolean(enabled);
+  if (textModeEnabled && penModeEnabled) setPenMode(false);
   document.body.classList.toggle("text-mode", textModeEnabled);
   annotationLayer.classList.toggle("text-layer-active", textModeEnabled);
 
@@ -2070,6 +2095,22 @@ function deleteEditingTextAnnotation() {
 function textAnnotationAtTarget(target) {
   return target?.closest?.(".annotation-text") || null;
 }
+
+function setPenColor(color){if(!/^#[0-9a-fA-F]{6}$/.test(String(color||"")))return;penColor=String(color).toLowerCase();penColorPicker.value=penColor;document.querySelectorAll("[data-pen-color]").forEach(b=>b.classList.toggle("active",b.dataset.penColor.toLowerCase()===penColor));}
+function setPenWidth(value){const n=Math.max(1,Math.min(12,Number(value)||3));penWidth=n;penWidthRange.value=String(n);penWidthLabel.textContent=String(n);}
+function setPenSelectMode(enabled){penSelectModeEnabled=Boolean(enabled);document.body.classList.toggle("pen-select-mode",penSelectModeEnabled);penSelectModeButton.classList.toggle("active",penSelectModeEnabled);penSelectModeButton.textContent=penSelectModeEnabled?"Tekenen":"Selecteren";if(!penSelectModeEnabled){selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");renderPenStrokesForCurrentPage();}}
+function setPenMode(enabled){penModeEnabled=Boolean(enabled);document.body.classList.toggle("pen-mode",penModeEnabled);penLayer.classList.toggle("pen-layer-active",penModeEnabled);if(penModeEnabled){if(annotationModeEnabled)setAnnotationMode(false);if(highlightModeEnabled)setHighlightMode(false);if(textModeEnabled)setTextMode(false);selectedAnnotationId=null;penToolbarSlot.classList.remove("hidden");setPenSelectMode(false);setInstallStatus("Pen actief: teken met vinger of muis op de PDF.",true);}else{selectedAnnotationId=null;activePenPointerId=null;activePenStroke=null;activePenPathElement=null;penToolbarSlot.classList.add("hidden");setPenSelectMode(false);}penModeMenuItem.textContent=penModeEnabled?"Pen uitschakelen":"Pen / Vrij tekenen";if(fsPenModeButton)fsPenModeButton.textContent=penModeEnabled?"Pen uitschakelen":"Pen / Vrij tekenen";renderPenStrokesForCurrentPage();}
+function togglePenMode(){if(!pdfDoc)return;if(continuousScrollEnabled){setInstallStatus("Vrij tekenen werkt in v0.3.3 alleen in single-page weergave.",true);return;}setPenMode(!penModeEnabled);closeMenus();closeFullscreenOverlay();}
+function penStrokeList(pageNumber=currentPage){return annotationPageList(pageNumber).filter(i=>i.type==="pen");}
+function normalizedPenPoint(clientX,clientY){const r=pageStage.getBoundingClientRect();return{x:r.width>0?Math.max(0,Math.min(1,(clientX-r.left)/r.width)):0,y:r.height>0?Math.max(0,Math.min(1,(clientY-r.top)/r.height)):0};}
+function penPathD(points){if(!points?.length)return"";const w=pageStage.clientWidth||1,h=pageStage.clientHeight||1;return points.map((p,i)=>`${i===0?"M":"L"} ${(p.x*w).toFixed(2)} ${(p.y*h).toFixed(2)}`).join(" ");}
+function renderPenStrokesForCurrentPage(){if(!penLayer)return;penLayer.replaceChildren();const w=Math.max(1,pageStage.clientWidth),h=Math.max(1,pageStage.clientHeight);penLayer.setAttribute("viewBox",`0 0 ${w} ${h}`);for(const a of penStrokeList(currentPage)){const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.dataset.annotationId=a.id;p.setAttribute("d",penPathD(a.points||[]));p.setAttribute("fill","none");p.setAttribute("stroke",a.color||"#111827");p.setAttribute("stroke-width",String(Math.max(1,(a.width||3)*Math.max(.65,Math.min(2.5,w/800)))));p.setAttribute("stroke-linecap","round");p.setAttribute("stroke-linejoin","round");p.classList.add("pen-stroke");if(a.id===selectedAnnotationId)p.classList.add("selected");penLayer.appendChild(p);}}
+function beginPenStroke(e){if(!penModeEnabled||penSelectModeEnabled||!pdfDoc||continuousScrollEnabled)return;if(e.button!==undefined&&e.button!==0)return;e.preventDefault();const a={id:nextAnnotationId(),type:"pen",page:currentPage,color:penColor,width:penWidth,points:[normalizedPenPoint(e.clientX,e.clientY)],createdAt:new Date().toISOString()};annotationPageList(currentPage).push(a);activePenPointerId=e.pointerId;activePenStroke=a;penLayer.setPointerCapture?.(e.pointerId);renderPenStrokesForCurrentPage();activePenPathElement=penLayer.querySelector(`[data-annotation-id="${a.id}"]`);}
+function updatePenStroke(e){if(!activePenStroke||activePenPointerId!==e.pointerId)return;e.preventDefault();const p=normalizedPenPoint(e.clientX,e.clientY),pts=activePenStroke.points,prev=pts[pts.length-1];if(Math.hypot(p.x-prev.x,p.y-prev.y)<.0015)return;pts.push(p);activePenPathElement?.setAttribute("d",penPathD(pts));}
+function endPenStroke(e){if(!activePenStroke||activePenPointerId!==e.pointerId)return;e.preventDefault();penLayer.releasePointerCapture?.(e.pointerId);if((activePenStroke.points||[]).length<2){const p=activePenStroke.points[0];activePenStroke.points.push({x:Math.min(1,p.x+.001),y:p.y});}activePenStroke.updatedAt=new Date().toISOString();activePenPointerId=null;activePenStroke=null;activePenPathElement=null;renderPenStrokesForCurrentPage();}
+function selectPenStrokeAtPoint(clientX,clientY){if(!penModeEnabled||!penSelectModeEnabled)return;const r=pageStage.getBoundingClientRect();const x=clientX-r.left,y=clientY-r.top;let best=null,dist=Infinity;for(const a of penStrokeList(currentPage)){for(const p of a.points||[]){const d=Math.hypot(p.x*r.width-x,p.y*r.height-y);if(d<dist){dist=d;best=a;}}}if(best&&dist<=22){selectedAnnotationId=best.id;deletePenStrokeButton.classList.remove("hidden");}else{selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");}renderPenStrokesForCurrentPage();}
+function deleteSelectedPenStroke(){if(!selectedAnnotationId)return;const l=annotationPageList(currentPage),i=l.findIndex(a=>a.id===selectedAnnotationId&&a.type==="pen");if(i>=0)l.splice(i,1);selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");renderPenStrokesForCurrentPage();}
+function clearPenStrokesForCurrentPage(){annotationsByPage.set(currentPage,annotationPageList(currentPage).filter(a=>a.type!=="pen"));selectedAnnotationId=null;deletePenStrokeButton.classList.add("hidden");renderPenStrokesForCurrentPage();}
 
 function fullscreenSupported() {
   return Boolean(
@@ -2761,6 +2802,20 @@ pageStage.addEventListener("pointerup", endTextMove);
 pageStage.addEventListener("pointercancel", endTextMove);
 
 
+penModeMenuItem.addEventListener("click", togglePenMode);
+if (fsPenModeButton) fsPenModeButton.addEventListener("click", togglePenMode);
+document.querySelectorAll("[data-pen-color]").forEach(button=>button.addEventListener("click",()=>setPenColor(button.dataset.penColor)));
+penColorPicker.addEventListener("input",()=>setPenColor(penColorPicker.value));
+penWidthRange.addEventListener("input",()=>setPenWidth(penWidthRange.value));
+penSelectModeButton.addEventListener("click",()=>setPenSelectMode(!penSelectModeEnabled));
+deletePenStrokeButton.addEventListener("click",deleteSelectedPenStroke);
+clearPenPageButton.addEventListener("click",clearPenStrokesForCurrentPage);
+closePenModeButton.addEventListener("click",()=>setPenMode(false));
+penLayer.addEventListener("pointerdown",e=>{if(penSelectModeEnabled){selectPenStrokeAtPoint(e.clientX,e.clientY);return;}beginPenStroke(e);});
+penLayer.addEventListener("pointermove",updatePenStroke);
+penLayer.addEventListener("pointerup",endPenStroke);
+penLayer.addEventListener("pointercancel",endPenStroke);
+
 textModeMenuItem.addEventListener("click", toggleTextMode);
 if (fsTextModeButton) {
   fsTextModeButton.addEventListener("click", toggleTextMode);
@@ -3135,4 +3190,4 @@ if (await verifyRuntimeCoherency()) {
   await loadPdfJs();
 }
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Cache Coherency & Runtime Recovery geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Pen / Vrij tekenen geladen.`);
