@@ -9,12 +9,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.1.2">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.1.2">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.1.2">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.2">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.2">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.2">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.1.2">
-  <title>PdfReader v0.3.1.2</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.2">
+  <title>PdfReader v0.3.2</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -24,7 +24,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.1.2</span>
+        <span>v0.3.2</span>
       </div>
     </div>
   </div>
@@ -52,6 +52,7 @@
   <button id="continuousScrollMenuItem" class="menu-item" type="button">Doorlopend scrollen</button>
   <button id="annotationModeMenuItem" class="menu-item hidden" type="button">Annotatiemodus</button>
   <button id="highlightModeMenuItem" class="menu-item" type="button">Markeren</button>
+  <button id="textModeMenuItem" class="menu-item" type="button">Tekst toevoegen</button>
   <div class="highlight-color-row" aria-label="Markeerkleur">
     <button class="highlight-color-button active" data-highlight-color="yellow" type="button" aria-label="Geel"></button>
     <button class="highlight-color-button" data-highlight-color="green" type="button" aria-label="Groen"></button>
@@ -75,7 +76,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Highlight Action Bar UX Fix</h2>
+    <h2>Tekst toevoegen</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -128,6 +129,28 @@
   <button id="closeHighlightActionButton" type="button">Sluiten</button>
 </div></div>
 
+    <div id="textToolbarSlot" class="text-toolbar-slot hidden">
+      <div id="textActionBar" class="text-action-bar" role="toolbar" aria-label="Tekstannotatie">
+        <textarea id="textDraftInput" rows="2" maxlength="500" placeholder="Typ tekst…"></textarea>
+        <div class="text-action-options">
+          <select id="textSizeSelect" aria-label="Tekstgrootte">
+            <option value="0.016">Klein</option>
+            <option value="0.020" selected>Normaal</option>
+            <option value="0.026">Groot</option>
+          </select>
+          <select id="textColorSelect" aria-label="Tekstkleur">
+            <option value="#111827" selected>Zwart</option>
+            <option value="#dc2626">Rood</option>
+            <option value="#2563eb">Blauw</option>
+          </select>
+          <button id="saveTextAnnotationButton" type="button">Opslaan</button>
+          <button id="deleteTextAnnotationButton" class="hidden" type="button">Verwijderen</button>
+          <button id="cancelTextAnnotationButton" type="button">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+
     <div id="canvasWrap" class="canvas-wrap">
       <div id="pageStage" class="page-stage">
         <canvas id="pdfCanvas"></canvas>
@@ -148,12 +171,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.2 — Tekst toevoegen</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.3 — Pen / Vrij tekenen</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.3.1.2</span>
+  <span>PdfReader v0.3.2</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -184,7 +207,7 @@
     <div id="manualInstallBlock" class="install-block hidden">
       <strong>Handmatige installatie</strong>
       <p id="manualInstallText">Gebruik het browsermenu om PdfReader te installeren.</p>
-      <a id="openRegularBrowserLink" class="secondary-install-button" href="https://gasvdv-lab.github.io/PdfReader/?v=0.2.5.2" target="_blank" rel="noopener">Open de app in een nieuw browsertabblad</a>
+      <a id="openRegularBrowserLink" class="secondary-install-button" href="https://gasvdv-lab.github.io/PdfReader/?v=0.3.2" target="_blank" rel="noopener">Open de app in een nieuw browsertabblad</a>
     </div>
 
     <div id="installedBlock" class="install-block success hidden">
@@ -201,7 +224,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.1.2</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.2</dd></div>
       </dl>
     </details>
   </section>
@@ -256,6 +279,7 @@
       <button id="fsContinuousScrollButton" class="menu-item" type="button">Doorlopend scrollen</button>
       <button id="fsAnnotationModeButton" class="menu-item hidden" type="button">Annotatiemodus</button>
       <button id="fsHighlightModeButton" class="menu-item" type="button">Markeren</button>
+      <button id="fsTextModeButton" class="menu-item" type="button">Tekst toevoegen</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -266,6 +290,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.1.2"></script>
+<script type="module" src="app.js?v=0.3.2"></script>
 </body>
 </html>
