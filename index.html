@@ -9,12 +9,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.2">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.2">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.2">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.2.2">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.2.2">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.2.2">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.2">
-  <title>PdfReader v0.3.2</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.2.2">
+  <title>PdfReader v0.3.2.2</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -24,7 +24,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.2</span>
+        <span>v0.3.2.2</span>
       </div>
     </div>
   </div>
@@ -76,7 +76,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Tekst toevoegen</h2>
+    <h2>Advanced Text Style</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -132,17 +132,57 @@
     <div id="textToolbarSlot" class="text-toolbar-slot hidden">
       <div id="textActionBar" class="text-action-bar" role="toolbar" aria-label="Tekstannotatie">
         <textarea id="textDraftInput" rows="2" maxlength="500" placeholder="Typ tekst…"></textarea>
+        <div class="text-format-row">
+          <select id="textFontSelect" aria-label="Lettertype">
+            <option value="Arial, Helvetica, sans-serif" selected>Arial</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Courier New', monospace">Courier</option>
+          </select>
+
+          <div class="text-size-control">
+            <label for="textSizeRange">Grootte</label>
+            <input id="textSizeRange" type="range" min="8" max="72" step="1" value="20" aria-label="Tekstgrootte schuifregelaar">
+            <input id="textSizeNumber" type="number" min="8" max="72" step="1" value="20" inputmode="numeric" aria-label="Tekstgrootte">
+          </div>
+
+          <div class="text-color-control">
+            <label for="textColorPicker">Kleur</label>
+            <input id="textColorPicker" type="color" value="#111827" aria-label="Vrije tekstkleur">
+            <span id="textColorHex">#111827</span>
+          </div>
+        </div>
+
+        <div id="textColorPalette" class="text-color-palette" aria-label="Snelle kleurkeuze">
+          <button type="button" data-text-color="#111827" style="--swatch:#111827" aria-label="Zwart"></button>
+          <button type="button" data-text-color="#374151" style="--swatch:#374151" aria-label="Donkergrijs"></button>
+          <button type="button" data-text-color="#6b7280" style="--swatch:#6b7280" aria-label="Grijs"></button>
+          <button type="button" data-text-color="#ffffff" style="--swatch:#ffffff" aria-label="Wit"></button>
+          <button type="button" data-text-color="#dc2626" style="--swatch:#dc2626" aria-label="Rood"></button>
+          <button type="button" data-text-color="#ea580c" style="--swatch:#ea580c" aria-label="Oranje"></button>
+          <button type="button" data-text-color="#ca8a04" style="--swatch:#ca8a04" aria-label="Oker"></button>
+          <button type="button" data-text-color="#16a34a" style="--swatch:#16a34a" aria-label="Groen"></button>
+          <button type="button" data-text-color="#0d9488" style="--swatch:#0d9488" aria-label="Turkoois"></button>
+          <button type="button" data-text-color="#2563eb" style="--swatch:#2563eb" aria-label="Blauw"></button>
+          <button type="button" data-text-color="#4f46e5" style="--swatch:#4f46e5" aria-label="Indigo"></button>
+          <button type="button" data-text-color="#7c3aed" style="--swatch:#7c3aed" aria-label="Paars"></button>
+          <button type="button" data-text-color="#c026d3" style="--swatch:#c026d3" aria-label="Magenta"></button>
+          <button type="button" data-text-color="#db2777" style="--swatch:#db2777" aria-label="Roze"></button>
+          <button type="button" data-text-color="#7f1d1d" style="--swatch:#7f1d1d" aria-label="Donkerrood"></button>
+          <button type="button" data-text-color="#14532d" style="--swatch:#14532d" aria-label="Donkergroen"></button>
+        </div>
+
+        <div class="text-format-buttons" aria-label="Tekstopmaak">
+          <button id="textBoldButton" class="format-toggle" type="button" aria-label="Vet"><b>B</b></button>
+          <button id="textItalicButton" class="format-toggle" type="button" aria-label="Cursief"><i>I</i></button>
+          <button id="textUnderlineButton" class="format-toggle" type="button" aria-label="Onderlijnen"><u>U</u></button>
+
+          <button id="textAlignLeftButton" class="format-toggle active" type="button" aria-label="Links uitlijnen">≡</button>
+          <button id="textAlignCenterButton" class="format-toggle" type="button" aria-label="Centreren">≣</button>
+          <button id="textAlignRightButton" class="format-toggle" type="button" aria-label="Rechts uitlijnen">≡</button>
+        </div>
+
         <div class="text-action-options">
-          <select id="textSizeSelect" aria-label="Tekstgrootte">
-            <option value="0.016">Klein</option>
-            <option value="0.020" selected>Normaal</option>
-            <option value="0.026">Groot</option>
-          </select>
-          <select id="textColorSelect" aria-label="Tekstkleur">
-            <option value="#111827" selected>Zwart</option>
-            <option value="#dc2626">Rood</option>
-            <option value="#2563eb">Blauw</option>
-          </select>
+          <button id="moveTextAnnotationButton" class="hidden" type="button">Verplaatsen</button>
           <button id="saveTextAnnotationButton" type="button">Opslaan</button>
           <button id="deleteTextAnnotationButton" class="hidden" type="button">Verwijderen</button>
           <button id="cancelTextAnnotationButton" type="button">Annuleren</button>
@@ -176,7 +216,7 @@
 </main>
 
 <footer>
-  <span>PdfReader v0.3.2</span>
+  <span>PdfReader v0.3.2.2</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -224,7 +264,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.2</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.2.2</dd></div>
       </dl>
     </details>
   </section>
@@ -290,6 +330,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.2"></script>
+<script type="module" src="app.js?v=0.3.2.2"></script>
 </body>
 </html>

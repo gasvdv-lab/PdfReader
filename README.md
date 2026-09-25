@@ -1,36 +1,31 @@
-# PdfReader v0.3.2 — Tekst toevoegen
-
-## Doel
-Vrije tekst op een gekozen PDF-positie kunnen plaatsen.
-
-## Werking
-1. Kies `Tekst toevoegen`.
-2. Tik op de gewenste plek in de PDF.
-3. De invoerbalk boven de PDF opent.
-4. Typ tekst.
-5. Kies optioneel grootte en kleur.
-6. Tik `Opslaan`.
+# PdfReader v0.3.2.2 — Advanced Text Style
 
 ## Nieuw
-- vrije tekstannotaties per pagina
-- positie opgeslagen als genormaliseerde PDF-coördinaten
-- klein / normaal / groot
-- zwart / rood / blauw
-- bestaande tekstannotatie aantikken om te bewerken
-- verwijderen vanuit de editor
-- zoom, fullscreen en rotatie behouden positie en proportionele tekstgrootte
-- mobile-first editor boven de PDF
-- continuous scroll schakelt tekstmodus uit
-- stale PWA-links/versienummers bijgewerkt naar v0.3.2
 
-## Bewuste beperking
-Tekstannotaties zijn nog alleen in geheugen. Permanente PDF-export komt later.
+### Vrije lettergrootte
+De vaste XS/Klein/Normaal/Groot/XL-keuze is vervangen door:
+- slider van 8 t/m 72
+- numerieke invoer van 8 t/m 72
+- slider en getal blijven synchroon
 
-## Volgende stap
-v0.3.3 — Pen / Vrij tekenen
+De waarde wordt intern als genormaliseerde PDF-grootte opgeslagen zodat tekst correct meeschaalt bij zoom, fullscreen en rotatie.
+
+### Uitgebreide kleuren
+- volledige Android/Windows kleurkiezer
+- hex-kleur zichtbaar
+- 16 snelle kleuren:
+  zwart, donkergrijs, grijs, wit, rood, oranje, oker, groen,
+  turkoois, blauw, indigo, paars, magenta, roze, donkerrood en donkergroen
+- eigen kleur via de native kleurkiezer
+
+Alle bestaande opmaak blijft:
+- Arial / Georgia / Courier
+- vet / cursief / onderlijnd
+- links / midden / rechts
+- verplaatsen met vinger of muis
 
 ## Testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.3.2
+https://gasvdv-lab.github.io/PdfReader/?v=0.3.2.2
 
 ## Vaste app-link
 https://gasvdv-lab.github.io/PdfReader/

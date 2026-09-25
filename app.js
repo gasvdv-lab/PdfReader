@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.2";
+const APP_VERSION = "0.3.2.2";
 
 const $ = id => document.getElementById(id);
 
@@ -74,11 +74,22 @@ const fsTextModeButton = $("fsTextModeButton");
 const textToolbarSlot = $("textToolbarSlot");
 const textActionBar = $("textActionBar");
 const textDraftInput = $("textDraftInput");
-const textSizeSelect = $("textSizeSelect");
-const textColorSelect = $("textColorSelect");
+const textFontSelect = $("textFontSelect");
+const textSizeRange = $("textSizeRange");
+const textSizeNumber = $("textSizeNumber");
+const textColorPicker = $("textColorPicker");
+const textColorHex = $("textColorHex");
+const textColorPalette = $("textColorPalette");
 const saveTextAnnotationButton = $("saveTextAnnotationButton");
 const deleteTextAnnotationButton = $("deleteTextAnnotationButton");
 const cancelTextAnnotationButton = $("cancelTextAnnotationButton");
+const textBoldButton = $("textBoldButton");
+const textItalicButton = $("textItalicButton");
+const textUnderlineButton = $("textUnderlineButton");
+const textAlignLeftButton = $("textAlignLeftButton");
+const textAlignCenterButton = $("textAlignCenterButton");
+const textAlignRightButton = $("textAlignRightButton");
+const moveTextAnnotationButton = $("moveTextAnnotationButton");
 
 const installAppMenuItem = $("installAppMenuItem");
 const installStatus = $("installStatus");
@@ -957,6 +968,15 @@ let suppressHighlightSelectionCapture = false;
 let textModeEnabled = false;
 let pendingTextPoint = null;
 let editingTextAnnotationId = null;
+let textBold = false;
+let textItalic = false;
+let textUnderline = false;
+let textAlign = "left";
+let textMoveModeEnabled = false;
+let textMovePointerId = null;
+let movingTextAnnotation = null;
+let movingTextElement = null;
+let movingTextOffset = { x: 0, y: 0 };
 
 function updateOfflineUi() {
   if (!diagOffline) return;
@@ -983,7 +1003,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.2",
+      "./service-worker.js?v=0.3.2.2",
       {
         scope: "./",
         updateViaCache: "none"
@@ -1103,7 +1123,12 @@ function renderAnnotationsForCurrentPage() {
       item.style.left = `${annotation.x * 100}%`;
       item.style.top = `${annotation.y * 100}%`;
       item.style.color = annotation.color || "#111827";
+      item.style.fontFamily = annotation.fontFamily || "Arial, Helvetica, sans-serif";
       item.style.fontSize = `${Math.max(9, (annotation.fontSize || 0.020) * pageStage.clientWidth)}px`;
+      item.style.fontWeight = annotation.bold ? "700" : "500";
+      item.style.fontStyle = annotation.italic ? "italic" : "normal";
+      item.style.textDecoration = annotation.underline ? "underline" : "none";
+      item.style.textAlign = annotation.align || "left";
 
       if (annotation.id === selectedAnnotationId) {
         item.classList.add("selected");
@@ -1596,6 +1621,113 @@ pageStage.addEventListener("click", event => {
 });
 
 
+
+
+function clampTextSize(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 20;
+  return Math.max(8, Math.min(72, Math.round(numeric)));
+}
+
+function textSizeToNormalized(value) {
+  return clampTextSize(value) / 1000;
+}
+
+function normalizedToTextSize(value) {
+  const normalized = Number(value);
+  if (!Number.isFinite(normalized)) return 20;
+  return clampTextSize(Math.round(normalized * 1000));
+}
+
+function setTextSizeUi(value) {
+  const size = clampTextSize(value);
+  textSizeRange.value = String(size);
+  textSizeNumber.value = String(size);
+}
+
+function normalizeHexColor(value) {
+  const raw = String(value || "").trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw.toLowerCase();
+  return "#111827";
+}
+
+function setTextColorUi(value) {
+  const color = normalizeHexColor(value);
+  textColorPicker.value = color;
+  textColorHex.textContent = color.toUpperCase();
+
+  document.querySelectorAll("[data-text-color]").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.textColor.toLowerCase() === color
+    );
+  });
+}
+
+function updateTextFormatButtons() {
+  textBoldButton.classList.toggle("active", textBold);
+  textItalicButton.classList.toggle("active", textItalic);
+  textUnderlineButton.classList.toggle("active", textUnderline);
+
+  textAlignLeftButton.classList.toggle("active", textAlign === "left");
+  textAlignCenterButton.classList.toggle("active", textAlign === "center");
+  textAlignRightButton.classList.toggle("active", textAlign === "right");
+}
+
+function resetTextFormatting() {
+  textFontSelect.value = "Arial, Helvetica, sans-serif";
+  setTextSizeUi(20);
+  setTextColorUi("#111827");
+  textBold = false;
+  textItalic = false;
+  textUnderline = false;
+  textAlign = "left";
+  updateTextFormatButtons();
+}
+
+function setTextAlignment(alignment) {
+  if (!["left", "center", "right"].includes(alignment)) return;
+  textAlign = alignment;
+  updateTextFormatButtons();
+}
+
+function setTextMoveMode(enabled) {
+  textMoveModeEnabled = Boolean(enabled) && Boolean(editingTextAnnotationId);
+
+  document.body.classList.toggle("text-move-mode", textMoveModeEnabled);
+
+  moveTextAnnotationButton.classList.toggle(
+    "active",
+    textMoveModeEnabled
+  );
+
+  moveTextAnnotationButton.textContent = textMoveModeEnabled
+    ? "Verplaatsen klaar"
+    : "Verplaatsen";
+
+  if (textMoveModeEnabled) {
+    textDraftInput.blur();
+    setInstallStatus(
+      "Verplaatsmodus actief: sleep de geselecteerde tekst naar een nieuwe positie.",
+      true
+    );
+  }
+}
+
+function currentEditingTextAnnotation() {
+  if (!editingTextAnnotationId) return null;
+  const list = annotationsByPage.get(currentPage) || [];
+  return list.find(
+    item => item.id === editingTextAnnotationId && item.type === "text"
+  ) || null;
+}
+
+function updateTextAnnotationElementPosition(element, annotation) {
+  if (!element || !annotation) return;
+  element.style.left = `${annotation.x * 100}%`;
+  element.style.top = `${annotation.y * 100}%`;
+}
+
 function setTextMode(enabled) {
   textModeEnabled = Boolean(enabled);
   document.body.classList.toggle("text-mode", textModeEnabled);
@@ -1604,6 +1736,7 @@ function setTextMode(enabled) {
   if (textModeEnabled) {
     if (annotationModeEnabled) setAnnotationMode(false);
     if (highlightModeEnabled) setHighlightMode(false);
+    setTextMoveMode(false);
 
     selectedAnnotationId = null;
     pendingTextPoint = null;
@@ -1615,6 +1748,7 @@ function setTextMode(enabled) {
       true
     );
   } else {
+    setTextMoveMode(false);
     selectedAnnotationId = null;
     pendingTextPoint = null;
     editingTextAnnotationId = null;
@@ -1651,11 +1785,12 @@ function toggleTextMode() {
 }
 
 function hideTextEditor() {
+  setTextMoveMode(false);
   textToolbarSlot.classList.add("hidden");
   textDraftInput.value = "";
-  textSizeSelect.value = "0.020";
-  textColorSelect.value = "#111827";
+  resetTextFormatting();
   deleteTextAnnotationButton.classList.add("hidden");
+  moveTextAnnotationButton.classList.add("hidden");
 }
 
 function openTextEditorAt(point) {
@@ -1664,9 +1799,9 @@ function openTextEditorAt(point) {
   selectedAnnotationId = null;
 
   textDraftInput.value = "";
-  textSizeSelect.value = "0.020";
-  textColorSelect.value = "#111827";
+  resetTextFormatting();
   deleteTextAnnotationButton.classList.add("hidden");
+  moveTextAnnotationButton.classList.add("hidden");
   textToolbarSlot.classList.remove("hidden");
 
   window.setTimeout(() => {
@@ -1682,9 +1817,17 @@ function openTextEditorForAnnotation(annotation) {
   selectedAnnotationId = annotation.id;
 
   textDraftInput.value = annotation.text || "";
-  textSizeSelect.value = String(annotation.fontSize || 0.020);
-  textColorSelect.value = annotation.color || "#111827";
+  textFontSelect.value = annotation.fontFamily || "Arial, Helvetica, sans-serif";
+  setTextSizeUi(normalizedToTextSize(annotation.fontSize || 0.020));
+  setTextColorUi(annotation.color || "#111827");
+  textBold = Boolean(annotation.bold);
+  textItalic = Boolean(annotation.italic);
+  textUnderline = Boolean(annotation.underline);
+  textAlign = annotation.align || "left";
+  updateTextFormatButtons();
+
   deleteTextAnnotationButton.classList.remove("hidden");
+  moveTextAnnotationButton.classList.remove("hidden");
   textToolbarSlot.classList.remove("hidden");
 
   renderAnnotationsForCurrentPage();
@@ -1709,8 +1852,9 @@ function saveTextAnnotation() {
     return;
   }
 
-  const fontSize = Number(textSizeSelect.value) || 0.020;
-  const color = textColorSelect.value || "#111827";
+  const fontFamily = textFontSelect.value || "Arial, Helvetica, sans-serif";
+  const fontSize = textSizeToNormalized(textSizeNumber.value);
+  const color = normalizeHexColor(textColorPicker.value);
 
   if (editingTextAnnotationId) {
     const list = annotationPageList(currentPage);
@@ -1718,8 +1862,13 @@ function saveTextAnnotation() {
 
     if (annotation && annotation.type === "text") {
       annotation.text = text;
+      annotation.fontFamily = fontFamily;
       annotation.fontSize = fontSize;
       annotation.color = color;
+      annotation.bold = textBold;
+      annotation.italic = textItalic;
+      annotation.underline = textUnderline;
+      annotation.align = textAlign;
       annotation.updatedAt = new Date().toISOString();
       selectedAnnotationId = annotation.id;
     }
@@ -1736,8 +1885,13 @@ function saveTextAnnotation() {
       x: pendingTextPoint.x,
       y: pendingTextPoint.y,
       text,
+      fontFamily,
       fontSize,
       color,
+      bold: textBold,
+      italic: textItalic,
+      underline: textUnderline,
+      align: textAlign,
       createdAt: new Date().toISOString()
     };
 
@@ -2387,10 +2541,145 @@ continuousScrollMenuItem.addEventListener("click", toggleContinuousScroll);
 annotationModeMenuItem.addEventListener("click", toggleAnnotationMode);
 highlightModeMenuItem.addEventListener("click", toggleHighlightMode);
 
+
+function beginTextMove(event) {
+  if (!textMoveModeEnabled || !editingTextAnnotationId) return;
+
+  const target = event.target.closest?.(".annotation-text");
+  if (!target) return;
+
+  const annotationId = target.dataset.annotationId;
+  if (annotationId !== editingTextAnnotationId) return;
+
+  const annotation = currentEditingTextAnnotation();
+  if (!annotation) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const point = normalizePoint(event.clientX, event.clientY);
+
+  movingTextAnnotation = annotation;
+  movingTextElement = target;
+  textMovePointerId = event.pointerId;
+  movingTextOffset = {
+    x: point.x - annotation.x,
+    y: point.y - annotation.y
+  };
+
+  target.setPointerCapture?.(event.pointerId);
+  target.classList.add("moving");
+}
+
+function updateTextMove(event) {
+  if (
+    !textMoveModeEnabled ||
+    !movingTextAnnotation ||
+    textMovePointerId !== event.pointerId
+  ) return;
+
+  event.preventDefault();
+
+  const point = normalizePoint(event.clientX, event.clientY);
+
+  movingTextAnnotation.x = Math.max(
+    0,
+    Math.min(0.98, point.x - movingTextOffset.x)
+  );
+  movingTextAnnotation.y = Math.max(
+    0,
+    Math.min(0.98, point.y - movingTextOffset.y)
+  );
+
+  updateTextAnnotationElementPosition(
+    movingTextElement,
+    movingTextAnnotation
+  );
+}
+
+function endTextMove(event) {
+  if (
+    !movingTextAnnotation ||
+    textMovePointerId !== event.pointerId
+  ) return;
+
+  event.preventDefault();
+
+  movingTextElement?.releasePointerCapture?.(event.pointerId);
+  movingTextElement?.classList.remove("moving");
+
+  movingTextAnnotation.updatedAt = new Date().toISOString();
+
+  movingTextAnnotation = null;
+  movingTextElement = null;
+  textMovePointerId = null;
+
+  renderAnnotationsForCurrentPage();
+
+  const annotation = currentEditingTextAnnotation();
+  if (annotation) {
+    openTextEditorForAnnotation(annotation);
+    setTextMoveMode(true);
+  }
+}
+
+pageStage.addEventListener("pointerdown", beginTextMove);
+pageStage.addEventListener("pointermove", updateTextMove);
+pageStage.addEventListener("pointerup", endTextMove);
+pageStage.addEventListener("pointercancel", endTextMove);
+
+
 textModeMenuItem.addEventListener("click", toggleTextMode);
 if (fsTextModeButton) {
   fsTextModeButton.addEventListener("click", toggleTextMode);
 }
+
+
+
+textSizeRange.addEventListener("input", () => {
+  setTextSizeUi(textSizeRange.value);
+});
+
+textSizeNumber.addEventListener("input", () => {
+  setTextSizeUi(textSizeNumber.value);
+});
+
+textSizeNumber.addEventListener("change", () => {
+  setTextSizeUi(textSizeNumber.value);
+});
+
+textColorPicker.addEventListener("input", () => {
+  setTextColorUi(textColorPicker.value);
+});
+
+textColorPalette.addEventListener("click", event => {
+  const button = event.target.closest("[data-text-color]");
+  if (!button) return;
+  setTextColorUi(button.dataset.textColor);
+});
+
+textBoldButton.addEventListener("click", () => {
+  textBold = !textBold;
+  updateTextFormatButtons();
+});
+
+textItalicButton.addEventListener("click", () => {
+  textItalic = !textItalic;
+  updateTextFormatButtons();
+});
+
+textUnderlineButton.addEventListener("click", () => {
+  textUnderline = !textUnderline;
+  updateTextFormatButtons();
+});
+
+textAlignLeftButton.addEventListener("click", () => setTextAlignment("left"));
+textAlignCenterButton.addEventListener("click", () => setTextAlignment("center"));
+textAlignRightButton.addEventListener("click", () => setTextAlignment("right"));
+
+moveTextAnnotationButton.addEventListener("click", () => {
+  setTextMoveMode(!textMoveModeEnabled);
+});
 
 saveTextAnnotationButton.addEventListener("click", saveTextAnnotation);
 deleteTextAnnotationButton.addEventListener("click", deleteEditingTextAnnotation);
@@ -2711,4 +3000,4 @@ await registerOfflineEngine();
 void updateInstallDiagnostics();
 await loadPdfJs();
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Tekst toevoegen geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Advanced Text Style geladen.`);

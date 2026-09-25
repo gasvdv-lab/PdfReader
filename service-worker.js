@@ -1,5 +1,5 @@
 /* PdfReader v0.2.6 — Offline Engine */
-const VERSION = "0.3.2";
+const VERSION = "0.3.2.2";
 const CACHE_NAME = `pdfreader-${VERSION}`;
 const CACHE_PREFIX = "pdfreader-";
 
@@ -16,11 +16,11 @@ const PDFJS_WORKER =
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=0.3.2",
-  "./app.js?v=0.3.2",
-  "./manifest.webmanifest?v=0.3.2",
+  "./styles.css?v=0.3.2.2",
+  "./app.js?v=0.3.2.2",
+  "./manifest.webmanifest?v=0.3.2.2",
   "./icon.svg",
-  "./icon-192.png?v=0.3.2",
+  "./icon-192.png?v=0.3.2.2",
   "./icon-512.png",
   PDFJS_MAIN,
   PDFJS_WORKER

@@ -1,33 +1,30 @@
-# PdfReader v0.3.2 — Testing
+# PdfReader v0.3.2.2 — Testing
 
 ## Testlink
-https://gasvdv-lab.github.io/PdfReader/?v=0.3.2
+https://gasvdv-lab.github.io/PdfReader/?v=0.3.2.2
 
-## Android
-1. Open een PDF.
-2. Kies ☰ → Tekst toevoegen.
-3. Tik op een vrije plek op de PDF.
-4. De teksteditor moet boven de PDF verschijnen.
-5. Android-toetsenbord mag de knoppen niet onbruikbaar maken.
-6. Typ tekst en tik Opslaan.
-7. Tekst moet op de gekozen PDF-positie verschijnen.
-8. Test klein/normaal/groot.
-9. Test zwart/rood/blauw.
-10. Zoom in/uit.
-11. Test fullscreen.
-12. Draai portrait ↔ landscape.
-13. Wissel pagina en ga terug.
-14. Tik een bestaande tekstannotatie aan.
-15. Wijzig de tekst en sla opnieuw op.
-16. Verwijder de annotatie.
-17. Activeer continuous scroll; tekstmodus moet uitschakelen.
+## Lettergrootte
+1. Voeg tekst toe.
+2. Beweeg de grootte-slider van 8 naar 72.
+3. Controleer dat het getal synchroon verandert.
+4. Vul handmatig bijvoorbeeld 13, 24, 48 en 72 in.
+5. Opslaan en opnieuw openen moet dezelfde grootte teruggeven.
+6. Test zoom, rotatie en fullscreen.
+
+## Kleuren
+1. Test alle 16 kleurvakjes.
+2. Open de vrije kleurkiezer.
+3. Kies een afwijkende kleur die niet in het palet staat.
+4. Sla op.
+5. Open annotatie opnieuw: kleur moet exact behouden zijn.
 
 ## Regressie
-- Markeren blijft werken.
-- Offline engine blijft werken.
-- Geen oude v0.2.5.2 installatielinks meer.
+- vet/cursief/onderlijnd
+- uitlijning
+- lettertype
+- verplaatsen
+- markeren
+- offline engine
 
 ## Acceptatie
-Tekst blijft gekoppeld aan dezelfde PDF-positie bij zoom, fullscreen, rotatie en paginawissel.
-
-Daarna v0.3.3 — Pen / Vrij tekenen.
+Tekstgrootte is vrij instelbaar van 8 t/m 72 en iedere geldige hexkleur kan gebruikt en herladen worden.
