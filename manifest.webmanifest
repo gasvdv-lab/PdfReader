@@ -2,7 +2,7 @@
   "id": "/PdfReader/",
   "name": "PdfReader",
   "short_name": "PdfReader",
-  "description": "Lokale PDF-reader met annotaties, algemene selectie, Undo/Redo en offline ondersteuning.",
+  "description": "Lokale PDF-reader en editor met pagina roteren, verwijderen, dupliceren, herschikken, samenvoegen en exporteren.",
   "start_url": "/PdfReader/",
   "scope": "/PdfReader/",
   "display": "standalone",

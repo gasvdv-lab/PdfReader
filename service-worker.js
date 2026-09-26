@@ -1,5 +1,5 @@
 /* PdfReader v0.3.2.3 — Cache Coherency & Runtime Recovery */
-const VERSION = "0.3.6";
+const VERSION = "0.4.0";
 const CACHE_NAME = `pdfreader-${VERSION}`;
 const INSTALL_CACHE = `${CACHE_NAME}-installing`;
 const CACHE_PREFIX = "pdfreader-";
@@ -8,17 +8,20 @@ const PDFJS_MAIN =
   "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.min.mjs";
 const PDFJS_WORKER =
   "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.worker.min.mjs";
+const PDFLIB_MAIN =
+  "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm";
 
 const CRITICAL_ASSETS = [
   "./index.html",
-  "./styles.css?v=0.3.6",
-  "./app.js?v=0.3.6",
-  "./manifest.webmanifest?v=0.3.6",
+  "./styles.css?v=0.4.0",
+  "./app.js?v=0.4.0",
+  "./manifest.webmanifest?v=0.4.0",
   "./icon.svg",
-  "./icon-192.png?v=0.3.6",
+  "./icon-192.png?v=0.4.0",
   "./icon-512.png",
   PDFJS_MAIN,
-  PDFJS_WORKER
+  PDFJS_WORKER,
+  PDFLIB_MAIN
 ];
 
 self.addEventListener("install", event => {
@@ -86,6 +89,10 @@ self.addEventListener("activate", event => {
 
 function isPdfJsRequest(url) {
   return url.href === PDFJS_MAIN || url.href === PDFJS_WORKER;
+}
+
+function isLibraryRequest(url) {
+  return isPdfJsRequest(url) || url.href === PDFLIB_MAIN;
 }
 
 function isVersionedAppAsset(url) {
@@ -169,7 +176,7 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (isPdfJsRequest(url)) {
+  if (isLibraryRequest(url)) {
     event.respondWith(exactCacheFirst(request));
     return;
   }

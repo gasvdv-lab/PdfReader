@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
   <meta name="application-name" content="PdfReader">
-  <meta name="pdfreader-version" content="0.3.6">
+  <meta name="pdfreader-version" content="0.4.0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.6">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.6">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.6">
+  <link rel="manifest" href="manifest.webmanifest?v=0.4.0">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.4.0">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.4.0">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.6">
-  <title>PdfReader v0.3.6</title>
+  <link rel="stylesheet" href="styles.css?v=0.4.0">
+  <title>PdfReader v0.4.0</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -25,7 +25,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.6</span>
+        <span>v0.4.0</span>
       </div>
     </div>
   </div>
@@ -39,6 +39,7 @@
   </div>
 
     <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
+    <input id="mergePdfInput" type="file" accept="application/pdf,.pdf" hidden>
 </header>
 
 <main>
@@ -57,6 +58,7 @@
   <button id="penModeMenuItem" class="menu-item" type="button">Pen / Vrij tekenen</button>
   <button id="noteModeMenuItem" class="menu-item" type="button">Notitie toevoegen</button>
   <button id="shapeModeMenuItem" class="menu-item" type="button">Vormen</button>
+  <button id="toggleEditToolbarMenuItem" class="menu-item" type="button">PDF bewerken</button>
   <div class="highlight-color-row" aria-label="Markeerkleur">
     <button class="highlight-color-button active" data-highlight-color="yellow" type="button" aria-label="Geel"></button>
     <button class="highlight-color-button" data-highlight-color="green" type="button" aria-label="Groen"></button>
@@ -80,8 +82,8 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Selectie + Undo/Redo</h2>
-    <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
+    <h2>PDF Editing Suite</h2>
+    <p>Deze release bundelt de vijf geplande PDF-bewerkingen: roteren, verwijderen, dupliceren, herschikken en PDF toevoegen/samenvoegen.</p>
   </div>
 
 
@@ -150,7 +152,25 @@
     </div>
 
 
-    <div id="historyToolbar" class="history-toolbar" role="toolbar" aria-label="Selectie en geschiedenis">
+    
+    <div id="pdfEditToolbar" class="pdf-edit-toolbar hidden" role="toolbar" aria-label="PDF bewerken">
+      <div class="pdf-edit-head">
+        <strong>PDF bewerken</strong>
+        <span id="pdfEditStatus">Origineel</span>
+      </div>
+      <div class="pdf-edit-actions">
+        <button id="rotatePageButton" type="button">↻ 90°</button>
+        <button id="deletePageButton" type="button">Pagina verwijderen</button>
+        <button id="duplicatePageButton" type="button">Dupliceren</button>
+        <button id="movePageUpButton" type="button">← Omhoog</button>
+        <button id="movePageDownButton" type="button">Omlaag →</button>
+        <button id="mergePdfButton" type="button">PDF toevoegen</button>
+        <button id="exportPdfButton" class="primary" type="button">Exporteren</button>
+        <button id="closePdfEditToolbarButton" type="button">Sluiten</button>
+      </div>
+    </div>
+
+<div id="historyToolbar" class="history-toolbar" role="toolbar" aria-label="Selectie en geschiedenis">
   <button id="globalSelectButton" type="button">Selecteren</button>
   <button id="undoButton" type="button" disabled>↶ Undo</button>
   <button id="redoButton" type="button" disabled>↷ Redo</button>
@@ -287,12 +307,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.4.0 — PDF Editing Foundation</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.4.1 — Annotaties meenemen in PDF-export</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.3.6</span>
+  <span>PdfReader v0.4.0</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -340,7 +360,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.6</dd></div>
+        <div><dt>Versie</dt><dd>v0.4.0</dd></div>
       </dl>
     </details>
   </section>
@@ -399,6 +419,7 @@
       <button id="fsPenModeButton" class="menu-item" type="button">Pen / Vrij tekenen</button>
       <button id="fsNoteModeButton" class="menu-item" type="button">Notitie toevoegen</button>
       <button id="fsShapeModeButton" class="menu-item" type="button">Vormen</button>
+      <button id="fsToggleEditToolbarButton" class="menu-item" type="button">PDF bewerken</button>
       <button id="fsFitWidthButton" class="menu-item" type="button">Passend op breedte</button>
       <button id="fsFitPageButton" class="menu-item" type="button">Passend op pagina</button>
       <button id="fsFillScreenButton" class="menu-item" type="button">Vul scherm</button>
@@ -409,6 +430,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.6"></script>
+<script type="module" src="app.js?v=0.4.0"></script>
 </body>
 </html>

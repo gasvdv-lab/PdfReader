@@ -1,8 +1,9 @@
-const APP_VERSION = "0.3.6";
+const APP_VERSION = "0.4.0";
 
 const $ = id => document.getElementById(id);
 
 const fileInput = $("fileInput");
+const mergePdfInput = $("mergePdfInput");
 const engineStatus = $("engineStatus");
 const fileName = $("fileName");
 const pageCount = $("pageCount");
@@ -84,6 +85,18 @@ const globalSelectButton = $("globalSelectButton");
 const undoButton = $("undoButton");
 const redoButton = $("redoButton");
 const deleteSelectedGlobalButton = $("deleteSelectedGlobalButton");
+const toggleEditToolbarMenuItem = $("toggleEditToolbarMenuItem");
+const fsToggleEditToolbarButton = $("fsToggleEditToolbarButton");
+const pdfEditToolbar = $("pdfEditToolbar");
+const pdfEditStatus = $("pdfEditStatus");
+const rotatePageButton = $("rotatePageButton");
+const deletePageButton = $("deletePageButton");
+const duplicatePageButton = $("duplicatePageButton");
+const movePageUpButton = $("movePageUpButton");
+const movePageDownButton = $("movePageDownButton");
+const mergePdfButton = $("mergePdfButton");
+const exportPdfButton = $("exportPdfButton");
+const closePdfEditToolbarButton = $("closePdfEditToolbarButton");
 const annotationModeMenuItem = $("annotationModeMenuItem");
 const fsAnnotationModeButton = $("fsAnnotationModeButton");
 const annotationStatusChip = $("annotationStatusChip");
@@ -997,7 +1010,7 @@ async function installPwa() {
 let offlineEngineReady = false;
 
 let serviceWorkerReloadedForVersion = false;
-const EXPECTED_RUNTIME_VERSION = "0.3.6";
+const EXPECTED_RUNTIME_VERSION = "0.4.0";
 let annotationModeEnabled = false;
 let annotationIdCounter = 1;
 const annotationsByPage = new Map();
@@ -1042,6 +1055,12 @@ let activeShapeAnnotation = null;
 let globalSelectModeEnabled = false;
 let undoStack = [];
 let redoStack = [];
+let pdfLib = null;
+let editingPdfDoc = null;
+let editingPdfBytes = null;
+let originalPdfBytes = null;
+let originalPdfFileName = "document.pdf";
+let pdfEditDirty = false;
 let historyMuted = false;
 let historyTimer = null;
 let lastHistorySerialized = "";
@@ -1070,6 +1089,10 @@ function resetReaderAfterFatalError(message) {
     }
 
     pdfDoc = null;
+    editingPdfDoc = null;
+    editingPdfBytes = null;
+    originalPdfBytes = null;
+    pdfEditDirty = false;
     currentPage = 1;
     currentScale = 1;
 
@@ -1165,7 +1188,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.6",
+      "./service-worker.js?v=0.4.0",
       {
         scope: "./",
         updateViaCache: "none"
@@ -2585,6 +2608,367 @@ function deleteSelectedGlobalAnnotation(){
   list.splice(i,1); selectedAnnotationId=null;
   renderAnnotationsForCurrentPage();renderPenStrokesForCurrentPage();renderShapesForCurrentPage();scheduleHistoryCommit();updateHistoryUi();
 }
+
+async function loadPdfLib() {
+  try {
+    pdfLib = await import("https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm");
+
+    if (
+      !pdfLib ||
+      typeof pdfLib.PDFDocument?.load !== "function" ||
+      typeof pdfLib.degrees !== "function"
+    ) {
+      throw new Error("pdf-lib kon niet correct worden geladen.");
+    }
+  } catch (error) {
+    console.error(error);
+    pdfLib = null;
+    setInstallStatus(
+      "PDF-bewerkingsengine kon niet worden geladen. Lezen blijft beschikbaar.",
+      true
+    );
+  }
+}
+
+function editingReady() {
+  return Boolean(pdfDoc && editingPdfDoc && pdfLib);
+}
+
+function updatePdfEditUi() {
+  const ready = editingReady();
+  const pages = editingPdfDoc?.getPageCount?.() || pdfDoc?.numPages || 0;
+
+  rotatePageButton.disabled = !ready;
+  deletePageButton.disabled = !ready || pages <= 1;
+  duplicatePageButton.disabled = !ready;
+  movePageUpButton.disabled = !ready || currentPage <= 1;
+  movePageDownButton.disabled = !ready || currentPage >= pages;
+  mergePdfButton.disabled = !ready;
+  exportPdfButton.disabled = !ready;
+
+  pdfEditStatus.textContent = pdfEditDirty
+    ? "Gewijzigd · nog niet geëxporteerd"
+    : "Origineel";
+  pdfEditStatus.classList.toggle("dirty", pdfEditDirty);
+}
+
+function setPdfEditDirty(dirty = true) {
+  pdfEditDirty = Boolean(dirty);
+  updatePdfEditUi();
+}
+
+function showPdfEditToolbar(show = true) {
+  if (!pdfDoc) return;
+
+  pdfEditToolbar.classList.toggle("hidden", !show);
+
+  if (show) {
+    closeMenus();
+    closeFullscreenOverlay();
+    updatePdfEditUi();
+  }
+}
+
+function togglePdfEditToolbar() {
+  if (!pdfDoc) return;
+  showPdfEditToolbar(pdfEditToolbar.classList.contains("hidden"));
+}
+
+function cloneAnnotationList(list) {
+  return JSON.parse(JSON.stringify(list || []));
+}
+
+function shiftAnnotationsAfterDelete(deletedPage) {
+  const next = new Map();
+
+  for (const [page, list] of annotationsByPage.entries()) {
+    if (page === deletedPage) continue;
+    const target = page > deletedPage ? page - 1 : page;
+    next.set(target, cloneAnnotationList(list).map(item => ({
+      ...item,
+      page: target
+    })));
+  }
+
+  annotationsByPage.clear();
+  for (const [page, list] of next.entries()) {
+    annotationsByPage.set(page, list);
+  }
+}
+
+function duplicateAnnotationsForPage(sourcePage, insertedPage) {
+  const next = new Map();
+
+  for (const [page, list] of annotationsByPage.entries()) {
+    const target = page > sourcePage ? page + 1 : page;
+    next.set(target, cloneAnnotationList(list).map(item => ({
+      ...item,
+      page: target
+    })));
+  }
+
+  const sourceList = cloneAnnotationList(
+    annotationsByPage.get(sourcePage) || []
+  ).map(item => ({
+    ...item,
+    id: `${item.id}-copy-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+    page: insertedPage
+  }));
+
+  if (sourceList.length) {
+    next.set(insertedPage, sourceList);
+  }
+
+  annotationsByPage.clear();
+  for (const [page, list] of next.entries()) {
+    annotationsByPage.set(page, list);
+  }
+}
+
+function swapAnnotationPages(pageA, pageB) {
+  const a = cloneAnnotationList(annotationsByPage.get(pageA) || []);
+  const b = cloneAnnotationList(annotationsByPage.get(pageB) || []);
+
+  if (b.length) {
+    annotationsByPage.set(
+      pageA,
+      b.map(item => ({ ...item, page: pageA }))
+    );
+  } else {
+    annotationsByPage.delete(pageA);
+  }
+
+  if (a.length) {
+    annotationsByPage.set(
+      pageB,
+      a.map(item => ({ ...item, page: pageB }))
+    );
+  } else {
+    annotationsByPage.delete(pageB);
+  }
+}
+
+async function refreshViewerFromEditingDocument({
+  targetPage = currentPage,
+  message = "PDF bijgewerkt."
+} = {}) {
+  if (!editingPdfDoc || !pdfjsLib) return;
+
+  const bytes = await editingPdfDoc.save();
+  editingPdfBytes = new Uint8Array(bytes);
+
+  ++renderGeneration;
+
+  if (renderTask) {
+    try { renderTask.cancel(); } catch {}
+    renderTask = null;
+  }
+
+  if (pdfDoc) {
+    try { await pdfDoc.destroy(); } catch {}
+  }
+
+  pdfDoc = await pdfjsLib.getDocument({
+    data: editingPdfBytes.slice()
+  }).promise;
+
+  currentPage = Math.max(
+    1,
+    Math.min(targetPage, pdfDoc.numPages)
+  );
+
+  pageTextCache.clear();
+  searchResults = [];
+  activeSearchIndex = -1;
+
+  resetThumbnails();
+  setContinuousScrollEnabled(false);
+  resetContinuousScroll();
+
+  pageCount.textContent = String(pdfDoc.numPages);
+  navPageCount.textContent = String(pdfDoc.numPages);
+
+  currentScale = await fitWidthScale(currentPage);
+
+  updateUi();
+  updatePdfEditUi();
+  await renderPage(currentPage, currentScale);
+
+  setMessage(message, "success");
+}
+
+async function rotateCurrentPage90() {
+  if (!editingReady()) return;
+
+  try {
+    const page = editingPdfDoc.getPage(currentPage - 1);
+    const current = page.getRotation()?.angle || 0;
+    page.setRotation(pdfLib.degrees((current + 90) % 360));
+
+    setPdfEditDirty(true);
+    await refreshViewerFromEditingDocument({
+      targetPage: currentPage,
+      message: `Pagina ${currentPage} 90° gedraaid.`
+    });
+  } catch (error) {
+    console.error(error);
+    setMessage(`Roteren mislukt: ${error?.message || error}`, "error");
+  }
+}
+
+async function deleteCurrentPdfPage() {
+  if (!editingReady()) return;
+
+  const pageCountValue = editingPdfDoc.getPageCount();
+
+  if (pageCountValue <= 1) {
+    setMessage("De laatste pagina kan niet verwijderd worden.", "error");
+    return;
+  }
+
+  try {
+    const deletedPage = currentPage;
+    editingPdfDoc.removePage(deletedPage - 1);
+    shiftAnnotationsAfterDelete(deletedPage);
+
+    setPdfEditDirty(true);
+
+    await refreshViewerFromEditingDocument({
+      targetPage: Math.min(deletedPage, editingPdfDoc.getPageCount()),
+      message: `Pagina ${deletedPage} verwijderd.`
+    });
+  } catch (error) {
+    console.error(error);
+    setMessage(`Pagina verwijderen mislukt: ${error?.message || error}`, "error");
+  }
+}
+
+async function duplicateCurrentPdfPage() {
+  if (!editingReady()) return;
+
+  try {
+    const sourcePage = currentPage;
+    const [copy] = await editingPdfDoc.copyPages(
+      editingPdfDoc,
+      [sourcePage - 1]
+    );
+
+    editingPdfDoc.insertPage(sourcePage, copy);
+    duplicateAnnotationsForPage(sourcePage, sourcePage + 1);
+
+    setPdfEditDirty(true);
+
+    await refreshViewerFromEditingDocument({
+      targetPage: sourcePage + 1,
+      message: `Pagina ${sourcePage} gedupliceerd.`
+    });
+  } catch (error) {
+    console.error(error);
+    setMessage(`Dupliceren mislukt: ${error?.message || error}`, "error");
+  }
+}
+
+async function rebuildEditingPdfInOrder(order) {
+  const newDoc = await pdfLib.PDFDocument.create();
+  const pages = await newDoc.copyPages(editingPdfDoc, order);
+
+  for (const page of pages) {
+    newDoc.addPage(page);
+  }
+
+  editingPdfDoc = newDoc;
+}
+
+async function moveCurrentPdfPage(direction) {
+  if (!editingReady()) return;
+
+  const count = editingPdfDoc.getPageCount();
+  const from = currentPage - 1;
+  const to = direction < 0 ? from - 1 : from + 1;
+
+  if (to < 0 || to >= count) return;
+
+  try {
+    const order = Array.from({ length: count }, (_, index) => index);
+    [order[from], order[to]] = [order[to], order[from]];
+
+    await rebuildEditingPdfInOrder(order);
+    swapAnnotationPages(from + 1, to + 1);
+
+    setPdfEditDirty(true);
+
+    await refreshViewerFromEditingDocument({
+      targetPage: to + 1,
+      message: `Pagina verplaatst naar positie ${to + 1}.`
+    });
+  } catch (error) {
+    console.error(error);
+    setMessage(`Pagina verplaatsen mislukt: ${error?.message || error}`, "error");
+  }
+}
+
+async function mergePdfFile(file) {
+  if (!editingReady() || !file) return;
+
+  try {
+    setMessage("Extra PDF wordt toegevoegd…");
+
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const otherDoc = await pdfLib.PDFDocument.load(bytes);
+    const indices = otherDoc.getPageIndices();
+    const copied = await editingPdfDoc.copyPages(otherDoc, indices);
+
+    for (const page of copied) {
+      editingPdfDoc.addPage(page);
+    }
+
+    setPdfEditDirty(true);
+
+    await refreshViewerFromEditingDocument({
+      targetPage: currentPage,
+      message: `${copied.length} pagina${copied.length === 1 ? "" : "'s"} toegevoegd uit ${file.name}.`
+    });
+  } catch (error) {
+    console.error(error);
+    setMessage(`PDF toevoegen mislukt: ${error?.message || error}`, "error");
+  }
+}
+
+function exportFileName() {
+  const base = String(originalPdfFileName || "document.pdf")
+    .replace(/\.pdf$/i, "")
+    .trim() || "document";
+
+  return `${base}_bewerkt.pdf`;
+}
+
+async function exportEditedPdf() {
+  if (!editingReady()) return;
+
+  try {
+    const bytes = await editingPdfDoc.save();
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = exportFileName();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    setMessage(
+      `PDF geëxporteerd als ${exportFileName()}.`,
+      "success"
+    );
+  } catch (error) {
+    console.error(error);
+    setMessage(`Exporteren mislukt: ${error?.message || error}`, "error");
+  }
+}
+
 function fullscreenSupported() {
   return Boolean(
     document.documentElement.requestFullscreen ||
@@ -2709,6 +3093,7 @@ function updateUi() {
   if (ready) updateFullscreenOverlayUi();
   if (ready) updateActiveThumbnail();
   if (ready) renderAnnotationsForCurrentPage();
+  updatePdfEditUi();
 }
 
 async function loadPdfJs() {
@@ -2939,7 +3324,23 @@ async function openPdf(file) {
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer());
-    pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
+
+    originalPdfBytes = bytes.slice();
+    editingPdfBytes = bytes.slice();
+    originalPdfFileName = file.name || "document.pdf";
+    pdfEditDirty = false;
+
+    if (pdfLib) {
+      editingPdfDoc = await pdfLib.PDFDocument.load(
+        editingPdfBytes.slice()
+      );
+    } else {
+      editingPdfDoc = null;
+    }
+
+    pdfDoc = await pdfjsLib.getDocument({
+      data: bytes.slice()
+    }).promise;
 
     currentPage = 1;
     currentScale = 1;
@@ -2958,6 +3359,7 @@ async function openPdf(file) {
     currentScale = await fitWidthScale(1);
     updateUi();
     await renderPage(1, currentScale);
+    updatePdfEditUi();
   } catch (error) {
     console.error(error);
     resetReaderAfterFatalError(
@@ -3145,6 +3547,39 @@ openPdfMenuItem.addEventListener("click", () => {
   closeMenus();
   fileInput.click();
 });
+
+
+toggleEditToolbarMenuItem.addEventListener("click", () => {
+  closeMenus();
+  togglePdfEditToolbar();
+});
+
+if (fsToggleEditToolbarButton) {
+  fsToggleEditToolbarButton.addEventListener("click", togglePdfEditToolbar);
+}
+
+closePdfEditToolbarButton.addEventListener("click", () => {
+  showPdfEditToolbar(false);
+});
+
+rotatePageButton.addEventListener("click", rotateCurrentPage90);
+deletePageButton.addEventListener("click", deleteCurrentPdfPage);
+duplicatePageButton.addEventListener("click", duplicateCurrentPdfPage);
+movePageUpButton.addEventListener("click", () => moveCurrentPdfPage(-1));
+movePageDownButton.addEventListener("click", () => moveCurrentPdfPage(1));
+
+mergePdfButton.addEventListener("click", () => {
+  mergePdfInput.click();
+});
+
+mergePdfInput.addEventListener("change", async () => {
+  const file = mergePdfInput.files?.[0];
+  mergePdfInput.value = "";
+  await mergePdfFile(file);
+});
+
+exportPdfButton.addEventListener("click", exportEditedPdf);
+
 
 fitWidthMenuItem.addEventListener("click", async () => {
   closeMenus();
@@ -3706,6 +4141,7 @@ if (await verifyRuntimeCoherency()) {
   await registerOfflineEngine();
   void updateInstallDiagnostics();
   await loadPdfJs();
+  await loadPdfLib();
 }
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Selectie + Undo/Redo geladen.`);
+console.info(`PdfReader ${APP_VERSION} — PDF Editing Suite geladen.`);

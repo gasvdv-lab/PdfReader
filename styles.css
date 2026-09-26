@@ -1540,3 +1540,73 @@ body.global-select-mode .annotation-layer,body.global-select-mode .pen-layer,bod
 body.global-select-mode .annotation-object.selected{outline:3px solid #facc15!important;outline-offset:2px}.pen-stroke.selected,.shape-object.selected{filter:drop-shadow(0 0 4px rgba(250,204,21,.98))}
 body.fullscreen-reader .history-toolbar{position:fixed;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(94vw,760px);z-index:198}
 @media(max-width:640px){.history-toolbar{grid-template-columns:1fr 1fr}}
+
+
+/* v0.4.0 — PDF Editing Suite */
+.pdf-edit-toolbar{
+  position:sticky;
+  top:8px;
+  z-index:52;
+  width:100%;
+  margin-bottom:10px;
+  padding:9px;
+  box-sizing:border-box;
+  border:1px solid #334155;
+  border-radius:12px;
+  background:rgba(15,23,42,.98);
+  box-shadow:0 8px 24px rgba(0,0,0,.26);
+}
+.pdf-edit-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+  color:#e2e8f0;
+}
+#pdfEditStatus{
+  padding:4px 8px;
+  border:1px solid #334155;
+  border-radius:999px;
+  color:#94a3b8;
+  font-size:11px;
+}
+#pdfEditStatus.dirty{
+  border-color:#f59e0b;
+  color:#fde68a;
+  background:rgba(245,158,11,.12);
+}
+.pdf-edit-actions{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+}
+.pdf-edit-actions button{
+  min-height:38px;
+  padding:7px 8px;
+  border:1px solid #334155;
+  border-radius:9px;
+  background:#172033;
+  color:#fff;
+}
+.pdf-edit-actions button.primary{
+  background:#2563eb;
+  border-color:#3b82f6;
+  font-weight:750;
+}
+.pdf-edit-actions button:disabled{
+  opacity:.4;
+}
+body.fullscreen-reader .pdf-edit-toolbar{
+  position:fixed;
+  top:max(10px,env(safe-area-inset-top));
+  left:50%;
+  transform:translateX(-50%);
+  width:min(96vw,820px);
+  z-index:199;
+}
+@media(max-width:700px){
+  .pdf-edit-actions{
+    grid-template-columns:1fr 1fr;
+  }
+}
