@@ -1,5 +1,5 @@
 /* PdfReader v0.3.2.3 — Cache Coherency & Runtime Recovery */
-const VERSION = "0.3.5";
+const VERSION = "0.3.6";
 const CACHE_NAME = `pdfreader-${VERSION}`;
 const INSTALL_CACHE = `${CACHE_NAME}-installing`;
 const CACHE_PREFIX = "pdfreader-";
@@ -11,11 +11,11 @@ const PDFJS_WORKER =
 
 const CRITICAL_ASSETS = [
   "./index.html",
-  "./styles.css?v=0.3.5",
-  "./app.js?v=0.3.5",
-  "./manifest.webmanifest?v=0.3.5",
+  "./styles.css?v=0.3.6",
+  "./app.js?v=0.3.6",
+  "./manifest.webmanifest?v=0.3.6",
   "./icon.svg",
-  "./icon-192.png?v=0.3.5",
+  "./icon-192.png?v=0.3.6",
   "./icon-512.png",
   PDFJS_MAIN,
   PDFJS_WORKER

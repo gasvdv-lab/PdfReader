@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
   <meta name="application-name" content="PdfReader">
-  <meta name="pdfreader-version" content="0.3.5">
+  <meta name="pdfreader-version" content="0.3.6">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PdfReader">
-  <link rel="manifest" href="manifest.webmanifest?v=0.3.5">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.5">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.5">
+  <link rel="manifest" href="manifest.webmanifest?v=0.3.6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.3.6">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=0.3.6">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=0.3.5">
-  <title>PdfReader v0.3.5</title>
+  <link rel="stylesheet" href="styles.css?v=0.3.6">
+  <title>PdfReader v0.3.6</title>
 </head>
 <body>
 <header class="topbar" id="topbar">
@@ -25,7 +25,7 @@
       <div class="logo mini">PDF</div>
       <div class="brand-text">
         <strong>PdfReader</strong>
-        <span>v0.3.5</span>
+        <span>v0.3.6</span>
       </div>
     </div>
   </div>
@@ -80,7 +80,7 @@
 
 <section class="panel">
   <div class="intro-block">
-    <h2>Vormen</h2>
+    <h2>Selectie + Undo/Redo</h2>
     <p>Deze versie voegt de technische annotatielaag toe waarop markeren, tekst, pen en notities verder gebouwd worden.</p>
   </div>
 
@@ -149,6 +149,13 @@
       </div>
     </div>
 
+
+    <div id="historyToolbar" class="history-toolbar" role="toolbar" aria-label="Selectie en geschiedenis">
+  <button id="globalSelectButton" type="button">Selecteren</button>
+  <button id="undoButton" type="button" disabled>↶ Undo</button>
+  <button id="redoButton" type="button" disabled>↷ Redo</button>
+  <button id="deleteSelectedGlobalButton" type="button" disabled>Verwijderen</button>
+</div>
 
     <div id="shapeToolbarSlot" class="shape-toolbar-slot hidden">
       <div class="shape-action-bar" role="toolbar" aria-label="Vormen">
@@ -280,12 +287,12 @@
     </div>
   </div>
 
-  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.3.6 — Selectie + Undo/Redo</div>
+  <div class="next-step"><strong>Volgende stap bij succes:</strong> v0.4.0 — PDF Editing Foundation</div>
 </section>
 </main>
 
 <footer>
-  <span>PdfReader v0.3.5</span>
+  <span>PdfReader v0.3.6</span>
   <a href="https://gasvdv-lab.github.io/PdfReader/" target="_blank" rel="noopener">Live app</a>
 </footer>
 
@@ -333,7 +340,7 @@
         <div><dt>Native prompt</dt><dd id="diagPrompt">—</dd></div>
         <div><dt>Offline engine</dt><dd id="diagOffline">—</dd></div>
         <div><dt>Platform</dt><dd id="diagPlatform">—</dd></div>
-        <div><dt>Versie</dt><dd>v0.3.5</dd></div>
+        <div><dt>Versie</dt><dd>v0.3.6</dd></div>
       </dl>
     </details>
   </section>
@@ -402,6 +409,6 @@
 </div>
 
 
-<script type="module" src="app.js?v=0.3.5"></script>
+<script type="module" src="app.js?v=0.3.6"></script>
 </body>
 </html>

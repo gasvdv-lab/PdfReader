@@ -1,14 +1,12 @@
-# PdfReader v0.3.5 — Testing
+# PdfReader v0.3.6 — Testing
 
 Testlink:
-https://gasvdv-lab.github.io/PdfReader/?v=0.3.5
+https://gasvdv-lab.github.io/PdfReader/?v=0.3.6
 
-1. Open PDF.
-2. Kies Vormen.
-3. Teken rechthoek, ellips, lijn en pijl.
-4. Test kleur, dikte en vullen.
-5. Zoom/fullscreen/rotatie.
-6. Pagina wisselen en terug.
-7. Selecteer een vorm en verwijder ze.
-8. Test Wis vormen.
-9. Regressie: markeren, tekst, pen, notities, offline.
+1. Voeg markering, tekst, notitie, pen en vorm toe.
+2. Gebruik Undo meerdere keren.
+3. Gebruik Redo meerdere keren.
+4. Activeer Selecteren en tik dicht bij elk annotatietype.
+5. Verwijder selectie en test Undo.
+6. Windows: Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z.
+7. Test zoom, fullscreen, rotatie en offline.

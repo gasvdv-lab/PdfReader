@@ -1,4 +1,4 @@
-const APP_VERSION = "0.3.5";
+const APP_VERSION = "0.3.6";
 
 const $ = id => document.getElementById(id);
 
@@ -80,6 +80,10 @@ const shapeSelectModeButton = $("shapeSelectModeButton");
 const deleteShapeButton = $("deleteShapeButton");
 const clearShapesPageButton = $("clearShapesPageButton");
 const closeShapeModeButton = $("closeShapeModeButton");
+const globalSelectButton = $("globalSelectButton");
+const undoButton = $("undoButton");
+const redoButton = $("redoButton");
+const deleteSelectedGlobalButton = $("deleteSelectedGlobalButton");
 const annotationModeMenuItem = $("annotationModeMenuItem");
 const fsAnnotationModeButton = $("fsAnnotationModeButton");
 const annotationStatusChip = $("annotationStatusChip");
@@ -993,7 +997,7 @@ async function installPwa() {
 let offlineEngineReady = false;
 
 let serviceWorkerReloadedForVersion = false;
-const EXPECTED_RUNTIME_VERSION = "0.3.5";
+const EXPECTED_RUNTIME_VERSION = "0.3.6";
 let annotationModeEnabled = false;
 let annotationIdCounter = 1;
 const annotationsByPage = new Map();
@@ -1035,6 +1039,12 @@ let shapeFill = false;
 let shapeWidth = 3;
 let activeShapePointerId = null;
 let activeShapeAnnotation = null;
+let globalSelectModeEnabled = false;
+let undoStack = [];
+let redoStack = [];
+let historyMuted = false;
+let historyTimer = null;
+let lastHistorySerialized = "";
 
 
 function htmlRuntimeVersion() {
@@ -1155,7 +1165,7 @@ async function registerOfflineEngine() {
 
   try {
     const registration = await navigator.serviceWorker.register(
-      "./service-worker.js?v=0.3.5",
+      "./service-worker.js?v=0.3.6",
       {
         scope: "./",
         updateViaCache: "none"
@@ -1411,6 +1421,7 @@ function renderAnnotationsForCurrentPage() {
   }
 
   annotationLayer.classList.toggle("has-annotations", list.length > 0);
+  scheduleHistoryCommit();
 }
 
 function resetAnnotationDocumentState() {
@@ -1427,6 +1438,7 @@ function resetAnnotationDocumentState() {
   renderAnnotationsForCurrentPage();
   renderPenStrokesForCurrentPage();
   renderShapesForCurrentPage();
+  resetHistory();
 }
 
 annotationLayer.addEventListener("click", event => {
@@ -1449,6 +1461,15 @@ pageStage.addEventListener("click", event => {
   if (event.target.closest?.(".annotation-object")) return;
   openNoteEditorAt(normalizePoint(event.clientX, event.clientY));
 });
+window.addEventListener("keydown", event => {
+  const a=document.activeElement; const typing=a?.tagName==="INPUT"||a?.tagName==="TEXTAREA"||a?.isContentEditable;
+  if(typing)return;
+  const k=event.key.toLowerCase();
+  if((event.ctrlKey||event.metaKey)&&k==="z"){event.preventDefault();event.shiftKey?redoAnnotationAction():undoAnnotationAction();return;}
+  if((event.ctrlKey||event.metaKey)&&k==="y"){event.preventDefault();redoAnnotationAction();return;}
+  if(globalSelectModeEnabled&&(event.key==="Delete"||event.key==="Backspace")){event.preventDefault();deleteSelectedGlobalAnnotation();}
+});
+
 window.addEventListener("keydown", event => {
   const active = document.activeElement;
   const typing =
@@ -2176,7 +2197,7 @@ function togglePenMode(){if(!pdfDoc)return;if(continuousScrollEnabled){setInstal
 function penStrokeList(pageNumber=currentPage){return annotationPageList(pageNumber).filter(i=>i.type==="pen");}
 function normalizedPenPoint(clientX,clientY){const r=pageStage.getBoundingClientRect();return{x:r.width>0?Math.max(0,Math.min(1,(clientX-r.left)/r.width)):0,y:r.height>0?Math.max(0,Math.min(1,(clientY-r.top)/r.height)):0};}
 function penPathD(points){if(!points?.length)return"";const w=pageStage.clientWidth||1,h=pageStage.clientHeight||1;return points.map((p,i)=>`${i===0?"M":"L"} ${(p.x*w).toFixed(2)} ${(p.y*h).toFixed(2)}`).join(" ");}
-function renderPenStrokesForCurrentPage(){if(!penLayer)return;penLayer.replaceChildren();const w=Math.max(1,pageStage.clientWidth),h=Math.max(1,pageStage.clientHeight);penLayer.setAttribute("viewBox",`0 0 ${w} ${h}`);for(const a of penStrokeList(currentPage)){const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.dataset.annotationId=a.id;p.setAttribute("d",penPathD(a.points||[]));p.setAttribute("fill","none");p.setAttribute("stroke",a.color||"#111827");p.setAttribute("stroke-width",String(Math.max(1,(a.width||3)*Math.max(.65,Math.min(2.5,w/800)))));p.setAttribute("stroke-linecap","round");p.setAttribute("stroke-linejoin","round");p.classList.add("pen-stroke");if(a.id===selectedAnnotationId)p.classList.add("selected");penLayer.appendChild(p);}}
+function renderPenStrokesForCurrentPage(){if(!penLayer)return;penLayer.replaceChildren();const w=Math.max(1,pageStage.clientWidth),h=Math.max(1,pageStage.clientHeight);penLayer.setAttribute("viewBox",`0 0 ${w} ${h}`);for(const a of penStrokeList(currentPage)){const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.dataset.annotationId=a.id;p.setAttribute("d",penPathD(a.points||[]));p.setAttribute("fill","none");p.setAttribute("stroke",a.color||"#111827");p.setAttribute("stroke-width",String(Math.max(1,(a.width||3)*Math.max(.65,Math.min(2.5,w/800)))));p.setAttribute("stroke-linecap","round");p.setAttribute("stroke-linejoin","round");p.classList.add("pen-stroke");if(a.id===selectedAnnotationId)p.classList.add("selected");penLayer.appendChild(p);}scheduleHistoryCommit();}
 function beginPenStroke(e){if(!penModeEnabled||penSelectModeEnabled||!pdfDoc||continuousScrollEnabled)return;if(e.button!==undefined&&e.button!==0)return;e.preventDefault();const a={id:nextAnnotationId(),type:"pen",page:currentPage,color:penColor,width:penWidth,points:[normalizedPenPoint(e.clientX,e.clientY)],createdAt:new Date().toISOString()};annotationPageList(currentPage).push(a);activePenPointerId=e.pointerId;activePenStroke=a;penLayer.setPointerCapture?.(e.pointerId);renderPenStrokesForCurrentPage();activePenPathElement=penLayer.querySelector(`[data-annotation-id="${a.id}"]`);}
 function updatePenStroke(e){if(!activePenStroke||activePenPointerId!==e.pointerId)return;e.preventDefault();const p=normalizedPenPoint(e.clientX,e.clientY),pts=activePenStroke.points,prev=pts[pts.length-1];if(Math.hypot(p.x-prev.x,p.y-prev.y)<.0015)return;pts.push(p);activePenPathElement?.setAttribute("d",penPathD(pts));}
 function endPenStroke(e){if(!activePenStroke||activePenPointerId!==e.pointerId)return;e.preventDefault();penLayer.releasePointerCapture?.(e.pointerId);if((activePenStroke.points||[]).length<2){const p=activePenStroke.points[0];activePenStroke.points.push({x:Math.min(1,p.x+.001),y:p.y});}activePenStroke.updatedAt=new Date().toISOString();activePenPointerId=null;activePenStroke=null;activePenPathElement=null;renderPenStrokesForCurrentPage();}
@@ -2431,7 +2452,7 @@ function renderShapesForCurrentPage(){
   marker.setAttribute("id","shapeArrowHead");marker.setAttribute("markerWidth","8");marker.setAttribute("markerHeight","8");marker.setAttribute("refX","7");marker.setAttribute("refY","4");marker.setAttribute("orient","auto");marker.setAttribute("markerUnits","strokeWidth");
   const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d","M 0 0 L 8 4 L 0 8 z");p.setAttribute("fill","context-stroke");marker.appendChild(p);defs.appendChild(marker);shapeLayer.appendChild(defs);
   for(const a of shapeList(currentPage))shapeLayer.appendChild(buildShapeElement(a));
-}
+scheduleHistoryCommit();}
 function beginShape(e){
   if(!shapeModeEnabled||shapeSelectModeEnabled||!pdfDoc||continuousScrollEnabled)return;
   if(e.button!==undefined&&e.button!==0)return;
@@ -2484,6 +2505,86 @@ function clearShapesForCurrentPage(){
   selectedAnnotationId=null;deleteShapeButton.classList.add("hidden");renderShapesForCurrentPage();
 }
 
+
+function snapshotAnnotations(){
+  const obj={};
+  for(const [page,list] of annotationsByPage.entries()) obj[String(page)]=JSON.parse(JSON.stringify(list));
+  return obj;
+}
+function serializeAnnotations(){return JSON.stringify(snapshotAnnotations());}
+function restoreAnnotations(snapshot){
+  historyMuted=true;
+  annotationsByPage.clear();
+  for(const [page,list] of Object.entries(snapshot||{})) annotationsByPage.set(Number(page),JSON.parse(JSON.stringify(list)));
+  selectedAnnotationId=null;
+  editingTextAnnotationId=null; editingNoteId=null; pendingTextPoint=null; pendingNotePoint=null;
+  hideTextEditor(); hideNoteEditor();
+  renderAnnotationsForCurrentPage(); renderPenStrokesForCurrentPage(); renderShapesForCurrentPage();
+  historyMuted=false;
+  updateHistoryUi();
+}
+function resetHistory(){
+  if(historyTimer){clearTimeout(historyTimer);historyTimer=null;}
+  undoStack=[snapshotAnnotations()]; redoStack=[]; lastHistorySerialized=serializeAnnotations(); updateHistoryUi();
+}
+function scheduleHistoryCommit(){
+  if(historyMuted)return;
+  if(historyTimer)clearTimeout(historyTimer);
+  historyTimer=setTimeout(()=>{
+    historyTimer=null;
+    const serialized=serializeAnnotations();
+    if(serialized===lastHistorySerialized)return;
+    undoStack.push(JSON.parse(serialized));
+    if(undoStack.length>100)undoStack.shift();
+    lastHistorySerialized=serialized; redoStack=[]; updateHistoryUi();
+  },140);
+}
+function undoAnnotationAction(){
+  if(historyTimer){clearTimeout(historyTimer);historyTimer=null;const s=serializeAnnotations();if(s!==lastHistorySerialized){undoStack.push(JSON.parse(s));lastHistorySerialized=s;}}
+  if(undoStack.length<=1)return;
+  const current=undoStack.pop(); redoStack.push(current);
+  const prev=undoStack[undoStack.length-1]; lastHistorySerialized=JSON.stringify(prev); restoreAnnotations(prev); updateHistoryUi();
+}
+function redoAnnotationAction(){
+  if(!redoStack.length)return;
+  const next=redoStack.pop(); undoStack.push(next); lastHistorySerialized=JSON.stringify(next); restoreAnnotations(next); updateHistoryUi();
+}
+function updateHistoryUi(){
+  undoButton.disabled=undoStack.length<=1; redoButton.disabled=redoStack.length===0; deleteSelectedGlobalButton.disabled=!selectedAnnotationId;
+  globalSelectButton.classList.toggle("active",globalSelectModeEnabled);
+  globalSelectButton.textContent=globalSelectModeEnabled?"Selectie uit":"Selecteren";
+}
+function setGlobalSelectMode(enabled){
+  globalSelectModeEnabled=Boolean(enabled); document.body.classList.toggle("global-select-mode",globalSelectModeEnabled);
+  if(globalSelectModeEnabled){
+    if(annotationModeEnabled)setAnnotationMode(false); if(highlightModeEnabled)setHighlightMode(false); if(textModeEnabled)setTextMode(false); if(penModeEnabled)setPenMode(false); if(noteModeEnabled)setNoteMode(false); if(shapeModeEnabled)setShapeMode(false);
+    setInstallStatus("Selectiemodus actief: tik dicht bij een annotatie.",true);
+  }else selectedAnnotationId=null;
+  renderAnnotationsForCurrentPage(); renderPenStrokesForCurrentPage(); renderShapesForCurrentPage(); updateHistoryUi();
+}
+function globalAnnotationDistance(item,nx,ny){
+  let d=Infinity;
+  if(item.type==="text"||item.type==="note"||item.type==="foundation-point") d=Math.hypot((item.x||0)-nx,(item.y||0)-ny);
+  else if(item.type==="highlight") for(const b of item.boxes||[]) d=Math.min(d,Math.hypot(b.x+b.width/2-nx,b.y+b.height/2-ny));
+  else if(item.type==="pen") for(const p of item.points||[]) d=Math.min(d,Math.hypot(p.x-nx,p.y-ny));
+  else if(item.type==="shape") d=Math.hypot(((item.x1||0)+(item.x2||0))/2-nx,((item.y1||0)+(item.y2||0))/2-ny);
+  return d;
+}
+function selectNearestGlobalAnnotation(clientX,clientY){
+  if(!globalSelectModeEnabled||!pdfDoc)return;
+  const r=pageStage.getBoundingClientRect(); if(!r.width||!r.height)return;
+  const nx=(clientX-r.left)/r.width, ny=(clientY-r.top)/r.height;
+  let best=null,bestD=Infinity;
+  for(const item of annotationPageList(currentPage)){const d=globalAnnotationDistance(item,nx,ny);if(d<bestD){bestD=d;best=item;}}
+  selectedAnnotationId=(best&&bestD<=0.09)?best.id:null;
+  renderAnnotationsForCurrentPage();renderPenStrokesForCurrentPage();renderShapesForCurrentPage();updateHistoryUi();
+}
+function deleteSelectedGlobalAnnotation(){
+  if(!selectedAnnotationId)return;
+  const list=annotationPageList(currentPage); const i=list.findIndex(x=>x.id===selectedAnnotationId); if(i<0)return;
+  list.splice(i,1); selectedAnnotationId=null;
+  renderAnnotationsForCurrentPage();renderPenStrokesForCurrentPage();renderShapesForCurrentPage();scheduleHistoryCommit();updateHistoryUi();
+}
 function fullscreenSupported() {
   return Boolean(
     document.documentElement.requestFullscreen ||
@@ -3176,6 +3277,11 @@ pageStage.addEventListener("pointercancel", endTextMove);
 
 
 
+globalSelectButton.addEventListener("click",()=>setGlobalSelectMode(!globalSelectModeEnabled));
+undoButton.addEventListener("click",undoAnnotationAction);
+redoButton.addEventListener("click",redoAnnotationAction);
+deleteSelectedGlobalButton.addEventListener("click",deleteSelectedGlobalAnnotation);
+
 shapeModeMenuItem.addEventListener("click", toggleShapeMode);
 if (fsShapeModeButton) fsShapeModeButton.addEventListener("click", toggleShapeMode);
 
@@ -3197,6 +3303,10 @@ shapeLayer.addEventListener("pointerdown", event => {
 shapeLayer.addEventListener("pointermove", updateShape);
 shapeLayer.addEventListener("pointerup", endShape);
 shapeLayer.addEventListener("pointercancel", endShape);
+
+pageStage.addEventListener("click", event => {
+  if(globalSelectModeEnabled) selectNearestGlobalAnnotation(event.clientX,event.clientY);
+});
 
 noteModeMenuItem.addEventListener("click", toggleNoteMode);
 if (fsNoteModeButton) fsNoteModeButton.addEventListener("click", toggleNoteMode);
@@ -3598,4 +3708,4 @@ if (await verifyRuntimeCoherency()) {
   await loadPdfJs();
 }
 updateUi();
-console.info(`PdfReader ${APP_VERSION} — Vormen geladen.`);
+console.info(`PdfReader ${APP_VERSION} — Selectie + Undo/Redo geladen.`);

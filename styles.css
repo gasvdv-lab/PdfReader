@@ -1532,3 +1532,11 @@ body.shape-select-mode .shape-layer{cursor:pointer}
 body.shape-mode .text-layer,body.shape-mode .annotation-layer,body.shape-mode .pen-layer{pointer-events:none!important;user-select:none!important;-webkit-user-select:none!important}
 body.fullscreen-reader .shape-toolbar-slot{position:fixed;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(94vw,720px);z-index:194}
 @media(max-width:640px){.shape-type-row{grid-template-columns:1fr 1fr}.shape-style-row{grid-template-columns:48px auto 1fr 30px}.shape-style-row label[for="shapeWidthRange"]{display:none}.shape-actions{display:grid;grid-template-columns:1fr 1fr}}
+
+/* v0.3.6 — Selectie + Undo/Redo */
+.history-toolbar{position:sticky;top:8px;z-index:50;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;width:100%;margin-bottom:10px;padding:8px;box-sizing:border-box;border:1px solid #334155;border-radius:12px;background:rgba(15,23,42,.97);box-shadow:0 8px 24px rgba(0,0,0,.24)}
+.history-toolbar button{min-height:36px;padding:6px 9px;border:1px solid #334155;border-radius:9px;background:#172033;color:#fff}.history-toolbar button.active{background:#1d4ed8;border-color:#60a5fa}.history-toolbar button:disabled{opacity:.42}
+body.global-select-mode .annotation-layer,body.global-select-mode .pen-layer,body.global-select-mode .shape-layer{pointer-events:none!important}body.global-select-mode .page-stage{cursor:pointer}
+body.global-select-mode .annotation-object.selected{outline:3px solid #facc15!important;outline-offset:2px}.pen-stroke.selected,.shape-object.selected{filter:drop-shadow(0 0 4px rgba(250,204,21,.98))}
+body.fullscreen-reader .history-toolbar{position:fixed;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(94vw,760px);z-index:198}
+@media(max-width:640px){.history-toolbar{grid-template-columns:1fr 1fr}}

@@ -2,7 +2,7 @@
   "id": "/PdfReader/",
   "name": "PdfReader",
   "short_name": "PdfReader",
-  "description": "Lokale PDF-reader met markeringen, tekst, pen, notities, vormen en offline ondersteuning.",
+  "description": "Lokale PDF-reader met annotaties, algemene selectie, Undo/Redo en offline ondersteuning.",
   "start_url": "/PdfReader/",
   "scope": "/PdfReader/",
   "display": "standalone",

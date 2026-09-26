@@ -1,10 +1,7 @@
 # PdfReader Roadmap
 
-v0.3.4 — Notities
-v0.3.5 — Vormen — huidige release
+v0.3.5 — Vormen
+v0.3.6 — Selectie + Undo/Redo — huidige release
 
 Volgende stap:
-v0.3.6 — Selectie + Undo/Redo
-
-Daarna:
-v0.4.x — PDF Editing
+v0.4.0 — PDF Editing Foundation
